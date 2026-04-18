@@ -325,10 +325,33 @@ def test_population_synthesizer_registry():
     pop = syn.generate(N=200, seed=7)
     assert pop.N == 200
     assert "age_idx" in pop.attributes
-    # Roadmap synthesizers defer
+    # Bayes net works (v0.2 lands)
+    bn = get_synthesizer("bayes_net")
+    bpop = bn.generate(N=200, seed=7)
+    assert bpop.N == 200
+    assert "income_tertile_idx" in bpop.attributes
+    assert bpop.latent["backend"] == "bayesian_network"
+    # Future synthesizers still defer
     import pytest
     with pytest.raises(NotImplementedError, match="roadmap"):
         get_synthesizer("tabddpm")
+
+
+def test_bayes_net_synthesizer_respects_conditionals():
+    """Higher-education buckets should skew toward higher income tertiles —
+    a joint-dependency property IPF cannot represent."""
+    import numpy as np
+    from oransim.data.synthesizers import get_synthesizer
+    bn = get_synthesizer("bayes_net")
+    pop = bn.generate(N=5000, seed=42)
+    edu = np.asarray(pop.attributes["edu_idx"])
+    inc = np.asarray(pop.attributes["income_tertile_idx"])
+    # Mean income tertile should increase with edu level
+    means = [float(inc[edu == e].mean()) if (edu == e).any() else 0.0 for e in range(5)]
+    # Undergrad (3) and grad (4) must have strictly higher mean income tertile
+    # than junior (1) — core dependency the BN encodes that IPF loses.
+    assert means[4] > means[1], f"grad mean income {means[4]:.3f} should exceed junior {means[1]:.3f}"
+    assert means[3] > means[1], f"undergrad mean income {means[3]:.3f} should exceed junior {means[1]:.3f}"
 
 
 def test_orancbench_scenarios_shipped():

@@ -17,6 +17,11 @@ def _load_ipf() -> type[PopulationSynthesizer]:
     return IPFSynthesizer
 
 
+def _load_bayes_net() -> type[PopulationSynthesizer]:
+    from .bayes_net import BayesianNetworkSynthesizer
+    return BayesianNetworkSynthesizer
+
+
 def _not_yet(name: str, milestone: str) -> Callable[[], type[PopulationSynthesizer]]:
     class _PendingSynthesizer(PopulationSynthesizer):
         def __init__(self, *_args: Any, **_kwargs: Any) -> None:
@@ -37,7 +42,7 @@ def _not_yet(name: str, milestone: str) -> Callable[[], type[PopulationSynthesiz
 
 REGISTRY: dict[str, Callable[[], type[PopulationSynthesizer]]] = {
     "ipf": _load_ipf,
-    "bayes_net":          _not_yet("Bayesian-network",                       "v0.2"),
+    "bayes_net":          _load_bayes_net,
     "tabddpm":            _not_yet("TabDDPM (tabular diffusion)",            "v0.5"),
     "causal_dag_tabddpm": _not_yet("Causal-DAG-guided TabDDPM",              "v1.0 (research)"),
     "ctgan":              _not_yet("CTGAN",                                  "v0.5"),

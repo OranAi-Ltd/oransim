@@ -32,6 +32,7 @@ from .base import (
     SynthesizedPopulation,
 )
 from .ipf import IPFSynthesizer, IPFConfig
+from .bayes_net import BayesianNetworkSynthesizer, BayesianNetworkConfig
 from .registry import REGISTRY, get_synthesizer, list_synthesizers
 
 __all__ = [
@@ -40,6 +41,8 @@ __all__ = [
     "SynthesizedPopulation",
     "IPFSynthesizer",
     "IPFConfig",
+    "BayesianNetworkSynthesizer",
+    "BayesianNetworkConfig",
     "REGISTRY",
     "get_synthesizer",
     "list_synthesizers",
