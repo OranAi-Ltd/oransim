@@ -395,7 +395,7 @@ Apache License 2.0 —— 详见 [LICENSE](LICENSE) 和 [NOTICE](NOTICE)。
 Oransim 由 **[OranAI Ltd.](https://oran.cn)** (橙果视界（深圳）科技有限公司) 出品。
 
 **核心维护者**
-- **尹法孔（Yin Fakong）** —— CTO · 架构师 · [cto@orannai.com](mailto:cto@orannai.com) · [@ORAN-cgsj](https://github.com/ORAN-cgsj)
+- **尹法空（Yin Fakong）** —— CTO · 架构师 · [cto@orannai.com](mailto:cto@orannai.com) · [@ORAN-cgsj](https://github.com/ORAN-cgsj)
 
 **招聘中** —— 我们在招研究员（Causal ML / RL / 基于 Agent 的模拟）和工程师（平台 / 基础设施），欢迎投递 [cto@orannai.com](mailto:cto@orannai.com)。
 
