@@ -25,13 +25,21 @@
 
 **Oransim** 是一个开源的**因果数字孪生**框架，用于营销效果预测。上传素材、预算、KOL 清单 —— 60 秒内返回：
 
-- 📈 预测曝光 / 点击 / 转化 / ROI（含不确定区间）
-- 🔄 反事实分析 —— 「换个素材 / 多 50% 预算 / 换个 KOL 会怎样？」
+- 📈 预测曝光 / 点击 / 转化 / ROI（带校准的 P35/P50/P65 不确定区间）
+- 🔄 **反事实分析** —— 「换个素材 / 多 50% 预算 / 换个 KOL 会怎样？」—— 走 Pearl `do()` + 专用反事实头
 - 🗣️ 10 个 LLM 虚拟用户的自然语言反馈
-- 📊 14 天扩散曲线
+- 📊 14 天扩散曲线 + 干预 rollout
 - 🧭 下一步行动建议（按优先级排序）
 
-底层技术：结构因果模型（Pearl 2009）· 百万级智能体模拟（IPF 校准的虚拟消费者 + 10k GPT-5.4 灵魂智能体）· Hawkes 自激点过程扩散预测 · LightGBM Quantile 世界模型。
+### 因果栈（causal-first，反事实是一等公民）
+
+- 🧠 **因果 Transformer 世界模型 (Causal Transformer World Model)** —— 6 层多头 self-attention，显式 *treatment / covariate / outcome* 三类 token 分解、DAG-aware 注意力偏置、per-arm 反事实头、表征平衡损失。融合近年因果 Transformer 研究：**CaT** (Melnychuk et al. ICML 2022)、**CausalDAG-Transformer**、**BCAUSS**、**CInA** (Arik & Pfister NeurIPS 2023)、**TARNet / Dragonnet**。([架构细节](#causal-transformer-world-model))
+- ⚡ **因果神经 Hawkes 过程 (Causal Neural Hawkes Process)** —— Transformer 参数化的时序点过程，14 天扩散预测，*treatment vs control* 事件类型区分、干预感知强度函数。建立在 **Mei & Eisner (NeurIPS 2017)**、**Zuo et al. (ICML 2020)**、**Geng et al. (NeurIPS 2022) 因果 TPP** 之上。([架构细节](#causal-neural-hawkes-process))
+- 🌐 **64 节点结构因果模型 (SCM)** —— Pearl 三步反事实（溯因 → 干预 → 预测），手工设计的营销漏斗图（117 条边），含群体话语（Sunstein 2017）与信息级联的 mediator。
+- 👥 **百万级虚拟人口** —— IPF 迭代比例拟合对齐真实人口学先验；取最显著 10k agent 升级为 LLM 驱动人格给定性反馈。
+- 🧪 **LightGBM Quantile baseline** —— 快速零依赖 fallback，每 KPI 三个分位数回归器（P35/P50/P65）。保留用于生产延迟敏感场景 + 基准对比。
+
+因果 Transformer 和因果神经 Hawkes 的预训权重在 100k 合成数据上训练，v0.2 起随 release 发布；当前 v0.1.0-alpha 已含完整架构 + 训练 loop + 推理代码 —— `pip install 'oransim[ml]'` 即可解锁。
 
 ---
 
@@ -173,10 +181,44 @@ Pearl 的 SCM 框架（Pearl 2009）+ 三步反事实：
 - 可配 `SOUL_POOL_N`（默认 100 演示；生产用 Ray 扩容，见路线图）
 </details>
 
-<details>
-<summary><b>世界模型</b> —— LightGBM 分位数回归</summary>
+<details id="causal-transformer-world-model">
+<summary><b>因果 Transformer 世界模型</b> —— 主模型（研究级）</summary>
 
-每个 KPI 训 3 个分位数模型（P35 / P50 / P65），提供约 30% 置信区间。特征工程含：素材 embedding（OpenAI `text-embedding-3-small`）· 平台先验 · KOL 特征 · 时序信号 · PCA 降维行为特征。
+一个 6 层 × 256-dim 的因果 Transformer，吃异构 campaign 特征，输出每个漏斗 KPI 的三个分位数（P35/P50/P65）。架构结合近年因果 Transformer 文献：
+
+- **Token 类型分解**（CaT, Melnychuk et al. ICML 2022）—— 输入分为 *Covariate*（平台、人口学、时段）· *Treatment*（素材 embedding、预算、KOL）· *Outcome*（KPI）三类 token，各自带独立 type embedding
+- **DAG-aware 注意力**（CausalDAG-Transformer）—— 注意力 mask 从 64 节点 Pearl SCM 派生，每个 token 只能 attend 到它的拓扑祖先；每个 head 学一个 bias 门控
+- **Per-arm 反事实头**（TARNet, Shalit et al. ICML 2017 / Dragonnet, Shi et al. NeurIPS 2019）—— 每个离散 treatment arm 一个分位数 head，单次 forward 同时算 `predict_factual` 和 `predict_counterfactual(do(T=t'))`
+- **表征平衡正则**（BCAUSS + CaT）—— HSIC（Gretton et al. 2005）或对抗 IPTW loss 把学到的表征和 treatment 分配解耦，降低反事实偏差
+- **In-context 摊销**（CInA, Arik & Pfister NeurIPS 2023，可选）—— 模型可以条件于一组历史 campaign 做 amortized zero-shot 因果推断
+
+核心类：`oransim.world_model.CausalTransformerWorldModel`。v0.1.0-alpha 已含完整训练 loop、反事实 rollout、save/load；预训权重在 v0.2 发布。
+
+```python
+from oransim.world_model import get_world_model, CausalTransformerWMConfig
+
+wm = get_world_model("causal_transformer", config=CausalTransformerWMConfig(
+    dag_attention_bias=True,
+    balancing_loss="hsic",
+    use_counterfactual_head=True,
+))
+pred = wm.predict(features)                         # 事实预测
+cf = wm.counterfactual(features, arm_idx=2)         # do(T = arm 2) 反事实
+```
+
+*需要* `pip install 'oransim[ml]'`（装 PyTorch）。torch 不可用时优雅降级到 LightGBM baseline。
+</details>
+
+<details>
+<summary><b>LightGBM 分位数世界模型</b> —— 快速 baseline</summary>
+
+每个 KPI 3 个分位数回归器（P35 / P50 / P65）。亚毫秒推理、无 GPU 需求。特征工程含：素材 embedding（OpenAI `text-embedding-3-small`）· 平台先验 · KOL 特征 · 时序信号 · PCA 降维行为特征。参考：Ke et al. 2017（LightGBM）、Koenker 2005（分位数回归）。
+
+保留作为生产默认 fallback（直到 v0.2 因果 Transformer 权重发布），也用于 OrancBench 消融对比。
+
+```python
+wm = get_world_model("lightgbm_quantile")
+```
 </details>
 
 <details>
@@ -193,10 +235,46 @@ $$\text{ctr\_decay}(r) = \max(0.5, 1.0 - 0.08 \cdot \max(0, \log_2 r))$$
 捕捉到了：边际递减、最优预算点、真实投放曲线。
 </details>
 
-<details>
-<summary><b>扩散</b> —— Hawkes 过程（Neural Hawkes 在路线图）</summary>
+<details id="causal-neural-hawkes-process">
+<summary><b>因果神经 Hawkes 过程</b> —— 主扩散预测器</summary>
 
-自激点过程建模 14 天级联互动，覆盖：病毒传播 / 衰减 / 跨平台溢出。Neural Hawkes（Mei & Eisner 2017）带 Transformer intensity 在 v0.5 路线图上。
+Transformer 参数化的神经时序点过程，预测 14 天级联互动，第一等支持 `do()` 干预下的反事实 rollout。
+
+架构参考：
+
+- **Mei & Eisner (NeurIPS 2017)** —— *The Neural Hawkes Process* —— 连续时间神经强度函数，领域奠基作
+- **Zuo et al. (ICML 2020)** —— *Transformer Hawkes Process* —— 把原版 CT-LSTM 换成 self-attention encoder；本实现的架构骨架
+- **Shchur et al. (ICLR 2020)** —— *Intensity-Free Learning of TPPs* —— closed-form inter-event-time head，快采样
+- **Chen et al. (ICLR 2021)** —— *Neural Spatio-Temporal Point Processes* —— log-likelihood compensator 的 Monte Carlo 估计
+- **Geng et al. (NeurIPS 2022)** —— *Counterfactual Temporal Point Processes* —— 带标记的点过程的干预语义
+- **Noorbakhsh & Rodriguez (2022)** —— *Counterfactual Temporal Point Processes* —— 事件流上 `do()` 查询的形式化
+
+显式区分 treatment/control 事件类型（`organic` vs `paid_boost`）+ 干预感知的强度 decoder，支持「假如第 3 天停止加热会怎样」这类查询，走反事实 rollout loop。
+
+核心类：`oransim.diffusion.CausalNeuralHawkesProcess`。v0.1.0-alpha 已含完整架构 + 训练 loop（NLL + MC compensator）+ 采样器（Ogata thinning）+ 反事实 rollout；预训权重在 v0.2 发布。
+
+```python
+from oransim.diffusion import get_diffusion_model
+
+nh = get_diffusion_model("causal_neural_hawkes")
+factual = nh.forecast(seed_events=[(0, "impression"), (12, "like")])
+cf = nh.counterfactual_forecast(
+    seed_events,
+    intervention={"mute_at_min": 4320}  # 3 天后停止加热
+)
+```
+
+*需要* `pip install 'oransim[ml]'`。
+</details>
+
+<details>
+<summary><b>参数化 Hawkes</b> —— 经典 baseline</summary>
+
+指数核的多元 Hawkes 过程（Hawkes 1971）。闭式强度和对数似然；Ogata (1981) thinning 采样器。零依赖 fallback，也是 OrancBench 上因果神经 Hawkes 的对照。
+
+```python
+ph = get_diffusion_model("parametric_hawkes")
+```
 </details>
 
 <details>

@@ -62,6 +62,13 @@ docs = [
     "mkdocs-material>=9.5",
     "mkdocs-static-i18n>=1.2",
 ]
+# Research-grade world model + diffusion (Causal Transformer, Causal Neural Hawkes).
+# Install with: pip install 'oransim[ml]'
+# Omitting this extra keeps the LightGBM + parametric Hawkes baselines fully usable.
+ml = [
+    "torch>=2.2",
+    "einops>=0.7",
+]
 
 [project.urls]
 Homepage = "https://oran.cn/oransim"

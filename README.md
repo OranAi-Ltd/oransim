@@ -25,13 +25,23 @@
 
 **Oransim** is an open-source **causal digital twin** for marketing performance prediction. Upload a creative, a budget, and a KOL list — in 60 seconds, get:
 
-- 📈 Predicted impressions, clicks, conversions, ROI (with uncertainty bands)
-- 🔄 Counterfactuals — "what if I'd used a different creative / more budget / another KOL?"
+- 📈 Predicted impressions, clicks, conversions, ROI (with calibrated P35/P50/P65 uncertainty)
+- 🔄 **Counterfactuals** — "what if I'd used a different creative / more budget / another KOL?" — via Pearl-style `do()` and a dedicated counterfactual head
 - 🗣️ Virtual-user feedback in natural language (10 LLM-powered personas)
-- 📊 14-day diffusion curve
+- 📊 14-day diffusion curve with intervention rollouts
 - 🧭 Recommended next actions, ranked
 
-Built on structural causal models (Pearl 2009), agent-based simulation (1M IPF-calibrated virtual consumers + 10k LLM soul agents), Hawkes-process diffusion forecasting, and a LightGBM quantile world model.
+### The causal stack
+
+Oransim is built **causal-first** — counterfactual reasoning is first-class, not an afterthought:
+
+- 🧠 **Causal Transformer World Model** — 6-layer multi-head self-attention with explicit *treatment / covariate / outcome* factorization, DAG-aware attention bias, per-arm counterfactual heads, and a representation-balancing loss. Draws from recent work: **CaT** (Melnychuk et al. ICML 2022), **CausalDAG-Transformer**, **BCAUSS**, **CInA** (Arik & Pfister NeurIPS 2023), **TARNet / Dragonnet**. ([arch details](#causal-transformer-world-model))
+- ⚡ **Causal Neural Hawkes Process** — Transformer-parameterized temporal point process for 14-day diffusion with *treatment vs control* event typing and intervention-aware intensity. Follows **Mei & Eisner (NeurIPS 2017)**, **Zuo et al. (ICML 2020)**, **Geng et al. (NeurIPS 2022)** on counterfactual TPPs. ([arch details](#causal-neural-hawkes-process))
+- 🌐 **64-node Structural Causal Model** — Pearl's 3-step counterfactual evaluation (abduction → action → prediction) over a hand-designed marketing funnel graph (117 edges), with mediators for group discourse (Sunstein 2017) and information cascades.
+- 👥 **1M-agent population** — Iterative Proportional Fitting (IPF) calibrated to real demographic priors; the top 10k most-salient agents get LLM-powered personas for qualitative feedback.
+- 🧪 **LightGBM Quantile baseline** — fast zero-dependency fallback, three quantile regressors (P35/P50/P65) per KPI. Retained for production latency targets and benchmark comparison.
+
+Pretrained weights for the Causal Transformer and Causal Neural Hawkes train on the 100k synthetic dataset and ship starting v0.2; today v0.1.0-alpha includes the full architecture, training loop, and inference code — run `pip install 'oransim[ml]'` to unlock them.
 
 ---
 
@@ -173,10 +183,44 @@ Cost controlled via:
 - Configurable `SOUL_POOL_N` (default 100 for demo; production tiers scale via Ray, see roadmap)
 </details>
 
-<details>
-<summary><b>World Model</b> — LightGBM Quantile Regression</summary>
+<details id="causal-transformer-world-model">
+<summary><b>Causal Transformer World Model</b> — primary (research-grade)</summary>
 
-Three quantile models (P35, P50, P65) for each KPI, providing ~30% confidence intervals. Feature engineering includes creative embeddings (OpenAI `text-embedding-3-small`), platform priors, KOL features, temporal signals, and PCA-reduced behavioral features.
+A 6-layer × 256-dim causal Transformer that ingests heterogeneous campaign features and predicts three quantile levels (P35/P50/P65) for each funnel KPI. Architecture lifts ideas from the recent causal-Transformer literature:
+
+- **Token-type factorization** (CaT, Melnychuk et al. ICML 2022) — inputs split into *Covariate* (platform, demographic, time), *Treatment* (creative embedding, budget, KOL), and *Outcome* (KPIs) tokens with distinct type embeddings
+- **DAG-aware attention** (CausalDAG-Transformer) — attention mask derived from the 64-node Pearl SCM restricts each token to attend to topological ancestors; per-head learnable gate on the bias
+- **Per-arm counterfactual heads** (TARNet, Shalit et al. ICML 2017 / Dragonnet, Shi et al. NeurIPS 2019) — one quantile head per discrete treatment arm enables `predict_factual` vs `predict_counterfactual(do(T=t'))` with a single forward pass
+- **Representation balancing** (BCAUSS + CaT) — HSIC (Gretton et al. 2005) or adversarial-IPTW loss decorrelates the learned representation from treatment assignment, reducing bias in counterfactual predictions
+- **In-context amortization** (CInA, Arik & Pfister NeurIPS 2023, optional) — model can condition on a context set of prior campaigns for amortized zero-shot causal inference
+
+Core component: `oransim.world_model.CausalTransformerWorldModel`. Training loop, counterfactual rollout, and save/load are shipped in v0.1.0-alpha; pretrained weights land in v0.2.
+
+```python
+from oransim.world_model import get_world_model, CausalTransformerWMConfig
+
+wm = get_world_model("causal_transformer", config=CausalTransformerWMConfig(
+    dag_attention_bias=True,
+    balancing_loss="hsic",
+    use_counterfactual_head=True,
+))
+pred = wm.predict(features)                         # factual
+cf = wm.counterfactual(features, arm_idx=2)         # do(T = arm 2)
+```
+
+*Requires* `pip install 'oransim[ml]'` (brings in PyTorch). Falls back gracefully to LightGBM if torch is unavailable.
+</details>
+
+<details>
+<summary><b>LightGBM Quantile World Model</b> — fast baseline</summary>
+
+Three quantile regressors (P35, P50, P65) per KPI. Sub-millisecond inference, zero GPU requirement. Feature engineering includes creative embeddings (OpenAI `text-embedding-3-small`), platform priors, KOL features, temporal signals, and PCA-reduced behavioral features. Refs: Ke et al. 2017 (LightGBM), Koenker 2005 (Quantile Regression).
+
+Kept as the production default until the Causal Transformer checkpoints ship in v0.2. Also used as an ablation baseline in OrancBench.
+
+```python
+wm = get_world_model("lightgbm_quantile")
+```
 </details>
 
 <details>
@@ -193,10 +237,46 @@ $$\text{ctr\_decay}(r) = \max(0.5, 1.0 - 0.08 \cdot \max(0, \log_2 r))$$
 This captures diminishing returns, an optimal budget point, and realistic campaign dynamics.
 </details>
 
-<details>
-<summary><b>Diffusion</b> — Hawkes process (Neural Hawkes on roadmap)</summary>
+<details id="causal-neural-hawkes-process">
+<summary><b>Causal Neural Hawkes Process</b> — primary diffusion forecaster</summary>
 
-Self-exciting point process modeling cascading engagement over 14 days. Captures virality, decay, and cross-platform spillover. Neural Hawkes (Mei & Eisner 2017) with Transformer intensity on the v0.5 roadmap.
+Transformer-parameterized neural temporal point process for 14-day cascading engagement forecasting, with first-class support for counterfactual rollouts under `do()` interventions.
+
+Architectural references:
+
+- **Mei & Eisner (NeurIPS 2017)** — *The Neural Hawkes Process* — continuous-time neural intensity function, foundation of the field
+- **Zuo et al. (ICML 2020)** — *Transformer Hawkes Process* — self-attention encoder replacing the original CT-LSTM; directly the backbone of this implementation
+- **Shchur et al. (ICLR 2020)** — *Intensity-Free Learning of TPPs* — closed-form inter-event-time head for fast sampling
+- **Chen et al. (ICLR 2021)** — *Neural Spatio-Temporal Point Processes* — Monte Carlo estimator for the log-likelihood compensator
+- **Geng et al. (NeurIPS 2022)** — *Counterfactual Temporal Point Processes* — the intervention semantics for marked point processes
+- **Noorbakhsh & Rodriguez (2022)** — *Counterfactual Temporal Point Processes* — formalizes `do()` queries on event streams
+
+Explicit treatment/control event typing (`organic` vs `paid_boost`) and an intervention-aware intensity decoder enable queries like "what if we had stopped boosting on day 3" via a counterfactual rollout loop.
+
+Core component: `oransim.diffusion.CausalNeuralHawkesProcess`. Architecture, training loop (NLL with MC compensator), forecast sampler (Ogata thinning), and counterfactual rollout are shipped in v0.1.0-alpha; pretrained weights land in v0.2.
+
+```python
+from oransim.diffusion import get_diffusion_model
+
+nh = get_diffusion_model("causal_neural_hawkes")
+factual = nh.forecast(seed_events=[(0, "impression"), (12, "like")])
+cf = nh.counterfactual_forecast(
+    seed_events,
+    intervention={"mute_at_min": 4320}  # stop boosting 3 days in
+)
+```
+
+*Requires* `pip install 'oransim[ml]'`.
+</details>
+
+<details>
+<summary><b>Parametric Hawkes</b> — classical baseline</summary>
+
+Exponential-kernel multivariate Hawkes process (Hawkes 1971). Closed-form intensity and log-likelihood; Ogata (1981) thinning sampler. Zero-dependency fallback and the baseline against which the Causal Neural Hawkes is evaluated on OrancBench.
+
+```python
+ph = get_diffusion_model("parametric_hawkes")
+```
 </details>
 
 <details>
