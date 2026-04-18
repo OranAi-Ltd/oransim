@@ -176,7 +176,7 @@ site, and expanded model / data card v1.0 documentation.
 
 ## [0.1.0-alpha] — 2026-04-18
 
-### Added
+### Added — research-grade model zoo (included in initial release scope)
 - **Causal Transformer World Model** (`oransim.world_model.CausalTransformerWorldModel`) —
   research-grade causal Transformer with token-type factorization
   (covariate/treatment/outcome), DAG-aware attention bias, per-arm
@@ -219,9 +219,7 @@ site, and expanded model / data card v1.0 documentation.
 - Phase 3: synthetic data generator (unlocks weight training) + test
   suite + Docker + CI + MkDocs site
 
-## [0.1.0-alpha] — 2026-04-18
-
-### Added
+### Added — initial release packaging
 - Initial public repository
 - Flagship bilingual README (EN + 中文) with hero banner, platform adapter matrix, technical deep-dive, roadmap summary, enterprise edition section, contributing guide, citation, star history
 - `ROADMAP.md` — 3-horizon × 8-theme ambitious roadmap (Neural Hawkes, Transformer world model, Causal Foundation Model, multi-LLM native formats, closed-loop AI media buying, differential privacy, federated learning, 15+ platform coverage)

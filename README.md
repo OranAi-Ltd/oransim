@@ -139,7 +139,7 @@ The frontend shows a yellow banner at the top whenever the backend is still in m
 <tr>
 <td width="50%" valign="top">
 
-**Three-panel working UI** — left: creative + budget + sliders · center: KPI / 百万智能体 / AI-群聊 tabs (+「更多 ›」dropdown for deep analysis) · right: per-persona LLM reactions.
+**Three-panel working UI** — left: creative + budget + sliders · center: KPI / Agent pool / AI group-chat tabs (+「更多 ›」dropdown for deep analysis) · right: per-persona LLM reactions.
 
 <img src="assets/screenshots/main-three-col.png" alt="Three-panel prediction UI" width="100%"/>
 

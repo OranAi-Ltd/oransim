@@ -69,7 +69,7 @@ jobs:
                backend frontend docs assets \
                .github/ISSUE_TEMPLATE .github/PULL_REQUEST_TEMPLATE.md .github/FUNDING.yml .github/CODEOWNERS \
                index.html README.md README.zh-CN.md ROADMAP.md \
-               CONTRIBUTING.md CODE_OF_CONDUCT.md SECURITY.md GITHUB_SETUP.md \
+               CONTRIBUTING.md CODE_OF_CONDUCT.md SECURITY.md .github/SETUP.md \
                CITATION.cff pyproject.toml \
                --include='*.py' --include='*.md' --include='*.html' --include='*.yml' \
                --include='*.yaml' --include='*.toml' --include='*.cff' --include='*.svg' \

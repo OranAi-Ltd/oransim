@@ -12,7 +12,7 @@ from datetime import date
 import numpy as np
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .agents.agent_provider import OASISProvider, SLOCProvider, compare_providers
 from .agents.brand_memory import BrandMemoryState, simulate_campaign_days
@@ -214,7 +214,8 @@ class CreativeInput(BaseModel):
 
 class PredictRequest(BaseModel):
     creative: CreativeInput
-    total_budget: float = 50_000
+    # Budget bounded at 10B — well above any realistic campaign, short of overflow.
+    total_budget: float = Field(default=50_000, ge=0, le=1e10)
     platform_alloc: dict[str, float] = {"douyin": 0.6, "xhs": 0.4}
     audience_age_buckets: list[int] | None = None
     audience_gender: int | None = None
@@ -222,8 +223,10 @@ class PredictRequest(BaseModel):
     kol_niche: str | None = None
     use_llm: bool = False
     llm_calibrate: bool = True  # if use_llm, also rescale KPIs by LLM votes
-    n_souls: int = 50  # how many to actually call (cap by pool size)
-    lifecycle_days: int = 14
+    # Hard cap at 1000 — beyond that, LLM latency and memory cost run away.
+    # Further capped at runtime by the actual soul pool size.
+    n_souls: int = Field(default=50, ge=0, le=1000)
+    lifecycle_days: int = Field(default=14, ge=1, le=60)
     today: str | None = None  # ISO date for holiday/season; default today
     daypart: str = "auto"  # morning/noon/afternoon/evening/late/auto
     weather_temp_c: float = 20.0
@@ -233,13 +236,13 @@ class PredictRequest(BaseModel):
     # --- feature toggles ---
     enable_crossplat: bool = True  # D — unique reach, cannibalization
     enable_discourse: bool = False  # A — LLM comment debate as SCM mediator
-    discourse_n_comments: int = 15
+    discourse_n_comments: int = Field(default=15, ge=0, le=200)
     enable_brand_memory: bool = False  # B — 90-day brand lift
-    brand_memory_days: int = 90
+    brand_memory_days: int = Field(default=90, ge=1, le=365)
     enable_recsys_rl: bool = False  # C — platform RL loop simulation
     enable_groupchat: bool = False  # E — multi-turn LLM group chat (true peer comm)
-    groupchat_n_agents: int = 12
-    groupchat_n_rounds: int = 4
+    groupchat_n_agents: int = Field(default=12, ge=2, le=50)
+    groupchat_n_rounds: int = Field(default=4, ge=1, le=20)
     # --- schema-aligned extras ---
     own_brand: str | None = None  # 本品牌名 (optional; for T1-A3/T3-A6)
     category: str | None = None  # 品类 (optional; for T1-A3 context)

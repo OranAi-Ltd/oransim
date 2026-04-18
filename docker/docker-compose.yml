@@ -23,7 +23,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    image: oransim/backend:v0.1.2-alpha
+    image: oransim/backend:v0.2.0-alpha
     container_name: oransim-backend
     ports:
       - "8001:8001"

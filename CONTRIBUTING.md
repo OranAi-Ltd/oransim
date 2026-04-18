@@ -73,7 +73,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 pip install -e '.[dev]'
 
 # Run backend (mock LLM mode for offline dev)
-LLM_MODE=mock PORT=8001 python backend/run.py
+LLM_MODE=mock python -m uvicorn oransim.api:app --port 8001
 
 # Run frontend
 python -m http.server 8090 --directory frontend

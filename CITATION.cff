@@ -3,8 +3,8 @@ message: "If you use Oransim in your research, please cite it as below."
 title: "Oransim: Causal Digital Twin for Marketing at Scale"
 abstract: "Oransim is an open-source causal digital twin framework for predicting marketing campaign performance using structural causal models, agent-based simulation with large language model personas, and Hawkes-process diffusion forecasting. It provides a platform-agnostic adapter layer with a reference implementation for Xiaohongshu (XHS / RedNote) and extension points for TikTok, Instagram, YouTube Shorts, and Douyin."
 type: software
-version: 0.1.0-alpha
-date-released: "2026-04-18"
+version: 0.2.0-alpha
+date-released: "2026-04-19"
 license: Apache-2.0
 repository-code: "https://github.com/OranAi-Ltd/oransim"
 url: "https://oran.cn/oransim"

@@ -96,5 +96,7 @@ plugins:
   - search
 
 extra_javascript:
-  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  # Dropped polyfill.io (service was sold in 2024 and started injecting malware
+  # into serviced scripts). Modern browsers ship ES6 natively so no replacement
+  # is needed for MathJax's runtime requirements.
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

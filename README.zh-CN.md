@@ -144,7 +144,7 @@ python -m uvicorn oransim.api:app --port 8001 &
 <tr>
 <td width="50%" valign="top">
 
-**三栏工作界面** —— 左：素材 + 预算 + 反事实滑块 · 中：KPI / 百万智能体 / AI 群聊 tab（「更多 ›」下拉藏着 Hawkes / SCM / CATE / Schema 等深度视图）· 右：逐 persona 的 LLM 反应。
+**三栏工作界面** —— 左：素材 + 预算 + 反事实滑块 · 中：KPI / Agent 人口池 / AI 群聊 tab（「更多 ›」下拉藏着 Hawkes / SCM / CATE / Schema 等深度视图）· 右：逐 persona 的 LLM 反应。
 
 <img src="assets/screenshots/main-three-col.png" alt="三栏预测界面" width="100%"/>
 
@@ -265,7 +265,7 @@ Pearl 的 SCM 框架（Pearl 2009）+ 三步反事实：
 </details>
 
 <details>
-<summary><b>Agent 人口池</b> —— 百万级 IPF 校准虚拟消费者</summary>
+<summary><b>Agent 人口池</b> —— 可配置规模（`POP_SIZE` env，默认 100k，生产可扩到百万级）的 IPF 校准虚拟消费者</summary>
 
 通过迭代比例拟合（IPF / Deming-Stephan 1940）对齐真实中国人口学分布（年龄 × 性别 × 地域 × 收入 × 平台）。每个 agent 带：
 - 人口学 + 心理画像
