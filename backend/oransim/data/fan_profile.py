@@ -40,7 +40,7 @@ class FanPrior:
     source: str = "hand-tuned"   # "hand-tuned" | "provider-calibrated"
 
 
-# Load Huitun-calibrated priors if available (real XHS KOL fan demographics)
+# Load provider-calibrated priors if available (real XHS KOL fan demographics)
 def _load_calibrated():
     import json
     from pathlib import Path
@@ -66,8 +66,8 @@ def _load_calibrated():
             gender_wt=np.array([g[0]/ref_gender_f, g[1]/(1-ref_gender_f)], np.float32),
             age_wt=np.array([max(0.05, a[i]/ref_age[i]) for i in range(6)], np.float32),
             city_wt=np.array([max(0.05, c[i]/ref_city[i]) for i in range(5)], np.float32),
-            income_wt=np.ones(10, np.float32),   # Huitun 没有收入数据,用 1
-            notes=f"Huitun 50 KOL 校准 · {stats.get('total_fans_aggregated', 0):,} 粉丝聚合",
+            income_wt=np.ones(10, np.float32),   # synthetic provider has no income signal,用 1
+            notes=f"synthetic 50 KOL 校准 · {stats.get('total_fans_aggregated', 0):,} 粉丝聚合",
             source="provider-calibrated",
         )
     return priors
@@ -142,7 +142,7 @@ NICHE_PRIORS: Dict[str, FanPrior] = {
 }
 
 
-# Override hand-tuned with Huitun-calibrated data (real XHS KOL fan demographics)
+# Override hand-tuned with provider-calibrated data (real XHS KOL fan demographics)
 _CALIBRATED = _load_calibrated()
 # Merge: calibrated Chinese niches + legacy English synonyms
 _ZH_TO_EN = {

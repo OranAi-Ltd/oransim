@@ -348,9 +348,11 @@ class CausalNeuralHawkesProcess(DiffusionModel):
                 treatment_ids = torch.zeros_like(treatment_ids)
             with torch.no_grad():
                 h = self._net(type_ids, dt, treatment_ids)
-                lam = self._net.intensity(h)[:, -1]
+                lam = self._net.intensity(h)[:, -1].clone()
             if boost != 1.0:
-                # Apply boost to "paid_*" event-type indices
+                # Apply boost to "paid_*" event-type indices.
+                # We clone above so this in-place mul stays safe for future
+                # training-time counterfactual rollouts.
                 for k, name in enumerate(self.config.event_types):
                     if name.startswith("paid_"):
                         lam[0, k] = lam[0, k] * boost
@@ -418,16 +420,19 @@ class CausalNeuralHawkesProcess(DiffusionModel):
         event_lam = lam[0, idx, type_ids.squeeze(0)]  # [N]
         log_sum = torch.log(event_lam.clamp(min=1e-12)).sum()
 
-        # Compensator via MC sampling on (t_{N-1}, t_N) for each interval
+        # Compensator approximation: piecewise-constant intensity over
+        # each inter-event interval. We use the intensity at event i-1
+        # (state before observing event i) to respect the causal ordering —
+        # integrating (t_{i-1}, t_i] with the post-event intensity at i
+        # would leak future information into the compensator. Full Monte
+        # Carlo integration (Chen et al. ICLR 2021) lands in v0.2.
         comp = torch.zeros((), device=self._device)
         abs_times = times.squeeze(0)
         for i in range(1, abs_times.shape[0]):
             t0, t1 = float(abs_times[i - 1].item()), float(abs_times[i].item())
             if t1 <= t0:
                 continue
-            # Use the last encoded state as a constant intensity approximation,
-            # which is a common simplification in practice (Zuo 2020 §3.2).
-            comp = comp + lam[0, i].sum() * (t1 - t0)
+            comp = comp + lam[0, i - 1].sum() * (t1 - t0)
         return float((log_sum - comp).item())
 
     # ---------------------------------------------------------------- train
@@ -468,7 +473,8 @@ class CausalNeuralHawkesProcess(DiffusionModel):
                 abs_times = times.squeeze(0)
                 for i in range(1, abs_times.shape[0]):
                     gap = max(0.0, float(abs_times[i].item() - abs_times[i - 1].item()))
-                    comp = comp + lam[0, i].sum() * gap
+                    # Use intensity at i-1 to integrate (t_{i-1}, t_i] without leaking the event at i.
+                    comp = comp + lam[0, i - 1].sum() * gap
                 nll = -(log_sum - comp)
                 nll.backward()
                 torch.nn.utils.clip_grad_norm_(self._net.parameters(), cfg.grad_clip)

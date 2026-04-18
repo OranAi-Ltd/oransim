@@ -5,7 +5,7 @@ Produces the reproducible OSS training corpus:
 - ``synthetic_kols.json``      — 1 000 fake KOLs across 10 niches
 - ``synthetic_notes.json``     — 10 000 fake notes with text, metrics, KOL link
 - ``synthetic_fan_profiles.json`` — per-niche fan demographic distributions
-- ``scenarios_v0_1.parquet``   — 100 000 (covariate, treatment, outcome, arm)
+- ``scenarios_v0_1.jsonl``     — 100 000 (covariate, treatment, outcome, arm)
   records for training the Causal Transformer World Model
   (``backend.scripts.train_transformer_wm``)
 - ``event_streams_v0_1.jsonl`` — 50 000 event streams (per-campaign 14-day
@@ -293,10 +293,15 @@ def generate_fan_profiles() -> dict[str, dict[str, Any]]:
 
 
 def _budget_effect(budget: float) -> float:
-    """Hill saturation used for the outcome process (Dubé & Manchanda 2005)."""
-    K = 50_000.0
+    """Hill saturation used for the outcome process (Dubé & Manchanda 2005).
+
+    ``effective_impr_ratio(x) = (1 + K_sat) * r / (K_sat + r)`` where
+    ``r = budget / K`` and ``K_sat = 1.0`` — asymptote 2× the reference budget.
+    """
+    K = 50_000.0  # reference budget (RMB)
+    K_SAT = 1.0   # Hill saturation coefficient; asymptote = 1 + K_SAT
     r = budget / K
-    return (1.0 + 1.0) * r / (1.0 + r)  # K_sat = 1.0 → asymptote 2x
+    return (1.0 + K_SAT) * r / (K_SAT + r)
 
 
 def _freq_fatigue(budget: float, kol_er: float) -> float:

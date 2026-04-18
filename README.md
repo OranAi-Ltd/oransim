@@ -316,13 +316,16 @@ See [`docs/en/benchmarks/`](docs/en/benchmarks/) for the full protocol.
 
 See [ROADMAP.md](ROADMAP.md) for the full 3-horizon × 8-theme plan. Teasers:
 
-**v0.5 (Q3 2026 – Q1 2027)**
-- 🎯 **Neural Hawkes Process** — learned intensity functions for diffusion
-- 🎯 **Transformer World Model** — attention over user × creative × platform × time
+**v0.2 (Q3 2026) — shipping pretrained weights**
+- 📦 Trained Causal Transformer + Causal Neural Hawkes checkpoints on the 100k synthetic corpus
+- TikTok + Douyin adapter MVPs
+- Docker Compose · MkDocs · CI
+
+**v0.5 (Q4 2026 – Q1 2027)**
 - 🎯 **Cross-platform transfer learning** — pretrain on XHS, fine-tune on TikTok
 - 🎯 **Multi-LLM-format adapters** — native Anthropic Messages, Gemini, Bedrock, Qwen DashScope
 - 🎯 **10k soul agents on Ray cluster**
-- TikTok / Instagram / YouTube Shorts / Douyin adapters MVP
+- Instagram / YouTube Shorts / Douyin adapters MVP
 
 **v1.0+ (2027)**
 - 🎯 **Causal Foundation Model** — pretrain on 10M+ campaigns
@@ -394,7 +397,7 @@ Third-party dependencies retain their original licenses. We are not affiliated w
 Oransim is built by **[OranAI Ltd.](https://oran.cn)** (橙果视界（深圳）科技有限公司).
 
 **Core Maintainers**
-- **Fakong Yin** — CTO & Core Architect · [cto@orannai.com](mailto:cto@orannai.com) · [GitHub](https://github.com/[TBD:%20GITHUB_HANDLE])
+- **Fakong Yin** — CTO & Core Architect · [cto@orannai.com](mailto:cto@orannai.com) · [@ORAN-cgsj](https://github.com/ORAN-cgsj)
 
 **Open roles** — we're hiring researchers (Causal ML, RL, Agent-based Simulation) and engineers (Platform, Infra). Reach out at [cto@orannai.com](mailto:cto@orannai.com).
 

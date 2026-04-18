@@ -314,13 +314,16 @@ Phase 1 基线在 **10 万条合成数据**上训练 —— 详见 [`data/models
 
 完整路线见 [ROADMAP.md](ROADMAP.md)，分三个时间 horizon × 八个主题。精选：
 
-**v0.5（2026 Q3 – 2027 Q1）**
-- 🎯 **Neural Hawkes Process** —— 神经网络化强度函数的扩散模型
-- 🎯 **Transformer 世界模型** —— attention over 用户 × 素材 × 平台 × 时间
+**v0.2（2026 Q3）—— 预训权重发布**
+- 📦 因果 Transformer + 因果神经 Hawkes 在 100k 合成数据上训好的 checkpoint
+- TikTok + Douyin adapter MVP
+- Docker Compose · MkDocs · CI
+
+**v0.5（2026 Q4 – 2027 Q1）**
 - 🎯 **跨平台迁移学习** —— XHS 预训 → TikTok fine-tune
 - 🎯 **多 LLM 原生格式** —— Anthropic Messages / Gemini / Bedrock / Qwen DashScope
 - 🎯 **10k 灵魂 Agent 跑 Ray 集群**
-- TikTok / Instagram / YouTube Shorts / Douyin MVP
+- Instagram / YouTube Shorts / Douyin adapter MVP
 
 **v1.0+（2027）**
 - 🎯 **因果基础模型 Causal Foundation Model** —— 千万级跨行业 campaign 预训练
@@ -392,7 +395,7 @@ Apache License 2.0 —— 详见 [LICENSE](LICENSE) 和 [NOTICE](NOTICE)。
 Oransim 由 **[OranAI Ltd.](https://oran.cn)** (橙果视界（深圳）科技有限公司) 出品。
 
 **核心维护者**
-- **尹法孔（Yin Fakong）** —— CTO · 架构师 · [cto@orannai.com](mailto:cto@orannai.com) · [GitHub](https://github.com/[TBD:%20GITHUB_HANDLE])
+- **尹法孔（Yin Fakong）** —— CTO · 架构师 · [cto@orannai.com](mailto:cto@orannai.com) · [@ORAN-cgsj](https://github.com/ORAN-cgsj)
 
 **招聘中** —— 我们在招研究员（Causal ML / RL / 基于 Agent 的模拟）和工程师（平台 / 基础设施），欢迎投递 [cto@orannai.com](mailto:cto@orannai.com)。
 

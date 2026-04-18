@@ -41,6 +41,9 @@ data/synthetic/*.csv
 data/synthetic/*.parquet
 data/models/*.pkl
 data/models/*.joblib
+data/models/*.pt
+data/models/*.safetensors
+data/synthetic/*.jsonl
 !data/**/.gitkeep
 
 # Logs

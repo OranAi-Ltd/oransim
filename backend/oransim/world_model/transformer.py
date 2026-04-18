@@ -686,7 +686,7 @@ class CausalTransformerWorldModel(WorldModel):
                 # Lightweight HSIC between CLS representation and treatment
                 # assignment (Gretton et al. 2005, simplified unbiased estimator).
                 h = self._net.encode(features)
-                bal_loss = self._hsic_unbiased(h, torch.nn.functional.one_hot(arm, cfg.n_treatment_arms).float())
+                bal_loss = self._hsic_biased(h, torch.nn.functional.one_hot(arm, cfg.n_treatment_arms).float())
 
         total = (
             cfg.pinball_weight * fact_loss
@@ -716,12 +716,13 @@ class CausalTransformerWorldModel(WorldModel):
         return total
 
     @staticmethod
-    def _hsic_unbiased(X: Any, Y: Any) -> Any:
-        """Unbiased HSIC (Gretton et al. 2005) with linear kernels.
+    def _hsic_biased(X: Any, Y: Any) -> Any:
+        """Biased HSIC estimator (Gretton et al. 2005, Eq. 4) with linear kernels.
 
         A simple drop-in to decorrelate representation ``X`` from treatment
         one-hot ``Y``. For a production training run, replace with an RBF
-        kernel and adaptive bandwidth (standard practice).
+        kernel and adaptive bandwidth (standard practice) and/or switch to
+        the unbiased estimator (Gretton et al. 2012, Eq. 4).
         """
         import torch
 

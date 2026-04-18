@@ -102,9 +102,17 @@ class ParametricHawkes(DiffusionModel):
         timeline: list[tuple[float, str, float]] = []
 
         t = max((h[0] for h in history), default=0.0)
-        max_iters = 200_000
+        # Bounds: max_iters caps the thinning rejection loop, max_events caps
+        # the accepted-event count so runaway self-excitation cannot build
+        # an O(N^2) history under aggressive excitation priors.
+        max_iters = 20_000
+        max_events = 2_000
         iters = 0
-        while t < horizon_min and iters < max_iters:
+        while (
+            t < horizon_min
+            and iters < max_iters
+            and len(timeline) < max_events
+        ):
             iters += 1
             # upper bound on total intensity for thinning
             lambda_bar = sum(self._intensity(t + 1e-6, history, k) for k in range(K))

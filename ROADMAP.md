@@ -67,8 +67,9 @@ Themes:
 ## v0.5 · Mid (Q4 2026 – Q1 2027)
 
 ### 🧠 Models & Algorithms
-- 🎯 **Neural Hawkes Process** (Mei & Eisner 2017) — replace parametric Hawkes with a neural intensity function (RNN or Transformer-parameterized), better long-tail diffusion capture, marked events
-- 🎯 **Transformer World Model** — attention over (user × creative × platform × time) as a drop-in alternative to LightGBM quantile; evaluate against current baseline on OrancBench v0.5
+- ✅ ~~Neural Hawkes Process~~ — **shipped in v0.1.0-alpha** as `CausalNeuralHawkesProcess` (Zuo ICML'20 + Geng NeurIPS'22 counterfactual TPP). Pretrained weights arrive with v0.2.
+- ✅ ~~Transformer World Model~~ — **shipped in v0.1.0-alpha** as `CausalTransformerWorldModel` (CaT + CausalDAG-Transformer + TARNet/Dragonnet + BCAUSS + CInA). Pretrained weights arrive with v0.2.
+- 🎯 **Pretrained-weight release** — trained checkpoints for both primary models on the 100k synthetic corpus, published at https://github.com/ORAN-cgsj/oransim/releases
 - 🎯 **Cross-platform transfer learning** — pretrain world model on XHS data, fine-tune on TikTok with few-shot adapter layer; quantify transfer gain
 - **Vision-Language Model (VLM) creative understanding** — CLIP / Qwen-VL / GPT-5.4-Vision to embed image + video creatives; compare against text-only baseline
 - **RLHF for soul agents** — fine-tune the LLM persona layer using real marketer thumbs-up/down feedback

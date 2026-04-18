@@ -5,7 +5,7 @@ Usage
 
     python -m backend.scripts.train_transformer_wm \\
         --config default \\
-        --data data/synthetic/scenarios_v0_1.parquet \\
+        --data data/synthetic/scenarios_v0_1.jsonl \\
         --out data/models/causal_transformer_wm_v0_1.pt \\
         --epochs 50 --batch-size 256
 
@@ -61,7 +61,7 @@ def _load_dataset(path: str) -> Iterable[dict[str, Any]]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Train the Causal Transformer World Model.")
     parser.add_argument("--config", default="default", help="Config preset or YAML path.")
-    parser.add_argument("--data", default="data/synthetic/scenarios_v0_1.parquet")
+    parser.add_argument("--data", default="data/synthetic/scenarios_v0_1.jsonl")
     parser.add_argument("--val", default=None)
     parser.add_argument("--out", default="data/models/causal_transformer_wm.pt")
     parser.add_argument("--epochs", type=int, default=50)
