@@ -93,7 +93,11 @@ Themes:
   - Alternative: dependency on `litellm` as unified backend
 
 ### 📊 Data & Benchmarks
-- OrancBench v0.5 — 500 scenarios with human rater scores
+- 🎯 **OrancBench v0.5** — **causal-native redesign** (not just scaling up scenarios). Three new task families that factual-R² baselines fundamentally cannot win:
+  1. **Confounded treatment task** — generator introduces `budget ↔ kol_tier` correlation (higher budgets deliberately assigned to higher-tier KOLs). Metric: counterfactual MAE under `do(budget=X, kol_tier=nano)`. LightGBM learns the spurious correlation; CausalTransformer's HSIC + per-arm head estimates the actual CATE.
+  2. **CATE heterogeneity task** — per-arm treatment effect varies with covariates (high-engagement KOLs are budget-insensitive; low-engagement are very sensitive). Metric: per-segment CATE R². LightGBM computes factual means — noisy when differenced; CT's per-arm head models it directly.
+  3. **Temporal intervention task** — `do(mute_at_min=day_3)` rollouts where boosting stops mid-campaign. Metric: per-day forecast MAE. ParametricHawkes uses fixed exponential kernels — poor on sharp policy changes; CausalNeuralHawkes's attention-over-history adapts.
+- **Pretrained weights ship here**, tied to demonstrating ≥2× improvement on at least two of the three causal tasks vs baselines. No weights released before this milestone is met.
 - Public leaderboard at `https://oran.cn/oransim/leaderboard`
 - Synthetic generator v2 — comparative study of Copula vs GMM vs VAE
 - Evaluation protocol spec (`docs/en/benchmarks/protocol.md`)
