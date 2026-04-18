@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: 💬 Discussions
-    url: https://github.com/oranai/oransim/discussions
+    url: https://github.com/ORAN-cgsj/oransim/discussions
     about: Ask questions or share ideas with the community.
   - name: 🏢 Enterprise Inquiries
     url: mailto:cto@orannai.com

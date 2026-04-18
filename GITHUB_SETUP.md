@@ -3,7 +3,7 @@
 This document walks you through the steps to publish the `oransim` repo and configure it for maximum visibility and star collection. All of these are **one-time setup steps** — complete once per repository.
 
 **Local repo location:** `/root/projects/oransim`
-**Target GitHub repo:** `https://github.com/[TBD: GITHUB_ORG_OR_HANDLE]/oransim`
+**Target GitHub repo:** `https://github.com/ORAN-cgsj/oransim`
 
 ---
 
@@ -29,7 +29,7 @@ Then create the repo:
 
 ```bash
 cd /root/projects/oransim
-git remote add origin https://github.com/oranai/oransim.git
+git remote add origin https://github.com/ORAN-cgsj/oransim.git
 git branch -M main
 git push -u origin main
 ```
@@ -38,7 +38,7 @@ If you used a different org/user, replace `oranai` above and run a find-replace 
 
 ```bash
 cd /root/projects/oransim
-grep -rIl "oranai/oransim" . | xargs sed -i 's|oranai/oransim|YOUR_HANDLE/oransim|g'
+grep -rIl "ORAN-cgsj/oransim" . | xargs sed -i 's|ORAN-cgsj/oransim|YOUR_HANDLE/oransim|g'
 grep -rIl "\[TBD: GITHUB_HANDLE\]" . | xargs sed -i 's|\[TBD: GITHUB_HANDLE\]|YOUR_HANDLE|g'
 git add -A && git commit -m "chore: point at real GitHub org/handle" -s
 git push
@@ -48,7 +48,7 @@ git push
 
 ## Step 3: Configure repo settings
 
-Go to https://github.com/oranai/oransim/settings and set:
+Go to https://github.com/ORAN-cgsj/oransim/settings and set:
 
 ### General
 - [ ] **Features**: ✅ Issues · ✅ Discussions · ✅ Projects (optional) · ❌ Wiki (use `docs/` instead)
@@ -128,7 +128,7 @@ git push origin v0.1.0-alpha
 ```
 
 Then on GitHub:
-1. Go to https://github.com/oranai/oransim/releases/new
+1. Go to https://github.com/ORAN-cgsj/oransim/releases/new
 2. Choose the tag `v0.1.0-alpha`
 3. **Release title**: `v0.1.0-alpha — Oransim goes public 🚀`
 4. **Describe this release**: copy from `CHANGELOG.md` → `## [0.1.0-alpha]` section
@@ -137,22 +137,19 @@ Then on GitHub:
 
 ---
 
-## Step 5: Fill in remaining placeholders
+## Step 5: Remaining placeholders (optional, post-launch)
 
-After the repo is live, grep for and resolve remaining TBDs:
+The GitHub handle `ORAN-cgsj` is already substituted throughout the repo (Phase 1 close-out). A few optional placeholders remain for later:
 
 ```bash
 cd /root/projects/oransim
-grep -rn "\[TBD:" .
+grep -rn "\[TBD:" . --include="*.md" --include="*.yml"
 ```
 
-Expected TBDs (from spec §0):
-- `[TBD: GITHUB_HANDLE]` — your personal GitHub handle (edit: CODEOWNERS, README.md Team section, README.zh-CN.md)
-- `[TBD: GITHUB_ORG]` — org name if different from `oranai`
-- `[TBD: BUSINESS_EMAIL]` — business@oran.cn or similar
-- `[TBD: CAREERS_EMAIL]` — careers@oran.cn or similar
-- `[TBD: DISCORD_INVITE]` — (Phase 2)
-- `[TBD: TWITTER_HANDLE]` — (Phase 2)
+Expected remaining TBDs (all optional, can be left for Phase 2):
+- `[TBD: GITHUB_ORG]` in `.github/FUNDING.yml` — once Sponsors / org is set up
+- `[TBD: BUSINESS_EMAIL]` / `[TBD: CAREERS_EMAIL]` — if you split contact beyond `cto@orannai.com`
+- `[TBD: DISCORD_INVITE]` / `[TBD: TWITTER_HANDLE]` — Phase 2 community infrastructure
 
 Replace each via `sed` or editor, then commit:
 

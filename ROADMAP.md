@@ -2,7 +2,7 @@
 
 > **Updated:** 2026-04-18 · **Current version:** 0.1.0-alpha
 >
-> This roadmap is aspirational. Item inclusion does not guarantee delivery; priorities shift with user feedback, research breakthroughs, and commercial signal. Give a 👍 reaction on the [tracking issue](https://github.com/oranai/oransim/issues) to help us prioritize.
+> This roadmap is aspirational. Item inclusion does not guarantee delivery; priorities shift with user feedback, research breakthroughs, and commercial signal. Give a 👍 reaction on the [tracking issue](https://github.com/ORAN-cgsj/oransim/issues) to help us prioritize.
 
 Oransim's roadmap is organized across three horizons and eight themes. Each horizon is cumulative — v1.0 ships everything from v0.2 and v0.5 plus new items.
 
@@ -183,9 +183,9 @@ To keep the project focused, these are **not** on the roadmap (may change with c
 
 ## Getting Involved
 
-- Open an [Issue](https://github.com/oranai/oransim/issues) to propose roadmap changes
+- Open an [Issue](https://github.com/ORAN-cgsj/oransim/issues) to propose roadmap changes
 - Pick up a `good first issue` or `help wanted` item
-- Join [Discussions](https://github.com/oranai/oransim/discussions) for design conversations
+- Join [Discussions](https://github.com/ORAN-cgsj/oransim/discussions) for design conversations
 - Enterprise sponsors influencing the roadmap: contact `cto@orannai.com`
 
 ## Changelog of the Roadmap

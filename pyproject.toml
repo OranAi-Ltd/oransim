@@ -65,10 +65,10 @@ docs = [
 
 [project.urls]
 Homepage = "https://oran.cn/oransim"
-Documentation = "https://github.com/oranai/oransim#readme"
-Repository = "https://github.com/oranai/oransim"
-Issues = "https://github.com/oranai/oransim/issues"
-Changelog = "https://github.com/oranai/oransim/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/ORAN-cgsj/oransim#readme"
+Repository = "https://github.com/ORAN-cgsj/oransim"
+Issues = "https://github.com/ORAN-cgsj/oransim/issues"
+Changelog = "https://github.com/ORAN-cgsj/oransim/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["backend"]

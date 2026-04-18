@@ -62,11 +62,12 @@ Placeholders remaining in repo files, grep for them with:
 cd /root/projects/oransim && grep -rn "\[TBD:" .
 ```
 
-Current TBDs:
-- `[TBD: GITHUB_HANDLE]` — Fakong's personal handle (appears in CODEOWNERS, README Team section, ZH mirror)
-- `[TBD: GITHUB_ORG]` — if different from `oranai`, search-replace `oranai/oransim` → `YOUR_ORG/oransim`
-- `[TBD: BUSINESS_EMAIL]` and `[TBD: CAREERS_EMAIL]` — referenced in GITHUB_SETUP.md only
-- Discord / Twitter — Phase 2
+Current TBDs (all optional):
+- `[TBD: GITHUB_ORG]` in `.github/FUNDING.yml` — when GitHub Sponsors is live
+- `[TBD: BUSINESS_EMAIL]` / `[TBD: CAREERS_EMAIL]` — if splitting beyond `cto@orannai.com`
+- Discord / Twitter — Phase 2 community infrastructure
+
+Note: `ORAN-cgsj` is already the active handle throughout the repo — no substitution needed.
 
 ## Next actions after GitHub push
 

@@ -21,5 +21,5 @@ def root() -> dict[str, str]:
         "version": "0.1.0a0",
         "status": "alpha",
         "docs": "/docs",
-        "repo": "https://github.com/oranai/oransim",
+        "repo": "https://github.com/ORAN-cgsj/oransim",
     }

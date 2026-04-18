@@ -35,5 +35,5 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Platform stubs (TikTok/Instagram/YouTube Shorts/Douyin) raise `NotImplementedError` when accessed; this is intentional and tracks the roadmap.
 - Benchmarks in README are based on synthetic data from the internal (non-public) data generator.
 
-[Unreleased]: https://github.com/oranai/oransim/compare/v0.1.0-alpha...HEAD
-[0.1.0-alpha]: https://github.com/oranai/oransim/releases/tag/v0.1.0-alpha
+[Unreleased]: https://github.com/ORAN-cgsj/oransim/compare/v0.1.0-alpha...HEAD
+[0.1.0-alpha]: https://github.com/ORAN-cgsj/oransim/releases/tag/v0.1.0-alpha
