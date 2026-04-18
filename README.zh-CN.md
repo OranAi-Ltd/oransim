@@ -41,6 +41,8 @@
 
 因果 Transformer 和因果神经 Hawkes 的预训权重在 100k 合成数据上训练，v0.2 起随 release 发布；当前 v0.1.0-alpha 已含完整架构 + 训练 loop + 推理代码 —— `pip install 'oransim[ml]'` 即可解锁。
 
+> 🏢 **企业版** —— OranAI 在**持续更新的真实自有数据**（100 万+ 标注 campaign）上训练同一套架构，提供**效果更优的垂类模型**（美妆 / 服装 / 3C / 食饮 / 奢品 / 汽车）和**模型定制服务**（私有化部署、领域专属 DAG、品牌专属人格库）。联系：`cto@orannai.com`。
+
 ---
 
 ## 🚀 一分钟上手
@@ -70,12 +72,17 @@ python -m http.server 8090 --directory frontend
 
 |  | 传统分析工具 | AutoML / 黑盒预测 | **Oransim** |
 |---|---|---|---|
-| 因果推理 | ❌ 仅相关性 | ❌ | ✅ Pearl 三步反事实 |
-| Agent 粒度模拟 | ❌ | ❌ 仅聚合 | ✅ 1M IPF + 10k LLM 人格 |
-| 多平台覆盖 | 单平台 | 单平台 | ✅ 多平台 Adapter 框架 |
-| 预算饱和建模 | ❌ 线性 | ❌ 线性 | ✅ Hill 曲线 + 频次疲劳 |
-| 可解释性 | 一般 | 低（最多 SHAP） | ✅ SCM 路径 + Agent 推理链 |
-| 成本 | License 费 | API 费 | ✅ Apache-2.0 + 自部署 |
+| 世界模型 | 规则模板 | 树 / GBDT / 通用 DNN | ✅ **因果 Transformer**（CaT / CausalDAG-Transformer），显式 treatment/covariate/outcome 分解 |
+| 反事实预测 | ❌ | ❌ | ✅ **Per-arm 反事实头**（TARNet / Dragonnet）+ Pearl 三步 `do()` 反事实 |
+| 因果偏差矫正 | ❌ | ❌ | ✅ **表征平衡损失**（HSIC / 对抗 IPTW，BCAUSS） |
+| 因果图结构 | ❌ | ❌ | ✅ **DAG-aware 注意力**，64 节点 Pearl SCM（117 条边） |
+| 扩散预测 | 线性衰减 | 通用时序 DNN | ✅ **因果神经 Hawkes**（Transformer Hawkes + Geng 2022 干预 TPP） |
+| Agent 粒度模拟 | ❌ | ❌ 仅聚合 | ✅ 1M IPF 校准虚拟消费者 + 10k LLM 人格 agent |
+| 多平台覆盖 | 单平台 | 单平台 | ✅ **PlatformAdapter × DataProvider** 两轴扩展 |
+| 预算饱和建模 | ❌ 线性 | ❌ 线性 | ✅ Hill 饱和（Dubé & Manchanda 2005）+ 频次疲劳（Naik & Raman 2003） |
+| 可解释性 | 一般 | 低（最多 SHAP） | ✅ SCM 路径 + per-head attention + agent 推理链 |
+| 摊销推断 | ❌ | 每个场景重训 | ✅ **In-context 摊销**（CInA, Arik & Pfister NeurIPS 2023） |
+| 成本 | License 费 | API 费 | ✅ Apache-2.0 + 自部署（`[ml]` extras 可选） |
 
 做这个项目的人不满两头 —— 学术模拟器不落地、企业工具不解释。我们想把两头好的一面拧在一起。
 
@@ -87,7 +94,7 @@ python -m http.server 8090 --directory frontend
 <img src="assets/architecture.svg" alt="Oransim 架构图" width="100%"/>
 </div>
 
-一次典型预测链路：**素材 + 预算** → **PlatformAdapter**（经可插拔 **DataProvider** 取数据）→ **World Model**（LightGBM quantile）+ **Agent 层**（1M IPF + 10k LLM 人格）→ **因果引擎**（SCM + Pearl 反事实）→ **扩散**（Hawkes 14 天预测）→ **预测 JSON**（14-19 个 schema）。
+一次典型预测链路：**素材 + 预算** → **PlatformAdapter**（经可插拔 **DataProvider** 取数据）→ **因果 Transformer 世界模型**（事实 + per-arm 反事实分位数预测）+ **Agent 层**（1M IPF + 10k LLM 人格）→ **因果引擎**（64 节点 Pearl SCM + 三步 `do()` 反事实）→ **因果神经 Hawkes**（14 天扩散 + 干预 rollout）→ **预测 JSON**（14-19 个 schema）。*LightGBM quantile 和参数化 Hawkes 通过 registry 作为快速 baseline 可用。*
 
 两轴可扩展：
 - **平台轴** —— 当前 XHS，TikTok / Instagram / YouTube Shorts / Douyin 在路线图
@@ -101,7 +108,7 @@ python -m http.server 8090 --directory frontend
 
 | 平台                 | 区域      | 状态    | 数据源                                | 世界模型              | 里程碑 |
 |----------------------|-----------|---------|---------------------------------------|-----------------------|--------|
-| 🔴 小红书 / XHS      | 大中华区  | ✅ v1   | Synthetic / CSV / JSON / OpenAPI    | LightGBM Quantile    | — |
+| 🔴 小红书 / XHS      | 大中华区  | ✅ v1   | Synthetic / CSV / JSON / OpenAPI    | 因果 Transformer + LightGBM baseline | — |
 | ⚫ TikTok            | 全球      | 🟡 stub | —                                     | —                     | v0.5（2026 Q3） |
 | 🟣 Instagram Reels   | 全球      | 🟡 stub | —                                     | —                     | v0.5（2026 Q4） |
 | 🔴 YouTube Shorts    | 全球      | 🟡 stub | —                                     | —                     | v0.7（2027 Q1） |
@@ -121,7 +128,7 @@ python -m http.server 8090 --directory frontend
 1. **total_kpis** —— 总曝光 / 点击 / 转化 / 成本 / 收入 / CTR / CVR / ROI（P35/P50/P65 区间）
 2. **per_platform** —— 各平台 KPI 分解
 3. **per_kol** —— KOL 层面归因
-4. **diffusion_curve** —— 14 天日维度曝光/互动预测（Hawkes）
+4. **diffusion_curve** —— 14 天日维度曝光/互动预测（因果神经 Hawkes 主预测器，参数化 Hawkes 作为 baseline）
 5. **cate** —— 条件平均处理效应（按 agent 人口学切片）
 6. **counterfactual** —— 反事实分支：换素材/加预算/换 KOL 的对比
 7. **soul_feedback** —— 10 个 LLM 人格的自然语言反馈

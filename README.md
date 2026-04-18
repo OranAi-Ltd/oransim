@@ -43,6 +43,8 @@ Oransim is built **causal-first** — counterfactual reasoning is first-class, n
 
 Pretrained weights for the Causal Transformer and Causal Neural Hawkes train on the 100k synthetic dataset and ship starting v0.2; today v0.1.0-alpha includes the full architecture, training loop, and inference code — run `pip install 'oransim[ml]'` to unlock them.
 
+> 🏢 **Enterprise edition** — OranAI trains the same architectures on **continuously-updated proprietary real-world data** (1M+ labeled campaigns), with **higher-performance vertical model variants** (beauty / fashion / 3C / F&B / luxury / auto) and **bespoke model customization** (on-premise, domain-specific DAGs, branded persona libraries). Contact `cto@orannai.com`.
+
 ---
 
 ## 🚀 Quickstart (60 seconds)
@@ -72,12 +74,17 @@ To use real LLMs, set `LLM_MODE=api` + `LLM_BASE_URL` + `LLM_API_KEY` + `LLM_MOD
 
 |  | Traditional Analytics | AutoML / Black-Box Predictors | **Oransim** |
 |---|---|---|---|
-| Causal reasoning | ❌ Correlation only | ❌ | ✅ Pearl 3-step counterfactuals |
-| Agent-level simulation | ❌ | ❌ Aggregate only | ✅ 1M IPF + 10k LLM personas |
-| Platform coverage | Single platform | Single platform | ✅ Multi-platform adapter framework |
-| Budget saturation | ❌ Linear | ❌ Linear | ✅ Hill curve + frequency fatigue |
-| Interpretability | Moderate | Low (SHAP at best) | ✅ SCM paths + agent reasoning traces |
-| Cost | Licensing fees | API costs | ✅ Apache-2.0 + self-hosted |
+| World model | Rule-based | Tree / GBDT / generic DNN | ✅ **Causal Transformer** (CaT / CausalDAG-Transformer) with treatment/covariate/outcome factorization |
+| Counterfactuals | ❌ | ❌ | ✅ **Per-arm counterfactual heads** (TARNet / Dragonnet) + Pearl 3-step `do()` evaluation |
+| Causal bias reduction | ❌ | ❌ | ✅ **Representation balancing** loss (HSIC / adversarial-IPTW, BCAUSS) |
+| Causal graph structure | ❌ | ❌ | ✅ **DAG-aware attention bias** over a 64-node Pearl SCM (117 edges) |
+| Diffusion forecasting | Linear decay | Generic time-series DNN | ✅ **Causal Neural Hawkes** (Transformer Hawkes + Geng 2022 intervention TPP) |
+| Agent-level simulation | ❌ | ❌ Aggregate only | ✅ 1M IPF-calibrated virtual consumers + 10k LLM persona agents |
+| Platform coverage | Single platform | Single platform | ✅ **PlatformAdapter × DataProvider** two-axis extension |
+| Budget saturation | ❌ Linear | ❌ Linear | ✅ Hill saturation (Dubé & Manchanda 2005) + frequency fatigue (Naik & Raman 2003) |
+| Interpretability | Moderate | Low (SHAP at best) | ✅ SCM paths + per-head attention + agent reasoning traces |
+| Amortized inference | ❌ | Per-problem retrain | ✅ **In-context amortization** (CInA, Arik & Pfister NeurIPS 2023) |
+| Cost | Licensing fees | API costs | ✅ Apache-2.0 + self-hosted (`[ml]` extras optional) |
 
 Built by practitioners frustrated with both ends of the market — academic simulators that don't ship, and enterprise tools that don't explain.
 
@@ -89,7 +96,7 @@ Built by practitioners frustrated with both ends of the market — academic simu
 <img src="assets/architecture.svg" alt="Oransim architecture diagram" width="100%"/>
 </div>
 
-A typical prediction request flows: **Creative + Budget** → **PlatformAdapter** (pulls data via pluggable **DataProvider**) → **World Model** (LightGBM quantile) + **Agent Layer** (1M IPF + 10k LLM personas) → **Causal Engine** (SCM + Pearl counterfactuals) → **Diffusion** (Hawkes 14-day forecast) → **Prediction JSON** (14–19 schemas).
+A typical prediction request flows: **Creative + Budget** → **PlatformAdapter** (pulls data via pluggable **DataProvider**) → **Causal Transformer World Model** (factual + per-arm counterfactual quantile predictions) + **Agent Layer** (1M IPF + 10k LLM personas) → **Causal Engine** (64-node Pearl SCM + 3-step `do()` counterfactuals) → **Causal Neural Hawkes** (14-day diffusion with intervention rollout) → **Prediction JSON** (14–19 schemas). *LightGBM quantile and parametric Hawkes are available as fast baselines via the registry.*
 
 Two-axis extensibility:
 - **Platform** axis — XHS today; TikTok / Instagram / YouTube Shorts / Douyin on roadmap
@@ -103,7 +110,7 @@ See [`docs/en/architecture.md`](docs/en/architecture.md) for the full design.
 
 | Platform             | Region   | Status  | Data Provider                       | World Model          | Milestone |
 |----------------------|----------|---------|-------------------------------------|----------------------|-----------|
-| 🔴 XHS / RedNote     | Greater China | ✅ v1   | Synthetic / CSV / JSON / OpenAPI | LightGBM Quantile    | — |
+| 🔴 XHS / RedNote     | Greater China | ✅ v1   | Synthetic / CSV / JSON / OpenAPI | Causal Transformer + LightGBM baseline | — |
 | ⚫ TikTok            | Global   | 🟡 stub | —                                 | —                    | v0.5 (Q3 2026) |
 | 🟣 Instagram Reels   | Global   | 🟡 stub | —                                 | —                    | v0.5 (Q4 2026) |
 | 🔴 YouTube Shorts    | Global   | 🟡 stub | —                                 | —                    | v0.7 (Q1 2027) |
@@ -123,7 +130,7 @@ A single `/api/predict` call returns structured outputs across these schemas:
 1. **total_kpis** — aggregate impressions / clicks / conversions / cost / revenue / CTR / CVR / ROI with P35/P50/P65 bands
 2. **per_platform** — KPIs broken down per platform adapter
 3. **per_kol** — KOL-level attribution
-4. **diffusion_curve** — 14-day daily impression/engagement forecast (Hawkes process)
+4. **diffusion_curve** — 14-day daily impression/engagement forecast (Causal Neural Hawkes; parametric Hawkes as baseline)
 5. **cate** — Conditional Average Treatment Effect across agent demographics
 6. **counterfactual** — "What if" branching: alternative creative / budget / KOL
 7. **soul_feedback** — 10 LLM persona reactions in natural language
