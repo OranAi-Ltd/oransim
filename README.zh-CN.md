@@ -68,10 +68,37 @@ LLM_MODE=mock PORT=8001 python backend/run.py &
 # 3. 启动前端
 python -m http.server 8090 --directory frontend
 
-# 4. 浏览器打开 http://localhost:8090 → 点 "🔥 爆款预设" → "🚀 预测"
+# 4. 浏览器打开 http://localhost:8090 → 点 "⚡ 极速" → "🚀 预测"
 ```
 
-想用真 LLM？设置 `LLM_MODE=api` + `LLM_API_KEY` + `LLM_MODEL`。用 `LLM_PROVIDER` 选原生格式（`openai` · `anthropic` · `gemini` · `qwen`）；`openai` 是默认值，也覆盖 DeepSeek / vLLM / 任何 OpenAI-compat 网关。详见 [docs/zh/quickstart.md](docs/zh/quickstart.md) 与 [.env.example](.env.example)。
+Mock 模式走模板，没 LLM 调用——能跑通但 soul persona / 群聊 / 评论区辩论 / LLM 校准全部退化。**切真 LLM：**
+
+```bash
+LLM_MODE=api \
+LLM_API_KEY=sk-xxxxx \
+LLM_MODEL=gpt-5.4 \
+PORT=8001 python backend/run.py &
+```
+
+`LLM_PROVIDER` 选原生格式，默认 `openai`（也覆盖 DeepSeek / vLLM / 任何 OpenAI-compat 网关）：
+
+<details>
+<summary>各 provider 推荐配置（点开展开）</summary>
+
+| `LLM_PROVIDER` | `LLM_BASE_URL` | `LLM_MODEL` 示例 | 关键 env |
+|---|---|---|---|
+| `openai`（默认） | `https://api.openai.com/v1` | `gpt-5.4` · `gpt-4o-mini` | `OPENAI_API_KEY` 或 `LLM_API_KEY` |
+| `openai`（DeepSeek） | `https://api.deepseek.com/v1` | `deepseek-chat` | `LLM_API_KEY` |
+| `openai`（本地 vLLM） | `http://localhost:8000/v1` | 任意已挂载的模型 | `LLM_API_KEY=local` |
+| `anthropic` | 默认官方 | `claude-sonnet-4-6` | `ANTHROPIC_API_KEY` 或 `LLM_API_KEY` |
+| `gemini` | 默认官方 | `gemini-2.5-pro` · `gemini-2.5-flash` | `GEMINI_API_KEY` / `GOOGLE_API_KEY` / `LLM_API_KEY` |
+| `qwen` | `https://dashscope.aliyuncs.com/api/v1`（默认） | `qwen-plus` · `qwen-turbo` | `DASHSCOPE_API_KEY` / `QWEN_API_KEY` / `LLM_API_KEY` |
+
+完整参考：[`.env.example`](.env.example)；重试 / 降级 fallback 细节见 [`docs/zh/quickstart.md`](docs/zh/quickstart.md)。
+
+</details>
+
+前端检测到后端还是 mock / 没 key 时，顶部会弹一条黄色 banner 贴启动命令 · 点 ✕ 本会话不再显示。
 
 > **注意**：v0.1.0-alpha 只含骨架代码，完整后端（含前端 demo）在 v0.2 到位（见 [ROADMAP.md](ROADMAP.md)）。关注仓库等待后续更新。
 

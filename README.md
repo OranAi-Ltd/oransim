@@ -70,10 +70,37 @@ LLM_MODE=mock PORT=8001 python backend/run.py &
 # 3. Run frontend
 python -m http.server 8090 --directory frontend
 
-# 4. Open http://localhost:8090 → click "🔥 Trending Preset" → "🚀 Predict"
+# 4. Open http://localhost:8090 → click "⚡ 极速" → "🚀 Predict"
 ```
 
-To use real LLMs, set `LLM_MODE=api` + `LLM_API_KEY` + `LLM_MODEL`. Select the native request format via `LLM_PROVIDER` (`openai` · `anthropic` · `gemini` · `qwen`); `openai` is the default and also covers DeepSeek / vLLM / any OpenAI-compat gateway. See [docs/en/quickstart.md](docs/en/quickstart.md) and [.env.example](.env.example).
+Mock mode returns deterministic stubs — good for CI / first look, but every LLM-driven feature (soul personas, group-chat, comment-section discourse, LLM calibration of KPIs) falls back to templates. **To unlock the real pipeline, switch to api mode:**
+
+```bash
+LLM_MODE=api \
+LLM_API_KEY=sk-xxxxx \
+LLM_MODEL=gpt-5.4 \
+PORT=8001 python backend/run.py &
+```
+
+Pick the native request format with `LLM_PROVIDER` — defaults to `openai` (also covers DeepSeek / vLLM / any OpenAI-compat gateway):
+
+<details>
+<summary>Per-provider recommended config (click)</summary>
+
+| `LLM_PROVIDER` | `LLM_BASE_URL` | `LLM_MODEL` example | Key env |
+|---|---|---|---|
+| `openai` *(default)* | `https://api.openai.com/v1` | `gpt-5.4` · `gpt-4o-mini` | `OPENAI_API_KEY` or `LLM_API_KEY` |
+| `openai` (DeepSeek) | `https://api.deepseek.com/v1` | `deepseek-chat` | `LLM_API_KEY` |
+| `openai` (vLLM local) | `http://localhost:8000/v1` | any served model | `LLM_API_KEY=local` |
+| `anthropic` | `https://api.anthropic.com` (default) | `claude-sonnet-4-6` | `ANTHROPIC_API_KEY` or `LLM_API_KEY` |
+| `gemini` | Google default | `gemini-2.5-pro` · `gemini-2.5-flash` | `GEMINI_API_KEY` / `GOOGLE_API_KEY` / `LLM_API_KEY` |
+| `qwen` | `https://dashscope.aliyuncs.com/api/v1` (default) | `qwen-plus` · `qwen-turbo` | `DASHSCOPE_API_KEY` / `QWEN_API_KEY` / `LLM_API_KEY` |
+
+Full reference in [`.env.example`](.env.example); extended retry / fallback-chain options in [`docs/en/quickstart.md`](docs/en/quickstart.md).
+
+</details>
+
+The frontend shows a yellow banner at the top whenever the backend is still in mock (or has no key set) — click ✕ to dismiss for the session.
 
 > **Note:** v0.1.0-alpha ships skeleton code only. Full backend (including the web demo) lands in v0.2 (see [ROADMAP.md](ROADMAP.md)). Follow the repo to get notified.
 
