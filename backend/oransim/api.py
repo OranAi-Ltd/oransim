@@ -3,9 +3,17 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import time
 from datetime import date
+
+logger = logging.getLogger("oransim.api")
+if not logger.handlers:
+    _h = logging.StreamHandler()
+    _h.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s · %(message)s", "%H:%M:%S"))
+    logger.addHandler(_h)
+    logger.setLevel(logging.INFO)
 
 import numpy as np
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
@@ -43,11 +51,11 @@ from .runtime.graph import CausalGraph
 from .sandbox.engine import SandboxStore
 
 # ---------------- Bootstrap ----------------
-print("[Oransim] bootstrapping…")
+logger.info("[Oransim] bootstrapping…")
 t0 = time.time()
 POP_SIZE = int(os.environ.get("POP_SIZE", "100000"))
 POP = generate_population(N=POP_SIZE, seed=42)
-print(f"  population 100k ready  ({time.time()-t0:.1f}s)  marginal KL={marginal_fit_report(POP)}")
+logger.info(f"  population 100k ready  ({time.time()-t0:.1f}s)  marginal KL={marginal_fit_report(POP)}")
 WM = PlatformWorldModel(POP)
 AG = StatisticalAgents(POP)
 SOULS = SoulAgentPool(POP, n=int(os.environ.get("SOUL_POOL_N", "100")), seed=7)
@@ -108,25 +116,25 @@ def _bootstrap_index() -> None:
 
 
 _bootstrap_index()
-print(
+logger.info(
     f"  UEB ready: {len(BUS.list_sources())} sources, {sum(s['n_items'] for s in BUS.list_sources())} items pre-indexed"
 )
 
 # Voronoi partition: 100 souls own ~1k territory each in a 100k pop
-print(f"  building Voronoi partition ({len(SOULS.idx)} souls)...")
+logger.info(f"  building Voronoi partition ({len(SOULS.idx)} souls)...")
 t1 = time.time()
 PARTITION = voronoi_partition(POP, [int(i) for i in SOULS.idx])
 PERSONA_TO_SLOT = {int(pid): slot for slot, pid in enumerate(SOULS.idx)}
 # Inject partition into SLOC provider
 SLOC_PROVIDER.partition = PARTITION
 SLOC_PROVIDER.persona_to_slot = PERSONA_TO_SLOT
-print(
+logger.info(
     f"  done in {time.time()-t1:.1f}s · max territory {PARTITION.weights.max():.3f}"
     f" mean {PARTITION.weights.mean():.4f}"
 )
 
-print(f"[Oransim] ready in {time.time()-t0:.1f}s")
-print(f"[Oransim] LLM: {llm_info()}")
+logger.info(f"[Oransim] ready in {time.time()-t0:.1f}s")
+logger.info(f"[Oransim] LLM: {llm_info()}")
 
 
 # ---------------- FastAPI ----------------
