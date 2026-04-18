@@ -39,7 +39,7 @@
 - 👥 **百万级虚拟人口** —— IPF 迭代比例拟合对齐真实人口学先验；取最显著 10k agent 升级为 LLM 驱动人格给定性反馈。
 - 🧪 **LightGBM Quantile baseline** —— 快速零依赖 fallback，每 KPI 三个分位数回归器（P35/P50/P65）。保留用于生产延迟敏感场景 + 基准对比。
 
-因果 Transformer 和因果神经 Hawkes 的预训权重在 100k 合成数据上训练，v0.2 起随 release 发布；当前 v0.1.0-alpha 已含完整架构 + 训练 loop + 推理代码 —— `pip install 'oransim[ml]'` 即可解锁。
+**开箱即跑** —— v0.1.1-alpha 仓库自带合成 demo 数据集（2.3 MB，200 KOL / 2k scenarios / 100 event streams）**和预训 LightGBM demo pkl**（2.7 MB，合成数据 R² 0.69–0.89）。git clone、pip install、配好 LLM API key，完整预测链路立即能跑——无需先训练。研究级因果 Transformer 和因果神经 Hawkes 的预训权重在 100k 合成数据上训练，v0.2 起随 release 发布；当前 v0.1.1-alpha 已含完整架构 + 训练 loop + 推理代码 —— `pip install 'oransim[ml]'` 即可解锁。
 
 > 🏢 **企业版** —— OranAI 在**持续更新的真实自有数据**（100 万+ 标注 campaign）上训练同一套架构，提供**效果更优的垂类模型**（美妆 / 服装 / 3C / 食饮 / 奢品 / 汽车）和**模型定制服务**（私有化部署、领域专属 DAG、品牌专属人格库）。联系：`cto@orannai.com`。
 

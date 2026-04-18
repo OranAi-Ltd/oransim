@@ -41,7 +41,7 @@ Oransim is built **causal-first** — counterfactual reasoning is first-class, n
 - 👥 **1M-agent population** — Iterative Proportional Fitting (IPF) calibrated to real demographic priors; the top 10k most-salient agents get LLM-powered personas for qualitative feedback.
 - 🧪 **LightGBM Quantile baseline** — fast zero-dependency fallback, three quantile regressors (P35/P50/P65) per KPI. Retained for production latency targets and benchmark comparison.
 
-Pretrained weights for the Causal Transformer and Causal Neural Hawkes train on the 100k synthetic dataset and ship starting v0.2; today v0.1.0-alpha includes the full architecture, training loop, and inference code — run `pip install 'oransim[ml]'` to unlock them.
+**Plug-and-play out of the box** — v0.1.1-alpha ships the synthetic demo corpus (2.3 MB — 200 KOLs, 2k scenarios, 100 event streams) **and a pretrained LightGBM demo pkl** (2.7 MB, R² 0.69–0.89 on synthetic eval). Clone, install, set an LLM API key, and the full prediction pipeline works immediately — no separate training step required. The research-grade Causal Transformer and Causal Neural Hawkes weights train on the 100k synthetic dataset and ship starting v0.2; today v0.1.1-alpha includes the full architecture, training loop, and inference code — run `pip install 'oransim[ml]'` to unlock them.
 
 > 🏢 **Enterprise edition** — OranAI trains the same architectures on **continuously-updated proprietary real-world data** (1M+ labeled campaigns), with **higher-performance vertical model variants** (beauty / fashion / 3C / F&B / luxury / auto) and **bespoke model customization** (on-premise, domain-specific DAGs, branded persona libraries). Contact `cto@orannai.com`.
 

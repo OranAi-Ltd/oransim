@@ -1,0 +1,232 @@
+{
+  "beauty": {
+    "age_bands": [
+      "14-17",
+      "18-24",
+      "25-34",
+      "35-44",
+      "45-54",
+      "55-64",
+      "65+"
+    ],
+    "age_dist": [
+      0.03,
+      0.36,
+      0.39,
+      0.15,
+      0.05,
+      0.015,
+      0.005
+    ],
+    "female_share": 0.9,
+    "male_share": 0.1,
+    "source": "synthetic v0.1 (distribution-matched to published aggregates)"
+  },
+  "fashion": {
+    "age_bands": [
+      "14-17",
+      "18-24",
+      "25-34",
+      "35-44",
+      "45-54",
+      "55-64",
+      "65+"
+    ],
+    "age_dist": [
+      0.05,
+      0.32,
+      0.36,
+      0.17,
+      0.07,
+      0.025,
+      0.005
+    ],
+    "female_share": 0.78,
+    "male_share": 0.22,
+    "source": "synthetic v0.1 (distribution-matched to published aggregates)"
+  },
+  "food": {
+    "age_bands": [
+      "14-17",
+      "18-24",
+      "25-34",
+      "35-44",
+      "45-54",
+      "55-64",
+      "65+"
+    ],
+    "age_dist": [
+      0.04,
+      0.22,
+      0.34,
+      0.22,
+      0.12,
+      0.05,
+      0.01
+    ],
+    "female_share": 0.6,
+    "male_share": 0.4,
+    "source": "synthetic v0.1 (distribution-matched to published aggregates)"
+  },
+  "electronics": {
+    "age_bands": [
+      "14-17",
+      "18-24",
+      "25-34",
+      "35-44",
+      "45-54",
+      "55-64",
+      "65+"
+    ],
+    "age_dist": [
+      0.03,
+      0.25,
+      0.38,
+      0.2,
+      0.09,
+      0.04,
+      0.01
+    ],
+    "female_share": 0.32,
+    "male_share": 0.68,
+    "source": "synthetic v0.1 (distribution-matched to published aggregates)"
+  },
+  "travel": {
+    "age_bands": [
+      "14-17",
+      "18-24",
+      "25-34",
+      "35-44",
+      "45-54",
+      "55-64",
+      "65+"
+    ],
+    "age_dist": [
+      0.02,
+      0.18,
+      0.32,
+      0.25,
+      0.15,
+      0.06,
+      0.02
+    ],
+    "female_share": 0.56,
+    "male_share": 0.44,
+    "source": "synthetic v0.1 (distribution-matched to published aggregates)"
+  },
+  "parenting": {
+    "age_bands": [
+      "14-17",
+      "18-24",
+      "25-34",
+      "35-44",
+      "45-54",
+      "55-64",
+      "65+"
+    ],
+    "age_dist": [
+      0.01,
+      0.08,
+      0.44,
+      0.35,
+      0.08,
+      0.03,
+      0.01
+    ],
+    "female_share": 0.88,
+    "male_share": 0.12,
+    "source": "synthetic v0.1 (distribution-matched to published aggregates)"
+  },
+  "fitness": {
+    "age_bands": [
+      "14-17",
+      "18-24",
+      "25-34",
+      "35-44",
+      "45-54",
+      "55-64",
+      "65+"
+    ],
+    "age_dist": [
+      0.02,
+      0.25,
+      0.38,
+      0.22,
+      0.1,
+      0.025,
+      0.005
+    ],
+    "female_share": 0.54,
+    "male_share": 0.46,
+    "source": "synthetic v0.1 (distribution-matched to published aggregates)"
+  },
+  "home": {
+    "age_bands": [
+      "14-17",
+      "18-24",
+      "25-34",
+      "35-44",
+      "45-54",
+      "55-64",
+      "65+"
+    ],
+    "age_dist": [
+      0.01,
+      0.1,
+      0.32,
+      0.3,
+      0.18,
+      0.07,
+      0.02
+    ],
+    "female_share": 0.72,
+    "male_share": 0.28,
+    "source": "synthetic v0.1 (distribution-matched to published aggregates)"
+  },
+  "beverage": {
+    "age_bands": [
+      "14-17",
+      "18-24",
+      "25-34",
+      "35-44",
+      "45-54",
+      "55-64",
+      "65+"
+    ],
+    "age_dist": [
+      0.05,
+      0.28,
+      0.35,
+      0.18,
+      0.1,
+      0.03,
+      0.01
+    ],
+    "female_share": 0.62,
+    "male_share": 0.38,
+    "source": "synthetic v0.1 (distribution-matched to published aggregates)"
+  },
+  "pet": {
+    "age_bands": [
+      "14-17",
+      "18-24",
+      "25-34",
+      "35-44",
+      "45-54",
+      "55-64",
+      "65+"
+    ],
+    "age_dist": [
+      0.02,
+      0.22,
+      0.4,
+      0.22,
+      0.1,
+      0.03,
+      0.01
+    ],
+    "female_share": 0.68,
+    "male_share": 0.32,
+    "source": "synthetic v0.1 (distribution-matched to published aggregates)"
+  }
+}

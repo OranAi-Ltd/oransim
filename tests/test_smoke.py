@@ -112,6 +112,48 @@ def test_parametric_hawkes_forecast_and_counterfactual():
     assert cf.latent["intervention"]["mute_at_min"] == 90.0
 
 
+def test_demo_lightgbm_pkl_loads_and_predicts():
+    """The shipped LightGBM demo pkl must load + predict out-of-the-box.
+
+    Powers the 'clone → set LLM key → run' plug-and-play experience.
+    """
+    import pickle
+    root = Path(__file__).parent.parent
+    pkl_path = root / "data" / "models" / "world_model_demo.pkl"
+    assert pkl_path.exists(), "demo pkl not shipped at data/models/world_model_demo.pkl"
+
+    with open(pkl_path, "rb") as f:
+        blob = pickle.load(f)
+    assert "config" in blob
+    assert "boosters" in blob
+    assert blob["config"]["feature_version"] == "demo_v1"
+    assert set(blob["boosters"].keys()) == {"impressions", "clicks", "conversions", "revenue"}
+
+    # Load a booster + predict on a plausible feature vector
+    import lightgbm as lgb
+    import numpy as np
+    b = lgb.Booster(model_str=blob["boosters"]["impressions"]["0.5"])
+    # [platform_id, niche_idx, budget, budget_bucket, kol_tier_idx, kol_fan_count, kol_engagement_rate]
+    x = np.asarray([[0.0, 0.0, 50000.0, 1.0, 2.0, 100000.0, 0.035]], dtype=np.float32)
+    pred = b.predict(x)[0]
+    assert pred > 0, f"impressions P50 prediction should be > 0, got {pred}"
+
+
+def test_demo_synthetic_data_shipped():
+    """The small synthetic demo dataset must ship for immediate exploration."""
+    root = Path(__file__).parent.parent
+    for fname in (
+        "synthetic_kols.json",
+        "synthetic_notes.json",
+        "synthetic_fan_profiles.json",
+        "scenarios_v0_1.jsonl",
+        "event_streams_v0_1.jsonl",
+    ):
+        p = root / "data" / "synthetic" / fname
+        assert p.exists(), f"demo synthetic file missing: {fname}"
+        assert p.stat().st_size > 0, f"demo synthetic file is empty: {fname}"
+
+
 def test_parametric_hawkes_log_likelihood():
     from oransim.diffusion import get_diffusion_model
     ph = get_diffusion_model("parametric_hawkes")
@@ -210,37 +252,82 @@ def test_fastapi_app_metadata():
 
 
 def test_no_sensitive_terms_in_package():
-    """Smoke assertion: no vendor-specific references leak into shipped code.
+    """BULLETPROOF case-insensitive scan — no vendor references leak anywhere.
 
-    Scans backend + top-level READMEs + landing page but skips tests/ itself
-    (this file contains the search pattern).
+    Covers every shipped file type, every case permutation (huitun/HUITUN/
+    Huitun/HuItUn), both dashes and underscores in tu-zi/cg-api, plus the
+    Chinese 灰豚 character and internal absolute paths. This is the single
+    gate between desensitization regressions and the public repo.
     """
     import subprocess
-    # Build pattern from hex codes to avoid matching this file's own source
-    pattern_parts = [
-        "hui" + "tun",
-        "Hui" + "tun",
-        "tu" + "-zi",
-        "cg" + "-api",
-        "cg" + "_api",
-        "\u7070\u8c5a",  # 灰豚
-    ]
-    pattern = "|".join(pattern_parts)
+    # Pattern built from hex / split strings to avoid matching this file.
+    # Parts:
+    #   hui[-_]?tun  — matches huitun, hui-tun, hui_tun (any case)
+    #   tu[-_]?zi    — matches tuzi, tu-zi, tu_zi
+    #   cg[-_]?api   — matches cgapi, cg-api, cg_api
+    #   \u7070\u8c5a — 灰豚 (Chinese)
+    #   /home/projects/sim — leaked internal absolute path
+    pattern = "|".join(
+        [
+            "hui" + "[-_]?tun",
+            "tu" + "[-_]?zi",
+            "cg" + "[-_]?api",
+            "\u7070\u8c5a",
+            "/home/projects/sim",
+            "/root/projects/sim",
+        ]
+    )
     root = Path(__file__).parent.parent
+    paths = [
+        str(root / "backend"),
+        str(root / "frontend"),
+        str(root / "docs"),
+        str(root / "assets"),
+        str(root / ".github"),
+        str(root / "index.html"),
+        str(root / "README.md"),
+        str(root / "README.zh-CN.md"),
+        str(root / "ROADMAP.md"),
+        str(root / "CHANGELOG.md"),
+        str(root / "CONTRIBUTING.md"),
+        str(root / "CODE_OF_CONDUCT.md"),
+        str(root / "SECURITY.md"),
+        str(root / "GITHUB_SETUP.md"),
+        str(root / "CITATION.cff"),
+        str(root / "pyproject.toml"),
+    ]
+    # Filter to only existing paths
+    paths = [p for p in paths if Path(p).exists()]
     result = subprocess.run(
         [
-            "grep", "-rIE",
+            "grep", "-rIEi",   # -i makes it case-insensitive
             pattern,
-            str(root / "backend"),
-            str(root / "index.html"),
-            str(root / "README.md"),
-            str(root / "README.zh-CN.md"),
+            *paths,
             "--include=*.py",
             "--include=*.md",
             "--include=*.html",
+            "--include=*.yml",
+            "--include=*.yaml",
+            "--include=*.toml",
+            "--include=*.cff",
+            "--include=*.svg",
+            "--include=*.json",
+            "--include=*.jsonl",
+            "--include=*.css",
+            "--include=*.js",
+            "--include=*.txt",
+            "--include=*.ini",
+            "--include=*.cfg",
+            "--exclude-dir=__pycache__",
+            "--exclude-dir=.git",
+            "--exclude-dir=node_modules",
+            "--exclude-dir=data",  # synthetic data ok
         ],
         capture_output=True,
         text=True,
     )
     # grep returns 1 when no matches — that's the good path
-    assert result.returncode == 1, f"sensitive term leak:\n{result.stdout}"
+    assert result.returncode == 1, (
+        "🚨 SENSITIVE TERM LEAK — would ship to public repo:\n"
+        f"{result.stdout}"
+    )
