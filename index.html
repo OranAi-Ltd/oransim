@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Oransim — Causal Digital Twin for Marketing at Scale</title>
+  <meta name="description" content="Oransim: open-source causal digital twin for marketing performance prediction. Causal Transformer world model, Causal Neural Hawkes diffusion, 64-node Pearl SCM, 1M IPF + 10k LLM agents. Apache-2.0."/>
+  <meta property="og:title" content="Oransim — Causal Digital Twin for Marketing at Scale"/>
+  <meta property="og:description" content="Predict any marketing decision before you spend a dollar. Pearl-style SCM · Causal Transformer · Neural Hawkes · LLM agents."/>
+  <meta property="og:image" content="https://raw.githubusercontent.com/ORAN-cgsj/oransim/main/assets/social-preview.svg"/>
+  <meta property="og:url" content="https://oran-cgsj.github.io/oransim/"/>
+  <meta property="og:type" content="website"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg"/>
+  <style>
+    :root {
+      --orange: #FF6B35;
+      --orange-lt: #FF8A3C;
+      --orange-dk: #D9542A;
+      --navy: #1a2a4a;
+      --navy-lt: #243656;
+      --bg: #0d1117;
+      --bg-card: #141a24;
+      --bg-card-hover: #1a2030;
+      --text: #e7ecf2;
+      --text-muted: #a0a0a0;
+      --text-dim: #6b7280;
+      --border: #2a3040;
+      --green: #4ade80;
+      --yellow: #facc15;
+      --red: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 16px;
+      overflow-x: hidden;
+    }
+    a { color: var(--orange); text-decoration: none; transition: color .15s; }
+    a:hover { color: var(--orange-lt); }
+    code, pre {
+      font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 0.9em;
+    }
+
+    /* Nav */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: 14px 48px;
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    nav .brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--text);
+    }
+    nav .brand img { width: 28px; height: 28px; }
+    nav .links { display: flex; gap: 28px; align-items: center; }
+    nav .links a { color: var(--text-muted); font-size: 14px; font-weight: 500; }
+    nav .links a:hover { color: var(--text); }
+    nav .links a.gh-btn {
+      background: var(--orange);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    nav .links a.gh-btn:hover { background: var(--orange-lt); }
+    @media (max-width: 720px) {
+      nav { padding: 12px 16px; }
+      nav .links { gap: 14px; }
+      nav .links .desktop-only { display: none; }
+    }
+
+    /* Containers */
+    section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 32px;
+    }
+    section.hero { padding-top: 140px; padding-bottom: 60px; }
+    @media (max-width: 720px) { section { padding: 48px 20px; } section.hero { padding-top: 100px; } }
+
+    /* Hero */
+    .hero-content { text-align: center; max-width: 920px; margin: 0 auto; }
+    .hero-tag {
+      display: inline-block;
+      padding: 6px 14px;
+      background: rgba(255, 107, 53, 0.1);
+      border: 1px solid rgba(255, 107, 53, 0.3);
+      color: var(--orange);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 28px;
+      letter-spacing: 0.3px;
+    }
+    .hero h1 {
+      font-size: clamp(40px, 7vw, 84px);
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #fff 0%, #cfcfcf 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero h1 .accent {
+      background: linear-gradient(135deg, var(--orange-lt) 0%, var(--orange) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero .lead {
+      font-size: clamp(17px, 2vw, 21px);
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 40px;
+    }
+    .hero .cta {
+      display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center; gap: 8px;
+      padding: 14px 26px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      transition: transform .15s, background .15s;
+      border: 1px solid transparent;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--orange-lt) 0%, var(--orange) 100%);
+      color: #fff;
+    }
+    .btn-primary:hover { color: #fff; box-shadow: 0 10px 28px rgba(255, 107, 53, 0.35); }
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .btn-outline:hover { border-color: var(--orange); color: var(--orange); }
+    .btn-ghost {
+      background: var(--bg-card);
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .btn-ghost:hover { background: var(--bg-card-hover); color: var(--orange); }
+
+    /* Shield badges row */
+    .badges {
+      display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+      margin-top: 28px;
+    }
+    .badges img { height: 20px; }
+
+    /* Section headings */
+    .section-label {
+      color: var(--orange);
+      font-size: 13px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    h2 {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 14px;
+      letter-spacing: -0.5px;
+    }
+    h3 {
+      font-size: 21px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .section-lead {
+      color: var(--text-muted);
+      font-size: 17px;
+      max-width: 720px;
+      margin-bottom: 48px;
+    }
+
+    /* Causal stack cards */
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .stack-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      transition: border-color .15s, transform .15s, background .15s;
+    }
+    .stack-card:hover {
+      border-color: var(--orange);
+      transform: translateY(-2px);
+      background: var(--bg-card-hover);
+    }
+    .stack-card .icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    .stack-card h3 {
+      color: var(--text);
+      font-size: 17px;
+    }
+    .stack-card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .stack-card.primary {
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 107, 53, 0.02));
+      border-color: rgba(255, 107, 53, 0.3);
+    }
+    .stack-card .tag {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 4px;
+      background: rgba(74, 222, 128, 0.12);
+      color: var(--green);
+    }
+    .stack-card .tag.baseline {
+      background: rgba(160, 160, 160, 0.12);
+      color: var(--text-muted);
+    }
+
+    /* Architecture */
+    .arch-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 40px;
+      text-align: center;
+    }
+    .arch-block img { max-width: 100%; height: auto; }
+
+    /* Comparison table */
+    .compare {
+      overflow-x: auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+    .compare table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .compare th, .compare td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .compare th {
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      background: rgba(255, 255, 255, 0.015);
+    }
+    .compare th.us { color: var(--orange); }
+    .compare td.good { color: var(--green); }
+    .compare td.bad { color: var(--red); }
+    .compare td.neutral { color: var(--yellow); }
+    .compare tr:last-child td { border-bottom: none; }
+    .compare tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    /* Quickstart */
+    .qs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    @media (max-width: 860px) { .qs-grid { grid-template-columns: 1fr; } }
+    .code-block {
+      background: #0a0d13;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .code-block pre {
+      color: #d4d4d4;
+      font-size: 13.5px;
+      line-height: 1.7;
+      white-space: pre;
+    }
+    .code-block .comment { color: #6b7280; }
+    .code-block .cmd { color: #a0f5c0; }
+    .code-block .str { color: var(--orange-lt); }
+    .code-block .kw { color: #c084fc; }
+
+    /* Model zoo */
+    .zoo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 16px;
+    }
+    .zoo-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+    }
+    .zoo-card .header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 12px; gap: 12px;
+    }
+    .zoo-card .title {
+      font-size: 16px; font-weight: 700; color: var(--text);
+    }
+    .zoo-card .role {
+      font-size: 11px; font-weight: 700;
+      padding: 3px 8px; border-radius: 4px;
+      white-space: nowrap;
+    }
+    .zoo-card .role.primary { background: rgba(255, 107, 53, 0.15); color: var(--orange); }
+    .zoo-card .role.baseline { background: rgba(160, 160, 160, 0.15); color: var(--text-muted); }
+    .zoo-card .meta { color: var(--text-muted); font-size: 13px; margin-bottom: 10px; }
+    .zoo-card .refs { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+    .zoo-card .refs strong { color: var(--text-muted); }
+
+    /* Platform matrix */
+    .plat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .plat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+    }
+    .plat-card .plat-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .plat-card .plat-status {
+      display: inline-block;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 7px; border-radius: 4px;
+    }
+    .plat-card .plat-status.live { background: rgba(74, 222, 128, 0.12); color: var(--green); }
+    .plat-card .plat-status.stub { background: rgba(250, 204, 21, 0.12); color: var(--yellow); }
+    .plat-card .plat-status.planned { background: rgba(160, 160, 160, 0.12); color: var(--text-muted); }
+    .plat-card .plat-milestone { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+    /* Roadmap */
+    .roadmap-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 860px) { .roadmap-grid { grid-template-columns: 1fr; } }
+    .roadmap-col {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .roadmap-col h3 { color: var(--orange); font-size: 15px; letter-spacing: 0.4px; }
+    .roadmap-col .horizon { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+    .roadmap-col ul { list-style: none; }
+    .roadmap-col li {
+      padding: 8px 0; font-size: 14px; color: var(--text-muted);
+      border-bottom: 1px dashed var(--border);
+    }
+    .roadmap-col li:last-child { border-bottom: none; }
+    .roadmap-col li::before { content: "→ "; color: var(--orange); font-weight: 700; }
+
+    /* Enterprise */
+    .enterprise {
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(26, 42, 74, 0.4) 100%);
+      border: 1px solid rgba(255, 107, 53, 0.3);
+      border-radius: 18px;
+      padding: 48px;
+      text-align: center;
+    }
+    .enterprise h2 { margin-bottom: 12px; }
+    .enterprise p { color: var(--text-muted); max-width: 640px; margin: 0 auto 28px; }
+    @media (max-width: 720px) { .enterprise { padding: 32px 20px; } }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 32px 30px;
+      margin-top: 40px;
+    }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 32px;
+    }
+    @media (max-width: 720px) { .footer-inner { grid-template-columns: 1fr 1fr; } }
+    .footer-col h4 {
+      font-size: 12px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+    .footer-col a {
+      display: block;
+      color: var(--text-muted);
+      font-size: 14px;
+      padding: 4px 0;
+    }
+    .footer-col a:hover { color: var(--orange); }
+    .footer-brand { max-width: 340px; }
+    .footer-brand .logo-row { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; margin-bottom: 10px; }
+    .footer-brand .logo-row img { width: 28px; height: 28px; }
+    .footer-brand p { color: var(--text-muted); font-size: 14px; }
+    .copyright {
+      max-width: 1200px;
+      margin: 32px auto 0;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 13px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    }
+
+    /* Stars widget */
+    .star-block { text-align: center; }
+    .star-block img {
+      max-width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    /* Citation */
+    .cite-box {
+      background: #0a0d13;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      overflow-x: auto;
+    }
+    .cite-box pre {
+      color: #d4d4d4;
+      font-size: 13px;
+      white-space: pre;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#top" class="brand">
+    <img src="assets/logo.svg" alt=""/>
+    Oransim
+  </a>
+  <div class="links">
+    <a href="#stack" class="desktop-only">Stack</a>
+    <a href="#architecture" class="desktop-only">Architecture</a>
+    <a href="#zoo" class="desktop-only">Models</a>
+    <a href="#roadmap" class="desktop-only">Roadmap</a>
+    <a href="https://github.com/ORAN-cgsj/oransim#readme" class="desktop-only">Docs</a>
+    <a href="https://github.com/ORAN-cgsj/oransim" class="gh-btn">⭐ View on GitHub</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-content">
+    <span class="hero-tag">🧠 Research-grade · 🏢 Commercial-ready · Apache-2.0</span>
+    <h1>Causal Digital Twin for <span class="accent">Marketing at Scale</span></h1>
+    <p class="lead">
+      Predict any marketing decision before you spend a dollar. Oransim is an open-source
+      causal digital twin combining a <strong>Causal Transformer world model</strong>,
+      a <strong>Causal Neural Hawkes diffusion forecaster</strong>, a 64-node Pearl SCM,
+      and 1M IPF-calibrated virtual consumers with 10k LLM-powered soul agents.
+    </p>
+    <div class="cta">
+      <a href="https://github.com/ORAN-cgsj/oransim" class="btn btn-primary">
+        📦 Get the Code
+      </a>
+      <a href="#quickstart" class="btn btn-outline">⚡ Quickstart</a>
+      <a href="mailto:cto@orannai.com?subject=Oransim%20Enterprise%20Demo" class="btn btn-ghost">
+        🏢 Book a Demo
+      </a>
+    </div>
+    <div class="badges">
+      <a href="https://github.com/ORAN-cgsj/oransim/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ORAN-cgsj/oransim?color=FF6B35&labelColor=1a2a4a" alt="License"/></a>
+      <a href="https://github.com/ORAN-cgsj/oransim/stargazers"><img src="https://img.shields.io/github/stars/ORAN-cgsj/oransim?style=flat&labelColor=1a2a4a&color=FF6B35" alt="Stars"/></a>
+      <a href="https://github.com/ORAN-cgsj/oransim/releases"><img src="https://img.shields.io/github/v/release/ORAN-cgsj/oransim?include_prereleases&labelColor=1a2a4a&color=FF6B35" alt="Release"/></a>
+      <a href="https://github.com/ORAN-cgsj/oransim/issues"><img src="https://img.shields.io/github/issues/ORAN-cgsj/oransim?labelColor=1a2a4a&color=FF6B35" alt="Issues"/></a>
+    </div>
+  </div>
+</section>
+
+<!-- CAUSAL STACK -->
+<section id="stack">
+  <p class="section-label">The Causal Stack</p>
+  <h2>Counterfactual reasoning, first-class.</h2>
+  <p class="section-lead">
+    Oransim is built causal-first — treatment effect estimation, DAG-aware attention, and
+    intervention-aware diffusion are core interfaces, not afterthoughts. Every component cites
+    the recent literature it builds on.
+  </p>
+  <div class="stack-grid">
+    <div class="stack-card primary">
+      <div class="icon">🧠</div>
+      <h3>Causal Transformer World Model</h3>
+      <p>6-layer multi-head self-attention with explicit treatment/covariate/outcome factorization,
+         DAG-aware attention bias, per-arm counterfactual heads, and a representation-balancing
+         loss. Based on CaT (Melnychuk ICML'22), CausalDAG-Transformer, BCAUSS, TARNet/Dragonnet, CInA (Arik NeurIPS'23).</p>
+      <span class="tag">primary</span>
+    </div>
+    <div class="stack-card primary">
+      <div class="icon">⚡</div>
+      <h3>Causal Neural Hawkes Process</h3>
+      <p>Transformer-parameterized temporal point process for 14-day diffusion with treatment
+         vs. control event typing and intervention-aware intensity. Based on Mei & Eisner (NeurIPS'17),
+         Zuo et al. (ICML'20), Geng et al. (NeurIPS'22 counterfactual TPP).</p>
+      <span class="tag">primary</span>
+    </div>
+    <div class="stack-card">
+      <div class="icon">🌐</div>
+      <h3>64-node Pearl SCM</h3>
+      <p>Hand-designed structural causal model over the marketing funnel (117 edges). Pearl's
+         three-step <code>do()</code> counterfactual evaluation (abduction → action → prediction)
+         with mediators for group discourse (Sunstein 2017) and cascades.</p>
+    </div>
+    <div class="stack-card">
+      <div class="icon">👥</div>
+      <h3>1M IPF Agents + 10k LLM Personas</h3>
+      <p>Iterative Proportional Fitting (IPF / Deming-Stephan 1940) calibrates 1M virtual consumers
+         to published demographic priors. Top-10k salient agents get LLM-powered personas for
+         qualitative feedback + simulated group chats (Sunstein 2017 polarization).</p>
+    </div>
+    <div class="stack-card">
+      <div class="icon">🧪</div>
+      <h3>LightGBM Quantile &nbsp;/&nbsp; Parametric Hawkes</h3>
+      <p>Zero-dependency baselines retained for sub-millisecond inference and OrancBench ablations.
+         Three P35/P50/P65 quantile regressors per KPI (Koenker 2005 · Ke et al. 2017); classical
+         exponential-kernel Hawkes (Hawkes 1971) with Ogata (1981) thinning.</p>
+      <span class="tag baseline">fast baselines</span>
+    </div>
+    <div class="stack-card">
+      <div class="icon">🧩</div>
+      <h3>Platform × DataProvider</h3>
+      <p>Two-axis extensibility. XHS / RedNote is the v1 reference implementation; TikTok, Instagram,
+         YouTube Shorts, Douyin ship as day-1 stubs with concrete roadmap. Each platform accepts
+         any DataProvider (Synthetic / CSV / JSON / OpenAPI / your own).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <p class="section-label">Architecture</p>
+  <h2>One prediction pass, seven engines.</h2>
+  <p class="section-lead">
+    A typical prediction: <strong>Creative + Budget</strong> → PlatformAdapter (+DataProvider) →
+    Causal Transformer World Model (factual + per-arm counterfactual quantiles) + Agent Layer →
+    Pearl SCM counterfactual evaluation → Causal Neural Hawkes 14-day diffusion → structured JSON
+    across 14-19 schemas.
+  </p>
+  <div class="arch-block">
+    <img src="assets/architecture.svg" alt="Oransim architecture diagram"/>
+  </div>
+</section>
+
+<!-- WHY ORANSIM -->
+<section id="why">
+  <p class="section-label">Why Oransim</p>
+  <h2>Built for decisions with evidence and explanations.</h2>
+  <p class="section-lead">
+    Academic simulators don't ship; enterprise tools don't explain. Oransim takes the good from both:
+    conference-grade causal modeling + production-grade packaging and deployment.
+  </p>
+  <div class="compare">
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Traditional analytics</th>
+          <th>AutoML / black-box</th>
+          <th class="us">Oransim</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>World model</strong></td>
+          <td class="bad">Rule-based</td>
+          <td class="neutral">Tree / GBDT / DNN</td>
+          <td class="good">✅ Causal Transformer (CaT / CausalDAG-Transformer)</td>
+        </tr>
+        <tr>
+          <td><strong>Counterfactuals</strong></td>
+          <td class="bad">❌</td>
+          <td class="bad">❌</td>
+          <td class="good">✅ Per-arm head + Pearl 3-step <code>do()</code></td>
+        </tr>
+        <tr>
+          <td><strong>Causal bias reduction</strong></td>
+          <td class="bad">❌</td>
+          <td class="bad">❌</td>
+          <td class="good">✅ HSIC / adversarial-IPTW balancing (BCAUSS)</td>
+        </tr>
+        <tr>
+          <td><strong>Causal graph</strong></td>
+          <td class="bad">❌</td>
+          <td class="bad">❌</td>
+          <td class="good">✅ DAG-aware attention over 64-node Pearl SCM</td>
+        </tr>
+        <tr>
+          <td><strong>Diffusion</strong></td>
+          <td class="bad">Linear decay</td>
+          <td class="neutral">Generic time-series DNN</td>
+          <td class="good">✅ Causal Neural Hawkes (Zuo'20 + Geng'22)</td>
+        </tr>
+        <tr>
+          <td><strong>Agent simulation</strong></td>
+          <td class="bad">❌</td>
+          <td class="neutral">Aggregate only</td>
+          <td class="good">✅ 1M IPF + 10k LLM personas</td>
+        </tr>
+        <tr>
+          <td><strong>Budget saturation</strong></td>
+          <td class="bad">Linear</td>
+          <td class="bad">Linear</td>
+          <td class="good">✅ Hill + frequency fatigue</td>
+        </tr>
+        <tr>
+          <td><strong>Interpretability</strong></td>
+          <td class="neutral">Moderate</td>
+          <td class="bad">Low (SHAP at best)</td>
+          <td class="good">✅ SCM paths + per-head attention + agent traces</td>
+        </tr>
+        <tr>
+          <td><strong>Amortized inference</strong></td>
+          <td class="bad">❌</td>
+          <td class="neutral">Per-problem retrain</td>
+          <td class="good">✅ In-context amortization (CInA NeurIPS'23)</td>
+        </tr>
+        <tr>
+          <td><strong>Cost</strong></td>
+          <td class="bad">License fees</td>
+          <td class="bad">API fees</td>
+          <td class="good">✅ Apache-2.0 · self-hosted · <code>[ml]</code> optional</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- QUICKSTART -->
+<section id="quickstart">
+  <p class="section-label">Quickstart</p>
+  <h2>Clone, install, predict — in 60 seconds.</h2>
+  <div class="qs-grid">
+    <div>
+      <p style="color: var(--text-muted); margin-bottom: 20px;">
+        v0.1.0-alpha ships the full skeleton — flagship docs, Causal Transformer and Causal Neural Hawkes
+        code (weights arrive in v0.2), five platform scaffolds, and the synthetic data generator to
+        train locally.
+      </p>
+      <p style="color: var(--text-muted); margin-bottom: 20px;">
+        <code>pip install 'oransim[ml]'</code> unlocks the research-grade PyTorch models; plain
+        <code>pip install oransim</code> keeps the LightGBM + parametric Hawkes baselines usable.
+      </p>
+      <a href="https://github.com/ORAN-cgsj/oransim#readme" class="btn btn-outline" style="margin-top: 8px;">Full Docs →</a>
+    </div>
+    <div class="code-block">
+<pre><span class="comment"># 1. Clone and install</span>
+<span class="cmd">git clone</span> https://github.com/ORAN-cgsj/oransim.git
+<span class="cmd">cd</span> oransim
+<span class="cmd">pip install</span> -e <span class="str">'.[ml,dev]'</span>
+
+<span class="comment"># 2. Generate synthetic training data</span>
+<span class="cmd">python</span> -m backend.scripts.gen_synthetic_data \
+    --out data/synthetic --seed 42
+
+<span class="comment"># 3. Train the Causal Transformer</span>
+<span class="cmd">python</span> -m backend.scripts.train_transformer_wm \
+    --data data/synthetic/scenarios_v0_1.jsonl \
+    --epochs 50
+
+<span class="comment"># 4. Or just inspect the architecture</span>
+<span class="cmd">python</span> -c <span class="str">"
+<span class="kw">from</span> oransim.world_model <span class="kw">import</span> get_world_model
+wm = get_world_model('causal_transformer')
+print(wm.describe())
+"</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- MODEL ZOO -->
+<section id="zoo">
+  <p class="section-label">Model Zoo</p>
+  <h2>Four models. One registry. Zero lock-in.</h2>
+  <p class="section-lead">
+    Each model ships architecture + training loop + inference code today.
+    Pretrained weights start shipping with v0.2.
+    OranAI Enterprise Edition trains the same architectures on proprietary real data.
+  </p>
+  <div class="zoo-grid">
+
+    <div class="zoo-card">
+      <div class="header">
+        <div class="title">CausalTransformerWorldModel</div>
+        <div class="role primary">Primary WM</div>
+      </div>
+      <div class="meta">≈ 4.3M params · 6 × 256-dim · PyTorch</div>
+      <div class="refs">
+        <strong>Refs:</strong> CaT (Melnychuk ICML'22) · CausalDAG-Transformer (Zhang'23)
+        · TARNet (Shalit'17) · Dragonnet (Shi'19) · BCAUSS (Tesei'21) · CInA (Arik'23) · HSIC (Gretton'05)
+      </div>
+    </div>
+
+    <div class="zoo-card">
+      <div class="header">
+        <div class="title">CausalNeuralHawkesProcess</div>
+        <div class="role primary">Primary diffusion</div>
+      </div>
+      <div class="meta">≈ 900k params · 4 × 128-dim · PyTorch</div>
+      <div class="refs">
+        <strong>Refs:</strong> Neural Hawkes (Mei & Eisner NeurIPS'17) · Transformer Hawkes (Zuo ICML'20)
+        · Intensity-Free TPP (Shchur ICLR'20) · Neural STPP (Chen ICLR'21) · Counterfactual TPP (Geng NeurIPS'22)
+      </div>
+    </div>
+
+    <div class="zoo-card">
+      <div class="header">
+        <div class="title">LightGBMQuantileWorldModel</div>
+        <div class="role baseline">Fast baseline</div>
+      </div>
+      <div class="meta">Sub-millisecond CPU · zero-GPU · PCA feature projection</div>
+      <div class="refs">
+        <strong>Refs:</strong> LightGBM (Ke et al. 2017) · Quantile Regression (Koenker 2005)
+      </div>
+    </div>
+
+    <div class="zoo-card">
+      <div class="header">
+        <div class="title">ParametricHawkes</div>
+        <div class="role baseline">Classical baseline</div>
+      </div>
+      <div class="meta">Closed-form intensity · Ogata thinning · pure-Python</div>
+      <div class="refs">
+        <strong>Refs:</strong> Hawkes (1971) · Ogata (1981) · Laub, Taimre, Pollett (2015)
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PLATFORM MATRIX -->
+<section id="platforms">
+  <p class="section-label">Platforms</p>
+  <h2>XHS today. TikTok / Instagram / YouTube / Douyin on the roadmap.</h2>
+  <p class="section-lead">
+    Each platform implements a common <code>PlatformAdapter</code> interface with a pluggable
+    <code>DataProvider</code>. Add a platform by subclassing; add a data source without touching
+    the platform logic.
+  </p>
+  <div class="plat-grid">
+    <div class="plat-card">
+      <div class="plat-name">🔴 XHS / RedNote</div>
+      <span class="plat-status live">✅ v1</span>
+      <div class="plat-milestone">Causal Transformer + LightGBM baseline</div>
+    </div>
+    <div class="plat-card">
+      <div class="plat-name">⚫ TikTok</div>
+      <span class="plat-status stub">🟡 stub</span>
+      <div class="plat-milestone">v0.5 (Q3 2026)</div>
+    </div>
+    <div class="plat-card">
+      <div class="plat-name">🟣 Instagram Reels</div>
+      <span class="plat-status stub">🟡 stub</span>
+      <div class="plat-milestone">v0.5 (Q4 2026)</div>
+    </div>
+    <div class="plat-card">
+      <div class="plat-name">🔴 YouTube Shorts</div>
+      <span class="plat-status stub">🟡 stub</span>
+      <div class="plat-milestone">v0.7 (Q1 2027)</div>
+    </div>
+    <div class="plat-card">
+      <div class="plat-name">🔵 Douyin</div>
+      <span class="plat-status stub">🟡 stub</span>
+      <div class="plat-milestone">v0.5 (Q3 2026)</div>
+    </div>
+    <div class="plat-card">
+      <div class="plat-name">⚪ Twitter / X</div>
+      <span class="plat-status planned">📋 planned</span>
+      <div class="plat-milestone">v0.5</div>
+    </div>
+    <div class="plat-card">
+      <div class="plat-name">📺 Bilibili</div>
+      <span class="plat-status planned">📋 planned</span>
+      <div class="plat-milestone">v1.0</div>
+    </div>
+    <div class="plat-card">
+      <div class="plat-name">✒️ LinkedIn</div>
+      <span class="plat-status planned">📋 planned</span>
+      <div class="plat-milestone">v1.0</div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <p class="section-label">Roadmap Teaser</p>
+  <h2>Three horizons, eight themes.</h2>
+  <p class="section-lead">
+    Full plan in <a href="https://github.com/ORAN-cgsj/oransim/blob/main/ROADMAP.md">ROADMAP.md</a>
+    — four conference-grade paper targets, 15+ platform coverage, causal foundation model,
+    closed-loop AI media buying, differential privacy, federated learning.
+  </p>
+  <div class="roadmap-grid">
+    <div class="roadmap-col">
+      <h3>v0.2 · Near</h3>
+      <div class="horizon">Q3 2026 · 6-12 weeks</div>
+      <ul>
+        <li>TikTok &amp; Douyin adapter MVPs</li>
+        <li>OrancBench v0.1 · 50 scenarios</li>
+        <li>Pretrained Causal Transformer + CNH weights</li>
+        <li>Docker Compose · MkDocs · CI</li>
+        <li>Discord + Office Hours launch</li>
+      </ul>
+    </div>
+    <div class="roadmap-col">
+      <h3>v0.5 · Mid</h3>
+      <div class="horizon">Q4 2026 – Q1 2027</div>
+      <ul>
+        <li>Instagram · YouTube Shorts · X · 微信视频号 adapters</li>
+        <li>Multi-LLM native formats · Anthropic / Gemini / Bedrock</li>
+        <li>Cross-platform transfer learning</li>
+        <li>10k souls on Ray cluster · K8s Helm</li>
+        <li>📄 ICML 2027 · KDD 2026 · WWW 2027 submissions</li>
+      </ul>
+    </div>
+    <div class="roadmap-col">
+      <h3>v1.0+ · Far</h3>
+      <div class="horizon">2027 and beyond</div>
+      <ul>
+        <li>Causal Foundation Model · 10M+ campaign pretraining</li>
+        <li>Closed-loop AI media buying · production RL</li>
+        <li>Differential privacy + federated learning</li>
+        <li>15+ platforms · multi-modal creative understanding</li>
+        <li>📄 NeurIPS 2027 · WWW 2027 · CHI 2027</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ENTERPRISE -->
+<section id="enterprise">
+  <div class="enterprise">
+    <p class="section-label" style="justify-content: center;">🏢 OranAI Enterprise Edition</p>
+    <h2>Real data. Higher-performance models. Custom for you.</h2>
+    <p>
+      OranAI trains the same architectures on <strong>continuously-updated proprietary real-world data</strong>
+      (1M+ labeled campaigns) with <strong>higher-performance vertical model variants</strong>
+      (beauty, fashion, 3C, F&amp;B, luxury, auto) and <strong>bespoke model customization</strong>
+      (on-premise deployment, domain-specific DAGs, branded persona libraries, SOC 2 / ISO 27001 / GDPR).
+    </p>
+    <div class="cta" style="justify-content: center;">
+      <a href="mailto:cto@orannai.com?subject=Oransim%20Enterprise%20Inquiry" class="btn btn-primary">
+        📧 Contact cto@orannai.com
+      </a>
+      <a href="https://github.com/ORAN-cgsj/oransim#-oranai-enterprise-edition" class="btn btn-outline">
+        Learn More
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- STAR HISTORY -->
+<section id="stars">
+  <p class="section-label">Community</p>
+  <h2>Star history.</h2>
+  <p class="section-lead">
+    Help us prioritize the roadmap. If Oransim is useful to you, drop a star.
+  </p>
+  <div class="star-block">
+    <a href="https://star-history.com/#ORAN-cgsj/oransim&Date">
+      <img src="https://api.star-history.com/svg?repos=ORAN-cgsj/oransim&type=Date&theme=dark" alt="Star history"/>
+    </a>
+  </div>
+</section>
+
+<!-- CITATION -->
+<section id="cite">
+  <p class="section-label">Citation</p>
+  <h2>Using Oransim in research?</h2>
+  <p class="section-lead">We'd love to hear about it. Drop us a note at <a href="mailto:cto@orannai.com">cto@orannai.com</a>.</p>
+  <div class="cite-box">
+<pre>@software{oransim2026,
+  author       = {Yin, Fakong and {Oransim contributors}},
+  title        = {Oransim: Causal Digital Twin for Marketing at Scale},
+  version      = {0.1.0-alpha},
+  date         = {2026-04-18},
+  url          = {https://github.com/ORAN-cgsj/oransim},
+  organization = {OranAI Ltd.}
+}</pre>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-col footer-brand">
+      <div class="logo-row">
+        <img src="assets/logo.svg" alt=""/>
+        Oransim
+      </div>
+      <p>
+        Open-source causal digital twin for marketing.
+        Built by <a href="https://oran.cn">OranAI Ltd.</a> (橙果视界（深圳）科技有限公司).
+      </p>
+    </div>
+    <div class="footer-col">
+      <h4>Project</h4>
+      <a href="https://github.com/ORAN-cgsj/oransim">GitHub repo</a>
+      <a href="https://github.com/ORAN-cgsj/oransim/releases">Releases</a>
+      <a href="https://github.com/ORAN-cgsj/oransim/blob/main/ROADMAP.md">Roadmap</a>
+      <a href="https://github.com/ORAN-cgsj/oransim/blob/main/CHANGELOG.md">Changelog</a>
+    </div>
+    <div class="footer-col">
+      <h4>Community</h4>
+      <a href="https://github.com/ORAN-cgsj/oransim/discussions">Discussions</a>
+      <a href="https://github.com/ORAN-cgsj/oransim/issues">Issues</a>
+      <a href="https://github.com/ORAN-cgsj/oransim/blob/main/CONTRIBUTING.md">Contributing</a>
+      <a href="https://github.com/ORAN-cgsj/oransim/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a>
+    </div>
+    <div class="footer-col">
+      <h4>Enterprise</h4>
+      <a href="mailto:cto@orannai.com">cto@orannai.com</a>
+      <a href="https://oran.cn">oran.cn</a>
+      <a href="https://github.com/ORAN-cgsj/oransim/blob/main/SECURITY.md">Security</a>
+      <a href="https://github.com/ORAN-cgsj/oransim/blob/main/LICENSE">License (Apache-2.0)</a>
+    </div>
+  </div>
+  <div class="copyright">
+    <span>© 2026 OranAI Ltd. — Licensed under Apache-2.0</span>
+    <span><a href="README.zh-CN.md">🇨🇳 中文</a> · <a href="#top">Back to top ↑</a></span>
+  </div>
+</footer>
+
+</body>
+</html>
