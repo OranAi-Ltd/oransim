@@ -32,8 +32,9 @@ Themes:
 - ⏸ **CT / NH pretrained weights deferred** — the current synthetic corpus is fully inside the LightGBM + ParametricHawkes baselines' hypothesis class, so training the research-grade models would produce factual R² at-or-below baselines. Weight release re-tied to the OrancBench v0.5 causal-native task suite (see v0.5 Data & Benchmarks).
 
 ### 🌐 Platforms
-- TikTok adapter MVP (notes + KOL endpoints at minimum)
-- Douyin adapter MVP (field schema close to TikTok)
+- ✅ TikTok adapter MVP (shipped — `backend/oransim/platforms/tiktok/`, wired via `POST /api/adapters/tiktok/simulate_impression`)
+- ✅ Douyin adapter MVP (shipped — `backend/oransim/platforms/douyin/`, same adapter surface)
+- ✅ Instagram Reels + YouTube Shorts adapter MVP (shipped — 4 short-video adapters total)
 - XHS adapter docs hardened (`docs/en/platforms/xhs.md`)
 
 ### 🔌 LLM Providers
