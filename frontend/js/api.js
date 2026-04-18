@@ -1,7 +1,15 @@
 "use strict";
 
 // ── Core globals + API wrapper + health + mock banner ───────────
-const API = `${location.protocol}//${location.hostname}:8001`;
+// API port resolution: ?api=8005 query-param > localStorage > default 8001.
+// Lets you point the same frontend at multiple backends without editing code —
+// useful when testing OSS (8005) and internal (8001) side-by-side.
+const _apiParam = new URLSearchParams(location.search).get("api");
+const _apiStored = localStorage.getItem("osim_api_port");
+const _apiPort = _apiParam || _apiStored || "8001";
+if (_apiParam) localStorage.setItem("osim_api_port", _apiParam);
+const API = `${location.protocol}//${location.hostname}:${_apiPort}`;
+console.info(`[oransim] API → ${API}  (override via ?api=<port>)`);
 
 function log(msg) {
   const el = document.getElementById("log");
