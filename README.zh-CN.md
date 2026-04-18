@@ -23,15 +23,22 @@
 
 ## 一句话介绍
 
+> **把 Oransim 当作广告预测界的 Figma。** 粘一段广告文案，拖个滑块，看预测**为什么**变了——以及换种做法会发生什么。反事实推理天生内建，不是外挂补丁。
+
 **Oransim** 是一个开源的**因果数字孪生**框架，用于营销效果预测。上传素材、预算、KOL 清单 —— 60 秒内返回：
 
-- 📈 预测曝光 / 点击 / 转化 / ROI（带校准的 P35/P50/P65 不确定区间）
-- 🔄 **反事实分析** —— 「换个素材 / 多 50% 预算 / 换个 KOL 会怎样？」—— 走 Pearl `do()` + 专用反事实头
-- 🗣️ 10 个 LLM 虚拟用户的自然语言反馈
-- 📊 14 天扩散曲线 + 干预 rollout
+- 📈 预测曝光 / 点击 / 转化 / ROI（带校准的不确定区间）
+- 🔄 **反事实分析** —— *「换个素材 / 多 50% 预算 / 换个 KOL 会怎样？」* —— 一次点击问完答完
+- 🗣️ 10 个 LLM 虚拟用户读完你的文案后给出自然语言反馈
+- 📊 14 天扩散曲线 + 干预 rollout（*「如果第 3 天停投会怎样？」*）
 - 🧭 下一步行动建议（按优先级排序）
 
-### 因果栈（causal-first，反事实是一等公民）
+**开箱即跑** —— v0.2 仓库自带合成 demo 数据集（2.3 MB，200 KOL / 2k scenarios / 100 event streams）**和预训 LightGBM demo 模型**（合成数据 R² 0.69–0.89）。git clone、pip install、配好 LLM API key，完整预测链路立即能跑——无需先训练。
+
+研究级因果 Transformer 和因果神经 Hawkes 当前 ship **架构 + 训练 loop + 推理代码**（`pip install 'oransim[ml]'` 解锁）；**预训权重刻意延后** —— 要等 [OrancBench v0.5](ROADMAP.md#v05--mid-q4-2026--q1-2027) 的因果原生评测任务（confounded treatment · CATE heterogeneity · temporal intervention）就位，且这俩架构在这些任务上能展示对 LightGBM baseline 的实质性优势再发。优先诚实，不做表面工夫。
+
+<details>
+<summary><b>🧠 因果栈</b> —— 每块组件的研究谱系（点开展开）</summary>
 
 - 🧠 **因果 Transformer 世界模型 (Causal Transformer World Model)** —— 6 层多头 self-attention，显式 *treatment / covariate / outcome* 三类 token 分解、DAG-aware 注意力偏置、per-arm 反事实头、表征平衡损失。融合近年因果 Transformer 研究：**CaT** (Melnychuk et al. ICML 2022)、**CausalDAG-Transformer**、**BCAUSS**、**CInA** (Arik & Pfister NeurIPS 2023)、**TARNet / Dragonnet**。([架构细节](#causal-transformer-world-model))
 - ⚡ **因果神经 Hawkes 过程 (Causal Neural Hawkes Process)** —— Transformer 参数化的时序点过程，14 天扩散预测，*treatment vs control* 事件类型区分、干预感知强度函数。建立在 **Mei & Eisner (NeurIPS 2017)**、**Zuo et al. (ICML 2020)**、**Geng et al. (NeurIPS 2022) 因果 TPP** 之上。([架构细节](#causal-neural-hawkes-process))
@@ -39,7 +46,7 @@
 - 👥 **百万级虚拟人口** —— IPF 迭代比例拟合（Deming & Stephan 1940）baseline 对齐人口学先验；可插拔 `PopulationSynthesizer` 接口，Bayesian Network（v0.2）· CTGAN（v0.5）· **Causal-DAG-guided TabDDPM**（v1.0 研究项目）在路线图。取最显著 10k agent 升级为 LLM 驱动人格。
 - 🧪 **LightGBM Quantile baseline** —— 快速零依赖 fallback，每 KPI 三个分位数回归器（P35/P50/P65）。保留用于生产延迟敏感场景 + 基准对比。
 
-**开箱即跑** —— v0.2 仓库自带合成 demo 数据集（2.3 MB，200 KOL / 2k scenarios / 100 event streams）**和预训 LightGBM demo pkl**（2.7 MB，合成数据 R² 0.69–0.89）。git clone、pip install、配好 LLM API key，完整预测链路立即能跑——无需先训练。研究级因果 Transformer 和因果神经 Hawkes 当前 ship **架构 + 训练 loop + 推理代码**（`pip install 'oransim[ml]'` 解锁）；**预训权重刻意延后** ——要等 [OrancBench v0.5](ROADMAP.md#v05--mid-q4-2026--q1-2027) 的因果原生评测任务（confounded treatment · CATE heterogeneity · temporal intervention）就位，且这俩架构在这些任务上能展示对 LightGBM baseline 的实质性优势。优先诚实，不做表面工夫。
+</details>
 
 > 🏢 **企业版** —— OranAI 在**持续更新的真实自有数据**（100 万+ 标注 campaign）上训练同一套架构，提供**效果更优的垂类模型**（美妆 / 服装 / 3C / 食饮 / 奢品 / 汽车）和**模型定制服务**（私有化部署、领域专属 DAG、品牌专属人格库）。联系：`cto@orannai.com`。
 
@@ -72,17 +79,28 @@ python -m http.server 8090 --directory frontend
 
 |  | 传统分析工具 | AutoML / 黑盒预测 | **Oransim** |
 |---|---|---|---|
-| 世界模型 | 规则模板 | 树 / GBDT / 通用 DNN | ✅ **因果 Transformer**（CaT / CausalDAG-Transformer），显式 treatment/covariate/outcome 分解 |
-| 反事实预测 | ❌ | ❌ | ✅ **Per-arm 反事实头**（TARNet / Dragonnet）+ Pearl 三步 `do()` 反事实 |
-| 因果偏差矫正 | ❌ | ❌ | ✅ **表征平衡损失**（HSIC / 对抗 IPTW，BCAUSS） |
-| 因果图结构 | ❌ | ❌ | ✅ **DAG-aware 注意力**，64 节点 Pearl SCM（117 条边） |
-| 扩散预测 | 线性衰减 | 通用时序 DNN | ✅ **因果神经 Hawkes**（Transformer Hawkes + Geng 2022 干预 TPP） |
-| Agent 粒度模拟 | ❌ | ❌ 仅聚合 | ✅ 1M IPF 校准虚拟消费者 + 10k LLM 人格 agent |
-| 多平台覆盖 | 单平台 | 单平台 | ✅ **PlatformAdapter × DataProvider** 两轴扩展 |
-| 预算饱和建模 | ❌ 线性 | ❌ 线性 | ✅ Hill 饱和（Dubé & Manchanda 2005）+ 频次疲劳（Naik & Raman 2003） |
-| 可解释性 | 一般 | 低（最多 SHAP） | ✅ SCM 路径 + per-head attention + agent 推理链 |
-| 摊销推断 | ❌ | 每个场景重训 | ✅ **In-context 摊销**（CInA, Arik & Pfister NeurIPS 2023） |
-| 成本 | License 费 | API 费 | ✅ Apache-2.0 + 自部署（`[ml]` extras 可选） |
+| **能回答「为什么这个预测变了？」** | 部分（规则追踪） | ❌ 不透明（最多 SHAP） | ✅ 每个预测都能沿因果图、per-agent 推理链、注意力路径溯源 |
+| **能回答「如果换种做法会怎样？」** | ❌ 从头再跑一遍 | ❌ 模型不知道 | ✅ 原生反事实头——`do(创意=B)` 一次 forward 直接出结果 |
+| **能看单个用户反应** | 仅聚合 | 仅聚合 | ✅ 1M 模拟消费者 + 10k 个 LLM 人格读完**你的**真实文案 |
+| **14 天扩散 + 中途干预预测** | 线性衰减 | 通用时序模型 | ✅ 自激点过程，支持「第 3 天停投会怎样」这类问题 |
+| **真实预算曲线** | ❌ 线性：2× 预算 = 2× 效果 | ❌ 同 | ✅ 递减收益 + 频次疲劳（贴合真实营销经济学） |
+| **消除虚假相关** | ❌ | ❌ | ✅ 表征平衡损失，把学到的表征与 treatment 分配解耦 |
+| **新 campaign 不用重训** | ❌ 从头分析 | ❌ 每个场景重训 | ✅ In-context 摊销——推理时条件依赖你的历史 campaign |
+| **多平台** | 单平台 | 单平台 | ✅ 5 个 adapter（小红书 · TikTok · IG · YouTube · 抖音），两轴可扩展 |
+| **成本** | 按位 license 费 | 按次 API token 费 | ✅ Apache-2.0 · 自部署 · 免费 |
+
+<details>
+<summary>每一行对应的技术文献</summary>
+
+- *为什么解释*：Pearl SCM 路径追踪（64 节点、117 边）+ per-head attention + agent 推理链
+- *反事实头*：TARNet (Shalit ICML 2017)、Dragonnet (Shi NeurIPS 2019)；Pearl 三步：溯因 → 干预 → 预测
+- *LLM 人格*：取前 10k 显著 agent 升级为 LLM 驱动人格（Park et al. 2023 Generative Agents）
+- *14 天扩散*：因果神经 Hawkes (Mei & Eisner 2017 + Zuo ICML 2020 + Geng NeurIPS 2022 counterfactual TPP)
+- *预算曲线*：Hill 饱和 (Dubé & Manchanda 2005) + 频次疲劳 (Naik & Raman 2003)
+- *表征平衡*：HSIC (Gretton 2005) 或 adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
+- *In-context 摊销*：CInA (Arik & Pfister NeurIPS 2023)
+
+</details>
 
 做这个项目的人不满两头 —— 学术模拟器不落地、企业工具不解释。我们想把两头好的一面拧在一起。
 

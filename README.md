@@ -23,15 +23,22 @@
 
 ## TL;DR
 
+> **Think of Oransim as Figma for ad prediction.** Paste your ad copy, move a slider, see *why* the prediction changes — and what would happen if you'd chosen differently. Counterfactual reasoning built in, not bolted on.
+
 **Oransim** is an open-source **causal digital twin** for marketing performance prediction. Upload a creative, a budget, and a KOL list — in 60 seconds, get:
 
-- 📈 Predicted impressions, clicks, conversions, ROI (with calibrated P35/P50/P65 uncertainty)
-- 🔄 **Counterfactuals** — "what if I'd used a different creative / more budget / another KOL?" — via Pearl-style `do()` and a dedicated counterfactual head
-- 🗣️ Virtual-user feedback in natural language (10 LLM-powered personas)
-- 📊 14-day diffusion curve with intervention rollouts
+- 📈 Predicted impressions, clicks, conversions, ROI (with calibrated uncertainty bands)
+- 🔄 **Counterfactuals** — *"what if I'd used a different creative / more budget / another KOL?"* — asked and answered in one click
+- 🗣️ Virtual-user feedback in natural language (10 LLM-powered personas reading your actual copy)
+- 📊 14-day diffusion curve with intervention rollouts (*"what if we'd stopped boosting on day 3?"*)
 - 🧭 Recommended next actions, ranked
 
-### The causal stack
+**Plug-and-play out of the box** — v0.2 ships the synthetic demo corpus (2.3 MB — 200 KOLs, 2k scenarios, 100 event streams) **and a pretrained LightGBM demo model** (R² 0.69–0.89 on synthetic eval). Clone, install, set an LLM API key, and the full prediction pipeline works immediately — no separate training step required.
+
+The research-grade Causal Transformer and Causal Neural Hawkes ship **architecture + training loop + inference code** today (`pip install 'oransim[ml]'`). **Pretrained weights are deliberately held back** until [OrancBench v0.5](ROADMAP.md#v05--mid-q4-2026--q1-2027) introduces causal-native evaluation tasks where these architectures can demonstrate real structural advantage over the LightGBM baseline. Honesty over optics.
+
+<details>
+<summary><b>🧠 The causal stack</b> — research lineage for each component (click to expand)</summary>
 
 Oransim is built **causal-first** — counterfactual reasoning is first-class, not an afterthought:
 
@@ -41,7 +48,7 @@ Oransim is built **causal-first** — counterfactual reasoning is first-class, n
 - 👥 **1M-agent population** — Iterative Proportional Fitting (IPF, Deming & Stephan 1940) baseline calibrated to demographic priors; pluggable `PopulationSynthesizer` interface with Bayesian-network (v0.2), CTGAN (v0.5), and Causal-DAG-guided TabDDPM (v1.0 research) variants on the roadmap. Top-10k salient agents get LLM personas for qualitative feedback.
 - 🧪 **LightGBM Quantile baseline** — fast zero-dependency fallback, three quantile regressors (P35/P50/P65) per KPI. Retained for production latency targets and benchmark comparison.
 
-**Plug-and-play out of the box** — v0.2 ships the synthetic demo corpus (2.3 MB — 200 KOLs, 2k scenarios, 100 event streams) **and a pretrained LightGBM demo pkl** (2.7 MB, R² 0.69–0.89 on synthetic eval). Clone, install, set an LLM API key, and the full prediction pipeline works immediately — no separate training step required. The research-grade Causal Transformer and Causal Neural Hawkes ship **architecture + training loop + inference code** today (run `pip install 'oransim[ml]'` to unlock them); pretrained weights are **deliberately held back** until [OrancBench v0.5](ROADMAP.md#v05--mid-q4-2026--q1-2027) introduces causal-native evaluation tasks (confounded treatment, CATE heterogeneity, temporal intervention) where these architectures can demonstrate real structural advantage over the LightGBM baseline. Honesty over optics.
+</details>
 
 > 🏢 **Enterprise edition** — OranAI trains the same architectures on **continuously-updated proprietary real-world data** (1M+ labeled campaigns), with **higher-performance vertical model variants** (beauty / fashion / 3C / F&B / luxury / auto) and **bespoke model customization** (on-premise, domain-specific DAGs, branded persona libraries). Contact `cto@orannai.com`.
 
@@ -74,17 +81,28 @@ To use real LLMs, set `LLM_MODE=api` + `LLM_API_KEY` + `LLM_MODEL`. Select the n
 
 |  | Traditional Analytics | AutoML / Black-Box Predictors | **Oransim** |
 |---|---|---|---|
-| World model | Rule-based | Tree / GBDT / generic DNN | ✅ **Causal Transformer** (CaT / CausalDAG-Transformer) with treatment/covariate/outcome factorization |
-| Counterfactuals | ❌ | ❌ | ✅ **Per-arm counterfactual heads** (TARNet / Dragonnet) + Pearl 3-step `do()` evaluation |
-| Causal bias reduction | ❌ | ❌ | ✅ **Representation balancing** loss (HSIC / adversarial-IPTW, BCAUSS) |
-| Causal graph structure | ❌ | ❌ | ✅ **DAG-aware attention bias** over a 64-node Pearl SCM (117 edges) |
-| Diffusion forecasting | Linear decay | Generic time-series DNN | ✅ **Causal Neural Hawkes** (Transformer Hawkes + Geng 2022 intervention TPP) |
-| Agent-level simulation | ❌ | ❌ Aggregate only | ✅ 1M IPF-calibrated virtual consumers + 10k LLM persona agents |
-| Platform coverage | Single platform | Single platform | ✅ **PlatformAdapter × DataProvider** two-axis extension |
-| Budget saturation | ❌ Linear | ❌ Linear | ✅ Hill saturation (Dubé & Manchanda 2005) + frequency fatigue (Naik & Raman 2003) |
-| Interpretability | Moderate | Low (SHAP at best) | ✅ SCM paths + per-head attention + agent reasoning traces |
-| Amortized inference | ❌ | Per-problem retrain | ✅ **In-context amortization** (CInA, Arik & Pfister NeurIPS 2023) |
-| Cost | Licensing fees | API costs | ✅ Apache-2.0 + self-hosted (`[ml]` extras optional) |
+| **Answers "why did the prediction change?"** | Partial — rule trace | ❌ Opaque (SHAP at best) | ✅ Every prediction traces back through the causal graph, per-agent reasoning, and attention paths |
+| **Answers "what if I'd done X instead?"** | ❌ Re-run from scratch | ❌ Model doesn't know | ✅ Native counterfactual heads — ask `do(creative=B)` in one forward pass |
+| **Sees individual user reactions** | Aggregates only | Aggregates only | ✅ 1M simulated consumers + 10k LLM personas reading your actual copy |
+| **Predicts 14-day diffusion + intervention** | Linear decay | Generic time-series | ✅ Self-exciting point process that handles "what if we stopped boosting on day 3" |
+| **Realistic budget curves** | ❌ Linear = 2× budget = 2× results | ❌ Same | ✅ Diminishing returns + frequency fatigue (real-world marketing economics) |
+| **Removes spurious correlations** | ❌ | ❌ | ✅ Representation balancing loss decorrelates learned features from treatment assignment |
+| **Transfers to a new campaign without retraining** | ❌ Redo the analysis | ❌ Per-problem retrain | ✅ In-context amortization — model conditions on your prior campaigns at inference time |
+| **Multiple platforms** | Single platform | Single platform | ✅ 5 adapters shipped (XHS / TikTok / IG / YouTube / Douyin), 2-axis extensible |
+| **Cost** | Per-seat licensing | API tokens per call | ✅ Apache-2.0 · self-hosted · free |
+
+<details>
+<summary>Technical references for each row</summary>
+
+- *Why explanation*: Pearl SCM path tracing (64 nodes, 117 edges) + per-head attention maps + agent reasoning traces
+- *Counterfactual heads*: TARNet (Shalit ICML 2017), Dragonnet (Shi NeurIPS 2019); Pearl 3-step abduction → action → prediction
+- *LLM personas*: top-10k salient agents upgraded to LLM-backed personas (Park et al. 2023 Generative Agents)
+- *14-day diffusion*: Causal Neural Hawkes (Mei & Eisner 2017 + Zuo ICML 2020 + Geng NeurIPS 2022 counterfactual TPP)
+- *Budget curves*: Hill saturation (Dubé & Manchanda 2005) + frequency fatigue (Naik & Raman 2003)
+- *Balancing loss*: HSIC (Gretton 2005) or adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
+- *In-context amortization*: CInA (Arik & Pfister NeurIPS 2023)
+
+</details>
 
 Built by practitioners frustrated with both ends of the market — academic simulators that don't ship, and enterprise tools that don't explain.
 
