@@ -83,15 +83,13 @@ Themes:
 - Twitch adapter stub
 
 ### 🔌 LLM Providers
-- 🎯 **Multi-LLM-format adapters** — first-class support for:
-  - Anthropic Messages API (native format)
-  - Google Gemini generateContent API
-  - AWS Bedrock (Claude / Llama / Mistral)
-  - Azure OpenAI
-  - xAI Grok API
-  - DeepSeek native API
-  - Qwen DashScope native API
-  - Alternative: dependency on `litellm` as unified backend
+- ✅ **Multi-LLM-format adapters landed in v0.2** — native `Anthropic /v1/messages`, Google `generateContent`, Qwen DashScope `/generation` shipped alongside the existing OpenAI-compat client. Route via `LLM_PROVIDER={openai|anthropic|gemini|qwen}`. See `backend/oransim/agents/llm_providers/`.
+- 🎯 **Still on the list for v0.5**:
+  - AWS Bedrock Converse (SigV4 via `boto3`)
+  - Azure OpenAI (`/openai/deployments/{name}/chat/completions`)
+  - xAI Grok (currently usable via OpenAI-compat path)
+  - DeepSeek native (currently usable via OpenAI-compat path)
+  - Native streaming for Anthropic / Gemini / Qwen (only OpenAI-compat streams today)
 
 ### 📊 Data & Benchmarks
 - 🎯 **OrancBench v0.5** — **causal-native redesign** (not just scaling up scenarios). Three new task families that factual-R² baselines fundamentally cannot win:

@@ -1,27 +1,98 @@
-"""Real LLM soul agents — OpenAI-compatible client.
+"""Real LLM soul agents — multi-provider router.
 
-Works with any OpenAI-compatible provider: OpenAI, Anthropic via proxy,
-Google Gemini via proxy, DeepSeek, Qwen DashScope, local vLLM / TGI, etc.
+Routes through :mod:`oransim.agents.llm_providers` so the same call site
+works against any supported provider (OpenAI-compat, Anthropic Messages,
+Google Gemini, Qwen DashScope). Select at runtime with env:
 
-Zero extra deps (uses urllib). Switch via env:
-  LLM_MODE=mock|api         (default: mock)
-  LLM_BASE_URL=...          (default: https://api.openai.com/v1)
-  LLM_API_KEY=...
-  LLM_MODEL=gpt-5.4         (or gpt-4o-mini, deepseek-chat, qwen-turbo,
-                              Qwen/Qwen3-4B-Instruct, etc.)
+  LLM_MODE=mock|api                  (default: mock)
+  LLM_PROVIDER=openai|anthropic|gemini|qwen   (default: openai)
+  LLM_BASE_URL=...                   (OpenAI-compat only; per-provider
+                                       overrides like ANTHROPIC_BASE_URL,
+                                       GEMINI_BASE_URL, DASHSCOPE_BASE_URL)
+  LLM_API_KEY=...                    (or provider-specific:
+                                       OPENAI_API_KEY, ANTHROPIC_API_KEY,
+                                       GEMINI_API_KEY, DASHSCOPE_API_KEY)
+  LLM_MODEL=gpt-5.4 | claude-sonnet-4-6 | gemini-2.5-pro | qwen-plus | ...
 
-Drop-in replacement for SoulAgentPool.infer_one when LLM_MODE=api.
+When ``LLM_PROVIDER=openai`` (the default), behavior is bit-compatible with
+the pre-R-phase client including SSE streaming.
 """
+
 from __future__ import annotations
-import os, json, time, urllib.request, urllib.error
-from typing import Dict, Optional
+
+import json
+import os
+import time
+import urllib.error
+import urllib.request
+from typing import Dict
+
+from .llm_providers import get_provider, resolve_provider_name
 from .soul import Persona
 
 MODE = os.environ.get("LLM_MODE", "mock")
+# Base URL / API key are resolved by the provider registry; kept here for
+# the legacy :func:`llm_info` report and the cost estimator.
 BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1").rstrip("/")
 API_KEY = os.environ.get("LLM_API_KEY", "")
 MODEL = os.environ.get("LLM_MODEL", "gpt-5.4")
 TIMEOUT = float(os.environ.get("LLM_TIMEOUT", "15"))
+
+
+# ---------------------------------------------------------------------------
+# Legacy low-level HTTP helpers (OpenAI-compat only)
+# ---------------------------------------------------------------------------
+#
+# A handful of modules (``competitor_roi``, ``final_report``, ``group_chat``,
+# ``discourse``, ``verdict``, ``data.world_events``) build OpenAI-compat
+# request bodies directly and call these helpers. Phase R introduces the
+# provider registry for the main soul-agent path but leaves these helpers in
+# place so callers aren't forced to migrate in one go. They are explicitly
+# OpenAI-compat and will be retired when those modules move to the registry.
+
+def _http_post(url: str, headers: Dict, body: Dict, timeout: float = TIMEOUT) -> Dict:
+    req = urllib.request.Request(
+        url, data=json.dumps(body).encode("utf-8"),
+        headers=headers, method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return json.loads(r.read().decode("utf-8"))
+
+
+def _http_stream_post(url: str, headers: Dict, body: Dict, timeout: float = TIMEOUT):
+    """Stream SSE chunks from an OpenAI-compatible ``/chat/completions?stream=true``.
+
+    Returns ``(collected_content, usage_dict)``.
+    """
+    body = dict(body); body["stream"] = True
+    headers = dict(headers); headers["Accept"] = "text/event-stream"
+    req = urllib.request.Request(
+        url, data=json.dumps(body).encode("utf-8"),
+        headers=headers, method="POST",
+    )
+    collected: list[str] = []
+    usage: Dict = {}
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        for raw in r:
+            line = raw.decode("utf-8", errors="ignore").strip()
+            if not line or not line.startswith("data:"):
+                continue
+            payload = line[5:].strip()
+            if payload == "[DONE]":
+                break
+            try:
+                chunk = json.loads(payload)
+            except Exception:
+                continue
+            if chunk.get("usage"):
+                usage = chunk["usage"]
+            choices = chunk.get("choices") or []
+            if not choices:
+                continue
+            delta = (choices[0].get("delta") or {}).get("content") or ""
+            if delta:
+                collected.append(delta)
+    return "".join(collected), usage
 
 
 SYSTEM = """你是社媒用户决策的 persona-driven 模拟器。
@@ -49,59 +120,41 @@ PROMPT_TEMPLATE = """<persona>
   "purchase_intent_7d": 0-1之间的小数}}"""
 
 
-def _http_post(url: str, headers: Dict, body: Dict, timeout=TIMEOUT) -> Dict:
-    req = urllib.request.Request(
-        url, data=json.dumps(body).encode("utf-8"),
-        headers=headers, method="POST"
-    )
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read().decode("utf-8"))
-
-
-def _http_stream_post(url: str, headers: Dict, body: Dict, timeout=TIMEOUT):
-    """Stream SSE chunks from an OpenAI-compatible /chat/completions?stream=true.
-    Yields per-chunk dict; returns total collected content + usage at end via
-    final 'end' event.
-    """
-    body = dict(body); body["stream"] = True
-    headers = dict(headers); headers["Accept"] = "text/event-stream"
-    req = urllib.request.Request(
-        url, data=json.dumps(body).encode("utf-8"),
-        headers=headers, method="POST"
-    )
-    collected = []
-    usage = {}
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        for raw in r:
-            line = raw.decode("utf-8", errors="ignore").strip()
-            if not line or not line.startswith("data:"):
-                continue
-            payload = line[5:].strip()
-            if payload == "[DONE]":
-                break
-            try:
-                chunk = json.loads(payload)
-            except Exception:
-                continue
-            if "usage" in chunk and chunk["usage"]:
-                usage = chunk["usage"]
-            choices = chunk.get("choices") or []
-            if not choices:
-                continue
-            delta = (choices[0].get("delta") or {}).get("content") or ""
-            if delta:
-                collected.append(delta)
-    return "".join(collected), usage
+def _provider_key_present() -> bool:
+    """Check whichever env var the *active* provider reads for its key."""
+    name = resolve_provider_name()
+    if name == "openai":
+        return bool(os.environ.get("LLM_API_KEY") or os.environ.get("OPENAI_API_KEY"))
+    if name == "anthropic":
+        return bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("LLM_API_KEY"))
+    if name == "gemini":
+        return bool(
+            os.environ.get("GEMINI_API_KEY")
+            or os.environ.get("GOOGLE_API_KEY")
+            or os.environ.get("LLM_API_KEY")
+        )
+    if name == "qwen_dashscope":
+        return bool(
+            os.environ.get("DASHSCOPE_API_KEY")
+            or os.environ.get("QWEN_API_KEY")
+            or os.environ.get("LLM_API_KEY")
+        )
+    return False
 
 
 def llm_available() -> bool:
-    return MODE == "api" and bool(API_KEY)
+    # Read env live so callers that flip LLM_MODE after import (tests,
+    # long-lived workers that reload config) see the change.
+    return os.environ.get("LLM_MODE", MODE) == "api" and _provider_key_present()
 
 
 def llm_info() -> Dict:
     return {
-        "mode": MODE, "base_url": BASE_URL, "model": MODEL,
-        "api_key_set": bool(API_KEY),
+        "mode": os.environ.get("LLM_MODE", MODE),
+        "provider": resolve_provider_name(),
+        "base_url": os.environ.get("LLM_BASE_URL", BASE_URL),
+        "model": os.environ.get("LLM_MODEL", MODEL),
+        "api_key_set": _provider_key_present(),
     }
 
 
@@ -124,39 +177,31 @@ def soul_infer_llm(
         kol_fans=f"{kol_fans/10000:.1f}万" if kol_fans else "无",
         caption=caption, visual=visual, music=music, duration=duration,
     )
-    body = {
-        "model": MODEL,
-        "messages": [
-            {"role": "system", "content": SYSTEM},
-            {"role": "user",   "content": prompt},
-        ],
-        "temperature": 0.7,
-        "max_tokens": 250,
-    }
-    # Some upstream (OpenAI-compat GPT-5 relay) don't support response_format; omit it.
-    headers = {"Authorization": f"Bearer {API_KEY}",
-               "Content-Type": "application/json"}
     use_stream = os.environ.get("LLM_STREAM", "1") not in ("0", "false", "False")
+    provider = get_provider()
+    # Streaming is an OpenAI-compat optimization; other providers run
+    # buffered until their native streaming surface is wired up.
+    stream_ok = use_stream and resolve_provider_name() == "openai"
     t0 = time.time()
     try:
-        if use_stream:
-            content, usage = _http_stream_post(
-                f"{BASE_URL}/chat/completions", headers, body)
-        else:
-            resp = _http_post(f"{BASE_URL}/chat/completions", headers, body)
-            content = resp["choices"][0]["message"]["content"]
-            usage = resp.get("usage", {})
-        # extract JSON object from content (robust to code-fence wrapping)
-        parsed = _extract_json(content)
-        parsed["_latency_ms"] = int((time.time() - t0) * 1000)
-        parsed["_tokens_in"] = usage.get("prompt_tokens", 0)
-        parsed["_tokens_out"] = usage.get("completion_tokens", 0)
-        parsed["_raw_preview"] = content[:120]
+        result = provider.generate(
+            system=SYSTEM,
+            user=prompt,
+            model=MODEL,
+            temperature=0.7,
+            max_tokens=250,
+            stream=stream_ok,
+        )
+        parsed = _extract_json(result.content)
+        parsed["_latency_ms"] = result.latency_ms or int((time.time() - t0) * 1000)
+        parsed["_tokens_in"] = int(result.usage.get("prompt_tokens", 0) or 0)
+        parsed["_tokens_out"] = int(result.usage.get("completion_tokens", 0) or 0)
+        parsed["_raw_preview"] = result.raw_preview
         return parsed
-    except urllib.error.HTTPError as e:
-        return {"_error": f"HTTP {e.code}: {e.read()[:200].decode(errors='ignore')}"}
     except Exception as e:
-        return {"_error": f"{type(e).__name__}: {e}"}
+        # Surface enough detail for the caller to triage without leaking
+        # raw response bodies (which may include auth echo on some gateways).
+        return {"_error": f"{type(e).__name__}: {str(e)[:200]}"}
 
 
 def _extract_json(s: str) -> Dict:
@@ -181,15 +226,17 @@ def _extract_json(s: str) -> Dict:
 # Cost estimation table (CNY per 1M tokens, rough as of 2025-2026)
 COST_TABLE_CNY = {
     # model substring → (input_per_1m, output_per_1m)
-    "deepseek-chat":    (1.0,  2.0),      # ¥/M tokens (cache miss)
+    "deepseek-chat":    (1.0,  2.0),       # ¥/M tokens (cache miss)
     "deepseek-v3":      (1.0,  2.0),
     "qwen-turbo":       (0.3,  0.6),
     "qwen-plus":        (2.0,  6.0),
     "qwen3":            (0.6,  1.2),
     "gpt-4o-mini":      (1.1,  4.4),       # ~USD0.15/0.60 → CNY
     "gpt-4o":           (18.0, 72.0),
-    "gpt-5":            (0.7,  5.0),        # OpenAI-compat 实测价 (¥0.7/M in · ¥5/M out)
+    "gpt-5":            (0.7,  5.0),       # OpenAI-compat 实测价 (¥0.7/M in · ¥5/M out)
     "claude":           (22.0, 110.0),
+    "gemini-2.5-flash": (2.2,  8.8),       # approx USD0.30/1.20 → CNY
+    "gemini-2.5-pro":   (9.0,  36.0),
 }
 
 

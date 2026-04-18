@@ -64,7 +64,7 @@ python -m http.server 8090 --directory frontend
 # 4. Open http://localhost:8090 → click "🔥 Trending Preset" → "🚀 Predict"
 ```
 
-To use real LLMs, set `LLM_MODE=api` + `LLM_BASE_URL` + `LLM_API_KEY` + `LLM_MODEL`. See [docs/en/quickstart.md](docs/en/quickstart.md).
+To use real LLMs, set `LLM_MODE=api` + `LLM_API_KEY` + `LLM_MODEL`. Select the native request format via `LLM_PROVIDER` (`openai` · `anthropic` · `gemini` · `qwen`); `openai` is the default and also covers DeepSeek / vLLM / any OpenAI-compat gateway. See [docs/en/quickstart.md](docs/en/quickstart.md) and [.env.example](.env.example).
 
 > **Note:** v0.1.0-alpha ships skeleton code only. Full backend (including the web demo and screenshots) lands in v0.2 (see [ROADMAP.md](ROADMAP.md)). Follow the repo to get notified.
 
@@ -323,9 +323,9 @@ See [ROADMAP.md](ROADMAP.md) for the full 3-horizon × 8-theme plan. Teasers:
 
 **v0.5 (Q4 2026 – Q1 2027)**
 - 🎯 **Cross-platform transfer learning** — pretrain on XHS, fine-tune on TikTok
-- 🎯 **Multi-LLM-format adapters** — native Anthropic Messages, Gemini, Bedrock, Qwen DashScope
+- ✅ **Multi-LLM-format adapters** — native Anthropic Messages, Gemini, Qwen DashScope shipped in v0.2; Bedrock Converse + native streaming roadmap item
 - 🎯 **10k soul agents on Ray cluster**
-- Instagram / YouTube Shorts / Douyin adapters MVP
+- ✅ Instagram / YouTube Shorts / Douyin adapters MVP
 
 **v1.0+ (2027)**
 - 🎯 **Causal Foundation Model** — pretrain on 10M+ campaigns

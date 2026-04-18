@@ -62,7 +62,7 @@ python -m http.server 8090 --directory frontend
 # 4. 浏览器打开 http://localhost:8090 → 点 "🔥 爆款预设" → "🚀 预测"
 ```
 
-想用真 LLM？设置 `LLM_MODE=api` + `LLM_BASE_URL` + `LLM_API_KEY` + `LLM_MODEL`。详见 [docs/zh/quickstart.md](docs/zh/quickstart.md)。
+想用真 LLM？设置 `LLM_MODE=api` + `LLM_API_KEY` + `LLM_MODEL`。用 `LLM_PROVIDER` 选原生格式（`openai` · `anthropic` · `gemini` · `qwen`）；`openai` 是默认值，也覆盖 DeepSeek / vLLM / 任何 OpenAI-compat 网关。详见 [docs/zh/quickstart.md](docs/zh/quickstart.md) 与 [.env.example](.env.example)。
 
 > **注意**：v0.1.0-alpha 只含骨架代码，完整后端（含前端 demo 和截图）在 v0.2 到位（见 [ROADMAP.md](ROADMAP.md)）。关注仓库等待后续更新。
 
@@ -321,9 +321,9 @@ Phase 1 基线在 **10 万条合成数据**上训练 —— 详见 [`data/models
 
 **v0.5（2026 Q4 – 2027 Q1）**
 - 🎯 **跨平台迁移学习** —— XHS 预训 → TikTok fine-tune
-- 🎯 **多 LLM 原生格式** —— Anthropic Messages / Gemini / Bedrock / Qwen DashScope
+- ✅ **多 LLM 原生格式** —— Anthropic Messages / Gemini / Qwen DashScope 已在 v0.2 落地；Bedrock Converse + 原生流式留在路线图
 - 🎯 **10k 灵魂 Agent 跑 Ray 集群**
-- Instagram / YouTube Shorts / Douyin adapter MVP
+- ✅ Instagram / YouTube Shorts / Douyin adapter MVP
 
 **v1.0+（2027）**
 - 🎯 **因果基础模型 Causal Foundation Model** —— 千万级跨行业 campaign 预训练
