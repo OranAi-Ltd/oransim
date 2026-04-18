@@ -85,8 +85,14 @@ class ScenarioRunner:
         self,
         scenario: Scenario,
         fixed_u: dict[str, np.ndarray] | None = None,
+        fixed_idx: dict[str, np.ndarray] | None = None,
         n_monte_carlo: int = 1,
     ) -> ScenarioResult:
+        """Run scenario. If doing counterfactual, pass `fixed_u` (per-platform
+        abducted noise) + `fixed_idx` (per-platform agent indices the noise
+        was sampled against). Keeping idx in a separate dict avoids the old
+        `plat + "_idx"` key-mangling which could collide when platform names
+        themselves contain underscores (e.g. ``youtube_shorts``)."""
         per_platform = {}
         abducted_u = {}
         agent_idx_by_platform = {}
@@ -108,11 +114,12 @@ class ScenarioRunner:
             fu = None
             if fixed_u is not None and plat in fixed_u:
                 pre_u = fixed_u[plat]
+                prior_idx = (fixed_idx or {}).get(plat, imp.agent_idx)
                 # Align noise to current impression agents (intersection by agent idx)
                 pre_map = {
                     int(ai): u
                     for ai, u in zip(
-                        fixed_u[plat + "_idx"] if plat + "_idx" in fixed_u else imp.agent_idx, pre_u
+                        prior_idx, pre_u
                     )
                 }
                 fu = np.array([pre_map.get(int(a), 0.0) for a in imp.agent_idx], dtype=np.float32)
@@ -196,9 +203,10 @@ class ScenarioRunner:
             cf.kol_per_platform = intervention["kol_per_platform"]
         cf.seed = baseline.seed + 777
 
-        # Pack abducted U with agent indices so we can re-align on new impression selection
-        fixed_u = dict(baseline_result.abducted_u)
-        for plat, idx in baseline_result.agent_idx_by_platform.items():
-            fixed_u[plat + "_idx"] = idx
-
-        return self.run(cf, fixed_u=fixed_u, n_monte_carlo=5)
+        # Keep noise and per-platform idx in separate dicts (see run() docstring).
+        return self.run(
+            cf,
+            fixed_u=dict(baseline_result.abducted_u),
+            fixed_idx=dict(baseline_result.agent_idx_by_platform),
+            n_monte_carlo=5,
+        )
