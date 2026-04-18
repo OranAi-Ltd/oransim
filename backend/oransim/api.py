@@ -874,11 +874,28 @@ def predict(req: PredictRequest):
         p: {k: round(float(v), 4) for k, v in d["kpi"].items()}
         for p, d in result.per_platform.items()
     }
-    # Schema-aligned structured outputs were migrated as a stub; removed from
-    # v0.2 until a clean OSS re-implementation lands. The predict response
-    # still carries every primary field (kpis / per_platform / soul_quotes /
-    # lifecycle / extras / predicted_sentiment).
-    schema_outputs = {}
+    try:
+        from .agents.schema_outputs import build_schema_outputs
+        schema_outputs = build_schema_outputs(
+            kpis=kpis_out, lifecycle=lifecycle, soul_quotes=souls,
+            per_platform=per_platform_out, predicted_sentiment=predicted_sentiment,
+            extras=extras, scenario_summary=scenario_summary_out,
+            competitors=req.competitors,
+            own_brand=req.own_brand, category=req.category,
+            target_niches=req.target_niches,
+            enable_competitor_llm=bool(req.competitors),
+            enable_kol_ilp=req.enable_kol_ilp,
+            enable_search_elasticity=req.enable_search_elasticity,
+        )
+        from .agents.final_report import build_final_report
+        schema_outputs["report_strategy_case"] = build_final_report(
+            scenario=scenario_summary_out, kpis=kpis_out,
+            predicted_sentiment=predicted_sentiment,
+            schema_outputs=schema_outputs,
+            use_llm=bool(req.use_llm),
+        )
+    except Exception as e:
+        schema_outputs = {"_error": str(e)}
 
     return {
         "scenario_summary": scenario_summary_out,

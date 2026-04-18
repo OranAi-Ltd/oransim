@@ -405,6 +405,7 @@
         <div class="tab" data-tab="dag" onclick="setTab('dag'); toggleTabMore()" style="display:block; border:0; padding:8px 14px;">🕸️ SCM 因果图</div>
         <div class="tab" data-tab="cate" onclick="setTab('cate'); toggleTabMore()" style="display:block; border:0; padding:8px 14px;">📊 CATE 异质效应</div>
         <div class="tab" data-tab="v1" onclick="setTab('v1'); toggleTabMore()" style="display:block; border:0; padding:8px 14px;">∞ V1 CCG 架构</div>
+        <div class="tab" data-tab="schema" onclick="setTab('schema'); toggleTabMore()" style="display:block; border:0; padding:8px 14px;">📋 结构化输出</div>
       </div>
     </div>
 
@@ -522,6 +523,13 @@
       <div id="cate-empty-hint" style="padding:14px; color:var(--muted); text-align:center; font-size:12px;">
         💡 还未触发反事实 — 去左侧 "② 反事实沙盘" 拉一下"总预算"或"抖音 %"滑块试试。
       </div>
+    </div>
+
+    <div id="tab-schema" style="display:none;">
+      <div class="hint" style="padding:8px; background:#0f141c; border-radius:4px; border-left:3px solid #a855f7;">
+        <b style="color:#a855f7">📋 结构化输出</b>：从当前预测状态派生的各维度表格（漏斗 β 拟合 / 扩散模拟 / persona / 涌现指标 / 敏感性分析 / 策略报告），零额外 LLM 调用。
+      </div>
+      <div id="schema-content" style="font-size:11px;"></div>
     </div>
 
   </section>
@@ -783,6 +791,8 @@ async function runPredict() {
   }).catch(()=>{});
   renderMacro(pred.macro);
   renderPredictedSentiment(pred.predicted_sentiment);
+  window.LAST_SCHEMA = pred.schema_outputs;
+  renderSchemaOutputs(pred.schema_outputs);
   renderSouls(pred.soul_quotes);
   if (pred.lifecycle) drawLifecycle(pred.lifecycle);
   renderFrontier(pred.extras || {});
@@ -1829,7 +1839,7 @@ async function undo() {
 
 function setTab(name) {
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active", t.dataset.tab===name));
-  ["kpi","life","chat","front","v1","society","dag","cate"].forEach(n=>{
+  ["kpi","life","chat","front","v1","society","dag","cate","schema"].forEach(n=>{
     const el = document.getElementById("tab-"+n);
     if (el) el.style.display = (n===name) ? "" : "none";
   });
@@ -1837,6 +1847,7 @@ function setTab(name) {
   if (name === "v1") refreshUEB();
   if (name === "chat" && window.LAST_GROUPCHAT) renderGroupChat(window.LAST_GROUPCHAT);
   if (name === "society" && !window.SOCIETY_LOADED) renderSociety(30000);
+  if (name === "schema" && window.LAST_SCHEMA) renderSchemaOutputs(window.LAST_SCHEMA);
 }
 
 function toggleTabMore(ev) {
