@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" role="img" aria-label="Oransim architecture">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4a4a"/>
+    </marker>
+    <style>
+      .box { fill:#ffffff; stroke:#1a2a4a; stroke-width:2; }
+      .box-orange { fill:#FFF4EC; stroke:#FF6B35; stroke-width:2; }
+      .box-blue { fill:#EBF1F8; stroke:#004E89; stroke-width:2; }
+      .label { font-family: 'Inter', Arial, sans-serif; font-size: 14px; font-weight:600; fill:#1a2a4a; text-anchor:middle; }
+      .sublabel { font-family: 'Inter', Arial, sans-serif; font-size: 11px; fill:#4a4a4a; text-anchor:middle; }
+      .arrow { stroke:#4a4a4a; stroke-width:2; fill:none; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <!-- Row 1: Input -->
+  <rect class="box-orange" x="40" y="40" width="180" height="80" rx="8"/>
+  <text class="label" x="130" y="72">Creative + Budget</text>
+  <text class="sublabel" x="130" y="92">caption, image, video,</text>
+  <text class="sublabel" x="130" y="106">platform alloc, KOLs</text>
+
+  <!-- Row 2: Platform Adapter + Data Provider -->
+  <rect class="box-blue" x="280" y="40" width="200" height="80" rx="8"/>
+  <text class="label" x="380" y="68">PlatformAdapter</text>
+  <text class="sublabel" x="380" y="88">XHS · TikTok · Instagram</text>
+  <text class="sublabel" x="380" y="104">YouTube Shorts · Douyin</text>
+
+  <rect class="box-blue" x="280" y="150" width="200" height="60" rx="8"/>
+  <text class="label" x="380" y="175">DataProvider</text>
+  <text class="sublabel" x="380" y="195">Synthetic / CSV / JSON / REST</text>
+
+  <!-- Row 3: World Model -->
+  <rect class="box" x="540" y="40" width="180" height="80" rx="8"/>
+  <text class="label" x="630" y="68">World Model</text>
+  <text class="sublabel" x="630" y="88">LightGBM Quantile</text>
+  <text class="sublabel" x="630" y="104">P35/P50/P65</text>
+
+  <!-- Row 4: Agents -->
+  <rect class="box" x="540" y="150" width="180" height="80" rx="8"/>
+  <text class="label" x="630" y="178">Agent Layer</text>
+  <text class="sublabel" x="630" y="198">1M IPF + 10k LLM</text>
+  <text class="sublabel" x="630" y="214">personas + discourse</text>
+
+  <!-- Row 5: Causal -->
+  <rect class="box" x="540" y="260" width="180" height="80" rx="8"/>
+  <text class="label" x="630" y="288">Causal Engine</text>
+  <text class="sublabel" x="630" y="308">SCM + Pearl 3-step</text>
+  <text class="sublabel" x="630" y="324">counterfactual + CATE</text>
+
+  <!-- Row 6: Diffusion -->
+  <rect class="box" x="540" y="370" width="180" height="80" rx="8"/>
+  <text class="label" x="630" y="398">Diffusion</text>
+  <text class="sublabel" x="630" y="418">Hawkes process</text>
+  <text class="sublabel" x="630" y="434">14-day forecast</text>
+
+  <!-- Output -->
+  <rect class="box-orange" x="820" y="205" width="240" height="100" rx="8"/>
+  <text class="label" x="940" y="240">Prediction JSON</text>
+  <text class="sublabel" x="940" y="262">14~19 schemas · counterfactuals</text>
+  <text class="sublabel" x="940" y="280">per-platform KPIs · diffusion curve</text>
+  <text class="sublabel" x="940" y="297">soul-agent feedback · mediators</text>
+
+  <!-- Arrows -->
+  <path class="arrow" d="M 220 80 L 280 80"/>
+  <path class="arrow" d="M 380 120 L 380 150"/>
+  <path class="arrow" d="M 480 80 L 540 80"/>
+  <path class="arrow" d="M 720 80 L 770 80 L 770 240 L 820 240"/>
+  <path class="arrow" d="M 720 190 L 820 240"/>
+  <path class="arrow" d="M 720 300 L 820 280"/>
+  <path class="arrow" d="M 720 410 L 820 305"/>
+</svg>

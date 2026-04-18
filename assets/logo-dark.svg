@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Oransim logo (dark variant)">
+  <title>Oransim</title>
+  <defs>
+    <linearGradient id="orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF8A3C"/>
+      <stop offset="100%" stop-color="#FF6B35"/>
+    </linearGradient>
+    <radialGradient id="pupil" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1a2a4a"/>
+      <stop offset="100%" stop-color="#004E89"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="#0d1117"/>
+
+  <circle cx="256" cy="256" r="220" fill="url(#orange)"/>
+  <path d="M 256,40 Q 280,10 320,30 Q 300,60 256,80 Z" fill="#2e7d32"/>
+
+  <g transform="translate(256,280)" fill="#ffffff" stroke="#ffffff" stroke-width="3">
+    <circle cx="-90" cy="-40" r="14"/>
+    <circle cx="0" cy="-80" r="14"/>
+    <circle cx="90" cy="-40" r="14"/>
+    <circle cx="-60" cy="40" r="14"/>
+    <circle cx="60" cy="40" r="14"/>
+    <circle cx="0" cy="90" r="14" fill="url(#pupil)"/>
+
+    <line x1="-90" y1="-40" x2="0" y2="-80" stroke-width="5"/>
+    <line x1="0" y1="-80" x2="90" y2="-40" stroke-width="5"/>
+    <line x1="-90" y1="-40" x2="-60" y2="40" stroke-width="5"/>
+    <line x1="90" y1="-40" x2="60" y2="40" stroke-width="5"/>
+    <line x1="-60" y1="40" x2="0" y2="90" stroke-width="5"/>
+    <line x1="60" y1="40" x2="0" y2="90" stroke-width="5"/>
+    <line x1="0" y1="-80" x2="0" y2="90" stroke-width="5" stroke-dasharray="6,6" opacity="0.6"/>
+  </g>
+</svg>

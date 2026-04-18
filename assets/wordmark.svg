@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" role="img" aria-label="Oransim wordmark">
+  <title>Oransim</title>
+  <defs>
+    <linearGradient id="orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF8A3C"/>
+      <stop offset="100%" stop-color="#FF6B35"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon: small orange with graph -->
+  <g transform="translate(20,20) scale(0.31)">
+    <circle cx="256" cy="256" r="220" fill="url(#orange)"/>
+    <g transform="translate(256,280)" fill="#ffffff" stroke="#ffffff" stroke-width="3">
+      <circle cx="-90" cy="-40" r="14"/>
+      <circle cx="0" cy="-80" r="14"/>
+      <circle cx="90" cy="-40" r="14"/>
+      <circle cx="-60" cy="40" r="14"/>
+      <circle cx="60" cy="40" r="14"/>
+      <circle cx="0" cy="90" r="14" fill="#004E89"/>
+      <line x1="-90" y1="-40" x2="0" y2="-80" stroke-width="5"/>
+      <line x1="0" y1="-80" x2="90" y2="-40" stroke-width="5"/>
+      <line x1="-90" y1="-40" x2="-60" y2="40" stroke-width="5"/>
+      <line x1="90" y1="-40" x2="60" y2="40" stroke-width="5"/>
+      <line x1="-60" y1="40" x2="0" y2="90" stroke-width="5"/>
+      <line x1="60" y1="40" x2="0" y2="90" stroke-width="5"/>
+    </g>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="200" y="120"
+        font-family="'Inter', 'Helvetica Neue', Arial, sans-serif"
+        font-weight="800"
+        font-size="90"
+        letter-spacing="-2"
+        fill="#1a2a4a">ORANSIM</text>
+
+  <!-- Tagline -->
+  <text x="200" y="160"
+        font-family="'Inter', 'Helvetica Neue', Arial, sans-serif"
+        font-weight="400"
+        font-size="22"
+        fill="#FF6B35">Causal Digital Twin for Marketing</text>
+</svg>

@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img" aria-label="Oransim social preview">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#1a2a4a"/>
+    </linearGradient>
+    <linearGradient id="orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF8A3C"/>
+      <stop offset="100%" stop-color="#FF6B35"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#bg)"/>
+
+  <!-- Decorative grid -->
+  <g opacity="0.08" stroke="#ffffff" stroke-width="1">
+    <path d="M 0 160 H 1280 M 0 320 H 1280 M 0 480 H 1280"/>
+    <path d="M 320 0 V 640 M 640 0 V 640 M 960 0 V 640"/>
+  </g>
+
+  <!-- Large orange + causal graph on left -->
+  <g transform="translate(100,130)">
+    <circle cx="180" cy="180" r="180" fill="url(#orange)"/>
+    <path d="M 180,-10 Q 220,-40 270,-20 Q 240,30 180,40 Z" fill="#2e7d32"/>
+    <g transform="translate(180,200)" fill="#ffffff" stroke="#ffffff" stroke-width="3">
+      <circle cx="-70" cy="-30" r="11"/>
+      <circle cx="0" cy="-60" r="11"/>
+      <circle cx="70" cy="-30" r="11"/>
+      <circle cx="-45" cy="30" r="11"/>
+      <circle cx="45" cy="30" r="11"/>
+      <circle cx="0" cy="70" r="11" fill="#004E89"/>
+      <line x1="-70" y1="-30" x2="0" y2="-60" stroke-width="4"/>
+      <line x1="0" y1="-60" x2="70" y2="-30" stroke-width="4"/>
+      <line x1="-70" y1="-30" x2="-45" y2="30" stroke-width="4"/>
+      <line x1="70" y1="-30" x2="45" y2="30" stroke-width="4"/>
+      <line x1="-45" y1="30" x2="0" y2="70" stroke-width="4"/>
+      <line x1="45" y1="30" x2="0" y2="70" stroke-width="4"/>
+    </g>
+  </g>
+
+  <!-- Text block on right -->
+  <g>
+    <text x="540" y="220"
+          font-family="'Inter', 'Helvetica Neue', Arial, sans-serif"
+          font-weight="800" font-size="110" letter-spacing="-3"
+          fill="#ffffff">ORANSIM</text>
+    <text x="540" y="290"
+          font-family="'Inter', 'Helvetica Neue', Arial, sans-serif"
+          font-weight="600" font-size="36"
+          fill="#FF6B35">Causal Digital Twin for Marketing at Scale</text>
+    <text x="540" y="360"
+          font-family="'Inter', 'Helvetica Neue', Arial, sans-serif"
+          font-weight="400" font-size="26"
+          fill="#cfcfcf">Predict any marketing decision before you spend a dollar.</text>
+    <text x="540" y="410"
+          font-family="'Inter', 'Helvetica Neue', Arial, sans-serif"
+          font-weight="400" font-size="20"
+          fill="#a0a0a0">Pearl-style SCM · Agent-based simulation · Hawkes diffusion · LLM personas</text>
+
+    <!-- Stat pills -->
+    <g font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="600">
+      <rect x="540" y="460" width="160" height="44" rx="22" fill="rgba(255,107,53,0.15)" stroke="#FF6B35"/>
+      <text x="620" y="489" text-anchor="middle" fill="#FF6B35">1M virtual users</text>
+
+      <rect x="716" y="460" width="160" height="44" rx="22" fill="rgba(255,107,53,0.15)" stroke="#FF6B35"/>
+      <text x="796" y="489" text-anchor="middle" fill="#FF6B35">10k LLM personas</text>
+
+      <rect x="892" y="460" width="200" height="44" rx="22" fill="rgba(255,107,53,0.15)" stroke="#FF6B35"/>
+      <text x="992" y="489" text-anchor="middle" fill="#FF6B35">64-node SCM / 117 edges</text>
+    </g>
+
+    <text x="540" y="560"
+          font-family="'Inter', 'Helvetica Neue', Arial, sans-serif"
+          font-weight="500" font-size="18"
+          fill="#808080">github.com/oranai/oransim · Apache-2.0</text>
+  </g>
+</svg>
