@@ -6,56 +6,225 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
   :root {
-    --bg:#0b0e14; --panel:#141922; --border:#222a38; --fg:#e6e8ee;
-    --muted:#8b93a7; --accent:#6ea8fe; --good:#5ed39b; --bad:#ff7a85; --warn:#ffc857;
+    --bg:#0a0d14; --bg-2:#11151f;
+    --panel: rgba(22, 28, 42, 0.72);
+    --panel-solid:#141a28;
+    --border: rgba(110, 168, 254, 0.12);
+    --border-strong: rgba(110, 168, 254, 0.25);
+    --fg:#e9ecf4; --fg-dim:#c3cad9;
+    --muted:#7b869c;
+    --accent:#6ea8fe; --accent-2:#a855f7;
+    --good:#22c55e; --bad:#ef4444; --warn:#f5b542;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,.25);
+    --shadow-md: 0 8px 24px rgba(0,0,0,.35);
+    --shadow-glow: 0 0 40px rgba(110,168,254,.15);
+    --r-lg: 14px; --r-md: 10px; --r-sm: 6px;
+    --grad-primary: linear-gradient(135deg, #6ea8fe 0%, #a855f7 100%);
   }
   * { box-sizing:border-box; }
-  body { margin:0; font-family: -apple-system,"PingFang SC",BlinkMacSystemFont,"Segoe UI",sans-serif;
-         background:var(--bg); color:var(--fg); font-size:14px; }
-  header { padding:14px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:20px; }
-  header h1 { font-size:18px; margin:0; font-weight:600; letter-spacing:0.5px; }
-  header .tag { color:var(--muted); font-size:12px; }
-  main { display:grid; grid-template-columns: 360px 1fr 360px; gap:16px; padding:16px; height: calc(100vh - 54px); overflow:hidden; }
-  .panel { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:18px; overflow:auto; }
-  .panel h3 { margin:0 0 14px; font-size:17px; color:var(--accent); font-weight:600; letter-spacing:0.1px; }
-  .panel h3 + .hint, .panel h3 + .sub { font-size:12px; color:var(--muted); margin-top:-8px; margin-bottom:10px; }
-  label { display:block; margin:8px 0 4px; color:var(--muted); font-size:12px; }
-  input[type=text], textarea, select, input[type=number] {
-    width:100%; background:#0f141c; color:var(--fg); border:1px solid var(--border);
-    border-radius:4px; padding:6px 8px; font: inherit;
+  html, body { margin:0; padding:0; }
+  body {
+    font-family: -apple-system, "PingFang SC", BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
+    font-size: 14px;
+    color: var(--fg);
+    background:
+      radial-gradient(1200px 800px at 10% -10%, rgba(110,168,254,.08), transparent 60%),
+      radial-gradient(900px 700px at 100% 110%, rgba(168,85,247,.06), transparent 60%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
-  textarea { resize:vertical; min-height:64px; }
-  button { background:var(--accent); color:#0b0e14; border:0; border-radius:4px;
-           padding:8px 14px; font-weight:600; cursor:pointer; }
-  button:hover { background:#9ec1ff; }
-  button.secondary { background:transparent; color:var(--fg); border:1px solid var(--border); }
-  .kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:10px 0; }
-  .kpi { background:#0f141c; padding:10px; border-radius:6px; text-align:center; }
-  .kpi .v { font-size:20px; font-weight:700; }
-  .kpi .l { font-size:11px; color:var(--muted); margin-top:3px; }
-  .kpi .d { font-size:11px; margin-top:2px; }
-  .delta-up { color:var(--good); }
-  .delta-down { color:var(--bad); }
-  .slider-row { display:grid; grid-template-columns: 70px 1fr 50px; gap:8px; align-items:center; margin:8px 0; }
-  input[type=range] { width:100%; }
-  .soul { background:#0f141c; padding:8px 10px; margin:6px 0; border-radius:6px; border-left:3px solid var(--accent); font-size:13px; }
-  .soul.skip { border-left-color:var(--bad); }
-  .soul .oneliner { color:var(--muted); font-size:11px; margin-bottom:3px; }
-  .soul .reason { color:var(--fg); }
-  .soul .comment { color:var(--warn); font-style:italic; font-size:12px; margin-top:2px; }
-  svg { width:100%; height:100%; }
-  .node rect { fill:#0f141c; stroke:var(--border); stroke-width:1; }
-  .node.intervenable rect { stroke:var(--accent); }
-  .node text { fill:var(--fg); font-size:11px; }
-  .edge { stroke:var(--border); stroke-width:1.2; fill:none; marker-end:url(#arr); }
-  .badge { display:inline-block; background:#23304a; color:var(--accent); padding:2px 6px; border-radius:3px; font-size:11px; }
-  .seg { font-size:12px; padding:4px 6px; background:#0f141c; border-radius:4px; margin:3px 0; display:flex; justify-content:space-between; }
-  .tab-row { display:flex; gap:4px; margin-bottom:14px; border-bottom:1px solid var(--border); }
-  .tab { padding:8px 14px; cursor:pointer; color:var(--muted); border-bottom:2px solid transparent; font-size:13px; font-weight:500; transition:color 120ms ease; }
-  .tab:hover { color:var(--fg); }
-  .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
-  .hint { color:var(--muted); font-size:11px; margin-top:4px; line-height:1.5; }
-  #log { font-size:11px; color:var(--muted); max-height:160px; overflow:auto; font-family: Menlo, monospace; padding:6px; background:#0b0e14; border-radius:4px; margin-top:6px; }
+  header {
+    padding: 14px 28px; display: flex; align-items: center; gap: 20px;
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    background: rgba(12, 16, 26, 0.72);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  header h1 {
+    font-size: 18px; margin: 0; font-weight: 600; letter-spacing: 0.2px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--grad-primary);
+    box-shadow: 0 0 12px rgba(110,168,254,.8);
+  }
+  header .tag { color: var(--muted); font-size: 12px; }
+  header .api-pill {
+    padding: 4px 10px; border-radius: 999px;
+    background: rgba(94,211,155,.08); border: 1px solid rgba(94,211,155,.2);
+    color: #8fe0b3;
+  }
+
+  main { display:grid; grid-template-columns: 360px 1fr 360px; gap:18px; padding:18px; overflow:hidden; }
+
+  .panel {
+    background: var(--panel);
+    backdrop-filter: blur(18px) saturate(1.3);
+    -webkit-backdrop-filter: blur(18px) saturate(1.3);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 18px 16px;
+    overflow: auto;
+    box-shadow: var(--shadow-md);
+    transition: border-color 180ms ease;
+  }
+  .panel:hover { border-color: var(--border-strong); }
+  .panel h3 {
+    margin: 0 0 14px; font-size: 16px; font-weight: 600; letter-spacing: 0.1px;
+    background: var(--grad-primary); -webkit-background-clip: text;
+    background-clip: text; color: transparent;
+  }
+  .panel h3 + .hint, .panel h3 + .sub { font-size: 12px; color: var(--muted); margin-top:-8px; margin-bottom:10px; }
+
+  label {
+    display: block; margin: 10px 0 5px;
+    color: var(--muted); font-size: 11.5px;
+    letter-spacing: 0.3px; text-transform: uppercase; font-weight: 500;
+  }
+  input[type=text], textarea, select, input[type=number] {
+    width: 100%; background: rgba(10,13,20,.65); color: var(--fg);
+    border: 1px solid var(--border); border-radius: var(--r-sm);
+    padding: 8px 11px; font: inherit;
+    transition: border-color 160ms, background 160ms;
+  }
+  input[type=text]:focus, textarea:focus, select:focus, input[type=number]:focus {
+    outline: none; border-color: var(--accent); background: rgba(14,19,30,.85);
+  }
+  textarea { resize: vertical; min-height: 72px; }
+
+  button {
+    background: var(--grad-primary); color: #0a0d14;
+    border: 0; border-radius: var(--r-sm);
+    padding: 9px 16px; font-weight: 600; font-size: 13px;
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 160ms ease, filter 120ms;
+    box-shadow: 0 4px 14px rgba(110,168,254,.25);
+  }
+  button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(110,168,254,.38); filter: brightness(1.08); }
+  button:active { transform: translateY(0); }
+  button.secondary {
+    background: rgba(255,255,255,.04); color: var(--fg);
+    border: 1px solid var(--border); box-shadow: none; font-weight: 500;
+  }
+  button.secondary:hover {
+    background: rgba(110,168,254,.08); border-color: var(--border-strong);
+    transform: translateY(-1px); box-shadow: var(--shadow-sm);
+  }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 12px 0; }
+  .kpi {
+    background: rgba(14,19,30,.7); border: 1px solid var(--border);
+    padding: 14px 10px; border-radius: var(--r-md);
+    text-align: center;
+    transition: transform 180ms ease, border-color 180ms ease;
+    position: relative; overflow: hidden;
+  }
+  .kpi::before {
+    content: ""; position: absolute; inset: 0; border-radius: var(--r-md);
+    background: linear-gradient(135deg, rgba(110,168,254,.06), transparent 60%);
+    pointer-events: none;
+  }
+  .kpi:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+  .kpi .v {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.3px;
+    background: var(--grad-primary); -webkit-background-clip: text;
+    background-clip: text; color: transparent;
+  }
+  .kpi .l { font-size: 10.5px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .kpi .d { font-size: 11px; margin-top: 3px; font-weight: 500; }
+  .delta-up { color: var(--good); }
+  .delta-down { color: var(--bad); }
+
+  .slider-row { display: grid; grid-template-columns: 80px 1fr 56px; gap: 10px; align-items: center; margin: 10px 0; }
+  .slider-row > span:first-child { font-size: 12px; color: var(--muted); }
+  .slider-row > span:last-child  { font-size: 12px; color: var(--fg); font-weight: 500; text-align: right; }
+  input[type=range] {
+    width: 100%; height: 4px; appearance: none; -webkit-appearance: none;
+    background: var(--border-strong); border-radius: 999px;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    appearance: none; -webkit-appearance: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); cursor: pointer;
+    box-shadow: 0 0 8px rgba(110,168,254,.6);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 0; cursor: pointer;
+    box-shadow: 0 0 8px rgba(110,168,254,.6);
+  }
+
+  .soul {
+    background: rgba(14,19,30,.65); padding: 10px 12px; margin: 8px 0;
+    border-radius: var(--r-md);
+    border-left: 3px solid var(--accent);
+    font-size: 13px; line-height: 1.55;
+    transition: background 160ms;
+  }
+  .soul:hover { background: rgba(18,24,38,.85); }
+  .soul.skip { border-left-color: var(--bad); }
+  .soul .oneliner { color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+  .soul .reason { color: var(--fg); }
+  .soul .comment { color: var(--warn); font-style: italic; font-size: 12px; margin-top: 3px; }
+
+  svg { width: 100%; height: 100%; }
+  .node rect { fill: rgba(14,19,30,.8); stroke: var(--border); stroke-width: 1; }
+  .node.intervenable rect { stroke: var(--accent); }
+  .node text { fill: var(--fg); font-size: 11px; }
+  .edge { stroke: rgba(110,168,254,.3); stroke-width: 1.2; fill: none; marker-end: url(#arr); }
+
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 500;
+    background: rgba(110,168,254,.12); color: var(--accent);
+    border: 1px solid rgba(110,168,254,.2);
+  }
+  .seg {
+    font-size: 12px; padding: 6px 10px;
+    background: rgba(14,19,30,.6); border: 1px solid var(--border);
+    border-radius: var(--r-sm); margin: 4px 0;
+    display: flex; justify-content: space-between;
+    transition: border-color 160ms;
+  }
+  .seg:hover { border-color: var(--border-strong); }
+
+  .tab-row { display: flex; gap: 2px; margin-bottom: 14px; border-bottom: 1px solid var(--border); position: relative; }
+  .tab {
+    padding: 8px 14px; cursor: pointer; color: var(--muted);
+    border-bottom: 2px solid transparent;
+    font-size: 12.5px; font-weight: 500;
+    transition: color 160ms, border-color 160ms;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--fg); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .hint { color: var(--muted); font-size: 11.5px; margin-top: 6px; line-height: 1.6; }
+
+  #log {
+    font-size: 11px; color: var(--muted);
+    max-height: 160px; overflow: auto;
+    font-family: "JetBrains Mono", Menlo, monospace;
+    padding: 8px 10px; background: rgba(5,8,14,.7);
+    border: 1px solid var(--border); border-radius: var(--r-sm);
+    margin-top: 8px;
+  }
+
+  details > summary {
+    cursor: pointer; padding: 6px 0; font-size: 12px;
+    color: var(--accent); list-style: none; transition: color 160ms;
+  }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary:hover { color: #9ec1ff; }
+  details[open] > summary { margin-bottom: 8px; }
+
+  .panel::-webkit-scrollbar { width: 6px; height: 6px; }
+  .panel::-webkit-scrollbar-track { background: transparent; }
+  .panel::-webkit-scrollbar-thumb { background: rgba(110,168,254,.18); border-radius: 999px; }
+  .panel::-webkit-scrollbar-thumb:hover { background: rgba(110,168,254,.35); }
 
   /* ── Hero section (T-A) ─────────────────────────────────────────────── */
   #hero {
@@ -187,9 +356,9 @@
 <body>
 
 <header>
-  <h1>🧠 Oransim</h1>
-  <span class="tag">百万级智能体 × 因果反事实 × 社媒广告效果预测 · MVP</span>
-  <span style="margin-left:auto" class="tag">API: <span id="api-status">…</span></span>
+  <h1><span class="logo-dot"></span>Oransim</h1>
+  <span class="tag">百万智能体 × 因果反事实 × 社媒广告效果预测</span>
+  <span style="margin-left:auto" class="tag api-pill">API · <span id="api-status">…</span></span>
 </header>
 
 <!-- ── Hero (T-A) · 100 万智能体意见传播背景 + 单 CTA ─────────────────── -->
@@ -2626,19 +2795,57 @@ function stopOpinionCascade(key) {
   CASCADE_INSTANCES.delete(k);
 }
 
-// ─── 「🌊 舆论波」按钮：运行新引擎 8 秒版 ─────────────────────────────
+// ─── 「🌊 舆论波」按钮：12 秒三幕剧叙事版 ─────────────────────────────
+// KOL 种子发声 → 一级扩散 → 级联触发，每一幕都说清楚在做什么 + 实时
+// 触达计数。粒子同时 drift + sparse connect，观感更"活"。
 function animateSociety() {
   if (!SOCIETY_DATA) { renderSociety(30000); return; }
   const c = document.getElementById("society-canvas");
+  const infected = new Set();
+  const t0 = performance.now();
+
   const key = runOpinionCascade(c, SOCIETY_DATA, {
-    initialWaves: 6, primaryBurst: 3, primaryIntervalMs: 1800,
+    initialWaves: 5, primaryBurst: 2, primaryIntervalMs: 2200,
+    waveSpeed: 0.16, waveThick: 0.04, waveTau: 3.5,
+    cascadeProb: 0.005, maxWaves: 60,
+    trailFill: 'rgba(10,14,22,0.14)',
+    drift: true, driftSpeed: 0.008,
+    connect: { threshold: 0.048, alphaMax: 0.15, rgb: "110,150,200" },
   });
-  const el = document.getElementById("society-stats");
-  if (el) el.innerHTML = "🌊 意见在 100 万智能体网络传播中（8 秒，含级联触发）...";
+
+  const state = CASCADE_INSTANCES.get(key);
+  const statsEl = document.getElementById("society-stats");
+  const phases = [
+    { t: 0,    text: "🌊 <b>Act I</b> · 5 个 KOL 种子发声（四种立场按色）· <span style='color:#22c55e'>绿</span>=好感 <span style='color:#a855f7'>紫</span>=强购意 <span style='color:#ef4444'>红</span>=厌恶 <span style='color:#6ea8fe'>蓝</span>=观望" },
+    { t: 2500, text: "⚡ <b>Act II</b> · 一级扩散 · 波前碰到粉丝就点亮立场色 · 粒子漂移模拟 persona 在 interest 空间流动" },
+    { t: 5500, text: "🔥 <b>Act III</b> · 级联触发 · 被感染的粉丝以 0.5% 概率晋升为二级波源（黑产式二次传播）" },
+    { t: 9000, text: "🎯 <b>收束</b> · 观察四色倾向在星图里的地缘分布，以及谁被级联到、谁一直没被说服" },
+  ];
+
+  const heartbeat = setInterval(() => {
+    if (state?._glowBuf) {
+      for (let i = 0; i < state._glowBuf.length; i++) {
+        if (state._glowBuf[i] > 0.3) infected.add(i);
+      }
+    }
+    const elapsed = performance.now() - t0;
+    for (let i = phases.length - 1; i >= 0; i--) {
+      if (elapsed >= phases[i].t) {
+        const total = SOCIETY_DATA.points.length;
+        const pct = (infected.size / total * 100).toFixed(1);
+        statsEl.innerHTML = phases[i].text + `<br><span style="color:var(--muted); font-size:11px">已触达 ${infected.size.toLocaleString()} / ${total.toLocaleString()} 粒子（${pct}%） · 活跃波源 ${state?.waves?.length ?? 0}</span>`;
+        break;
+      }
+    }
+  }, 200);
+
   setTimeout(() => {
+    clearInterval(heartbeat);
     stopOpinionCascade(key);
-    if (el) el.innerHTML += "<br>✅ 传播结束 · 观察级联如何从 soul agent 扩散";
-  }, 8000);
+    const total = SOCIETY_DATA.points.length;
+    const pct = (infected.size / total * 100).toFixed(1);
+    statsEl.innerHTML = `✅ <b>12 秒传播结束</b>：${infected.size.toLocaleString()} / ${total.toLocaleString()} 粒子被触达（${pct}%）· 级联贡献约 ${Math.max(0, infected.size - 5 * 400)} 个额外触达。<br><span class="hint">这就是为什么预算集中投少数 KOL，触达面远超粉丝数之和——网络效应。</span>`;
+  }, 12000);
 }
 
 async function refreshUEB() {
