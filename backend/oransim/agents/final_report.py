@@ -113,7 +113,7 @@ def _template_report(scenario: dict, kpis: dict, ps: dict | None, schema: dict) 
 
     md = f"""# 投放预测报告 · {caption[:40]}
 
-**TL;DR**：{recommend} · 预期 ROI **{roi_v:.2f}x** · 情感净值 **{net:.2f}**（正面占比 {pos_pct:.1f}%）
+**TL;DR**：{recommend} · 整体投放 ROI **{roi_v:.2f}x**（revenue/cost，见 §2 · 与 §5 KOL 层 ROI 不是同一口径） · 情感净值 **{net:.2f}**（正面占比 {pos_pct:.1f}%）
 
 ## 1. 投放方案
 - 素材：{caption}
@@ -126,7 +126,7 @@ def _template_report(scenario: dict, kpis: dict, ps: dict | None, schema: dict) 
 | 预估曝光 | {kpis.get('impressions',0):,.0f} |
 | 预估点击 | {kpis.get('clicks',0):,.0f} (CTR {ctr_pct:.2f}%) |
 | 预估转化 | {kpis.get('conversions',0):,.0f} (CVR {cvr_pct:.2f}%) |
-| 预估 ROI | **{roi_v:.2f}x** |
+| 整体投放 ROI | **{roi_v:.2f}x** &nbsp;<sub>(revenue/cost)</sub> |
 | 预估 GMV | ¥{kpis.get('revenue',0):,.0f} |
 
 ### 五阶漏斗 (P25 悲观 / P50 / P75 乐观)
@@ -157,11 +157,13 @@ def _template_report(scenario: dict, kpis: dict, ps: dict | None, schema: dict) 
             md += f"| {r.get('competitor_name','?')} | {(r.get('overlap_ratio',0) or 0)*100:.1f}% | {r.get('estimated_roi','?')} | {r.get('estimated_conversion',0):,} |\n"
 
     if kol:
+        kol_roi = kol.get("estimated_roi", 0) or 0
+        kol_roi_fmt = f"**{kol_roi:.2f}x**" if kol_roi else "— <sub>(未跑 KOL 组合优化或无有效解)</sub>"
         md += f"""
 ## 5. KOL 组合策略
 - 入选达人：**{kol.get('total_selected',0)}** 位（KOL:KOC = {kol.get('kol_koc_ratio','?')}）
 - 预估总触达：{kol.get('estimated_total_reach',0):,}
-- 预估平均 ROI：**{kol.get('estimated_roi',0)}**
+- **KOL 池加权 ROI（ILP 估算）**：{kol_roi_fmt} &nbsp;<sub>ILP optimizer 基于预算 × 单 KOL 历史 ROI 的加权平均 · **与 §2 整体投放 ROI 不是同一口径**</sub>
 - 预算利用率：{(kol.get('budget_utilization',0) or 0)*100:.1f}%
 
 ### 优先复投 Top3
