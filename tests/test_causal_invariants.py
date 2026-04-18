@@ -137,9 +137,9 @@ def test_compute_cate_antisymmetric():
 
     segs_ab = _segments(out_ab)
     segs_ba = _segments(out_ba)
-    assert len(segs_ab) >= 2 and len(segs_ba) >= 2, (
-        f"need segments for both directions · got {len(segs_ab)} / {len(segs_ba)}"
-    )
+    assert (
+        len(segs_ab) >= 2 and len(segs_ba) >= 2
+    ), f"need segments for both directions · got {len(segs_ab)} / {len(segs_ba)}"
 
     # Total absolute effect magnitude should match (sign differs)
     def _total_mag(segs):
@@ -148,9 +148,9 @@ def test_compute_cate_antisymmetric():
     mag_ab = _total_mag(segs_ab)
     mag_ba = _total_mag(segs_ba)
     assert mag_ab > 0 and mag_ba > 0
-    assert abs(mag_ab - mag_ba) / max(mag_ab, mag_ba) < 0.2, (
-        f"|CATE(A,B)| = {mag_ab:.4f} vs |CATE(B,A)| = {mag_ba:.4f} differ by >20%"
-    )
+    assert (
+        abs(mag_ab - mag_ba) / max(mag_ab, mag_ba) < 0.2
+    ), f"|CATE(A,B)| = {mag_ab:.4f} vs |CATE(B,A)| = {mag_ba:.4f} differ by >20%"
 
     # Sum of signed deltas on (A,B) must be opposite sign to (B,A)
     def _total_signed(segs):
@@ -158,9 +158,9 @@ def test_compute_cate_antisymmetric():
 
     s_ab = _total_signed(segs_ab)
     s_ba = _total_signed(segs_ba)
-    assert s_ab * s_ba < 0, (
-        f"antisymmetry violated: signed(A→B)={s_ab:.4f} · signed(B→A)={s_ba:.4f}"
-    )
+    assert (
+        s_ab * s_ba < 0
+    ), f"antisymmetry violated: signed(A→B)={s_ab:.4f} · signed(B→A)={s_ba:.4f}"
 
 
 # ========================================================= 3. Identity CF
@@ -195,10 +195,9 @@ def test_compute_cate_union_not_intersection():
     # get delta=-0.30; agents in cf-only get delta=+0.30). Forest should
     # return valid segments (not the saturation diagnostic).
     is_diagnostic = len(out) == 1 and out[0].get("_diagnostic") is not None
-    assert not is_diagnostic, (
-        "intersection-only semantics would zero out the symmetric gain/loss. "
-        "Got: " + str(out[:2])
-    )
+    assert (
+        not is_diagnostic
+    ), "intersection-only semantics would zero out the symmetric gain/loss. " "Got: " + str(out[:2])
 
 
 # ================================================== 5. Budget monotonicity
