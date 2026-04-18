@@ -54,12 +54,28 @@ def _amortized_abduct(
     observed_click: np.ndarray | None = None,
     observed_convert: np.ndarray | None = None,
 ) -> np.ndarray:
-    """Toy amortized posterior: infer u from observed outcomes.
+    """Abduct per-agent latent noise u from baseline outcome.
 
-    Real model: q(U | O) trained via NPE. Here we invert analytically:
-       click_logit ≈ feat·W + 0.7u
-       given sampled binary click, use soft inversion: pull u toward
-       the value that best explains the outcome.
+    Two modes:
+
+    1. **Sample-reuse** (default, no observed data passed): return the
+       sampled ``outcome.u_noise`` as-is. This implements ``u_i^{cf} = u_i^{fact}``
+       — the same residual is threaded through both baseline and the
+       counterfactual world. It is NOT a posterior over U given an
+       observation; it is the standard "fix U, change do(T), resample
+       descendants" reading of Pearl's three-step evaluation when we have
+       no external observed realization to condition on. Most callers (incl.
+       ``ScenarioRunner.counterfactual``) hit this branch.
+
+    2. **Observation-conditioned Bayesian shrink** (when ``observed_click``
+       passed): a closed-form soft inversion of the logit, pulling u toward
+       the value that best explains the observed click rate. Used when the
+       caller has per-agent historical click labels. This is a heuristic
+       amortizer, not a learned q(U|O).
+
+    Future work: replace branch 2 with a learned amortizer (e.g. ``sbi``
+    NPE / SNPE). Tracked on the Enterprise Edition roadmap; the OSS
+    sample-reuse branch is sufficient for scenario-level CATE.
     """
     u = outcome.u_noise.copy()
     if observed_click is None:

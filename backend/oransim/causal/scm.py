@@ -286,7 +286,7 @@ EDGES: list[tuple[str, str]] = [
     ("attributed_revenue", "roas"),
     ("brand_lift_aware", "brand_awareness"),  # feedback
     ("brand_lift_favor", "brand_favor"),  # feedback
-    ("brand_lift_intent", "purchase_intent_short_term" if False else "conversion"),  # placeholder
+    ("brand_lift_intent", "conversion"),  # measurement → funnel feedback
     ("ltv_increment", "roi"),
     ("organic_search_uplift", "attributed_revenue"),
     ("comment_sentiment", "nps_delta"),

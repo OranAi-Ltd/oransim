@@ -276,3 +276,66 @@ def test_counterfactual_empty_intervention_matches_baseline():
         f"null intervention should roughly preserve ROI · "
         f"baseline={roi_b:.3f} · cf={roi_cf:.3f} · rel_diff={rel_diff:.1%}"
     )
+
+
+# ============================================================ 7. SCM graph shape
+# Pin the documented invariants of the causal graph. Reviewer found the shipped
+# graph has cycles that README 之前 called "Pearl SCM" — we now describe it as
+# a "causal graph with feedback loops" and evaluate `do()` via the cyclic-SCM
+# generalization (Bongers 2021). These tests lock the intentional shape so a
+# refactor can't silently change it without updating the docs.
+
+
+def test_scm_shape_is_intentional_cyclic_graph():
+    """64 nodes · 117 edges · cycles concentrated in a single large SCC.
+
+    This is the shape README describes in §Causal Graph. If a future edit
+    makes the graph acyclic, update the README to drop the cyclic-SCM
+    framing. If it pushes cycles into multiple SCCs, also revisit the
+    fixed-point solve comment.
+    """
+    try:
+        import networkx as nx
+    except ImportError:
+        import pytest
+
+        pytest.skip("networkx not installed")
+    from oransim.causal.scm import dag_dict
+
+    g = dag_dict()
+    assert g["n_nodes"] == 64
+    assert g["n_edges"] == 117
+
+    G = nx.DiGraph()
+    for n in g["nodes"]:
+        G.add_node(n["name"])
+    for e in g["edges"]:
+        G.add_edge(e[0], e[1])
+
+    # Intentionally NOT a strict DAG — see §Causal Graph in README.
+    assert not nx.is_directed_acyclic_graph(
+        G
+    ), "graph became acyclic — update README's cyclic-SCM framing if intentional"
+    # Cycles are contained in a single large SCC (the long-term feedback
+    # loop around brand_equity ↔ impression_dist). Multiple large SCCs
+    # would mean poorly-posed fixed-point solves.
+    large_sccs = [s for s in nx.strongly_connected_components(G) if len(s) > 1]
+    assert (
+        len(large_sccs) == 1
+    ), f"expected 1 feedback SCC, got {len(large_sccs)} — cycle topology changed"
+    # The one feedback SCC should be the long-term brand-to-bid loop; sanity
+    # check a few expected members.
+    scc = large_sccs[0]
+    for expected in ("brand_equity", "ecpm_bid", "repurchase", "impression_dist"):
+        assert expected in scc, f"{expected} missing from feedback SCC — graph refactor?"
+
+
+def test_scm_edges_reference_defined_nodes():
+    """Every edge endpoint must exist in the node list. Catches placeholder
+    typos like a dead 'if False else' branch referencing a missing node."""
+    from oransim.causal.scm import dag_dict
+
+    g = dag_dict()
+    names = {n["name"] for n in g["nodes"]}
+    orphans = [e for e in g["edges"] if e[0] not in names or e[1] not in names]
+    assert not orphans, f"edges reference undefined nodes: {orphans[:5]}"
