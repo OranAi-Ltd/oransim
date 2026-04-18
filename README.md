@@ -56,18 +56,23 @@ Ad prediction looks like regression, but it's actually 5 unrelated hard subprobl
 Get all 5 right and you have Oransim. Each layer isn't there to sound good — each one is the only answer to one specific question the others can't handle.
 
 <details>
-<summary>Research lineage per layer (click to expand)</summary>
+<summary>Architecture + research lineage per layer (click to expand)</summary>
 
-- **Problem 1 balancing loss** → HSIC (Gretton 2005) · adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
-- **Problem 1 per-arm heads** → TARNet (Shalit ICML 2017) · Dragonnet (Shi NeurIPS 2019)
-- **Problem 1 in-context amortization** → CInA (Arik & Pfister NeurIPS 2023)
-- **Problem 2 budget curves** → Hill saturation (Dubé & Manchanda 2005) + frequency fatigue (Naik & Raman 2003)
-- **Problem 3 Hawkes** → Mei & Eisner NeurIPS 2017 · Zuo ICML 2020 · Geng NeurIPS 2022 (counterfactual TPP)
-- **SCM** → Pearl 3-step (abduction → action → prediction), 64 nodes / 117 edges, discourse + cascade mediators (Sunstein 2017)
-- **Agent population** → IPF / Deming-Stephan 1940 baseline; Bayesian-network / TabDDPM variants on roadmap
-- **Embedding bus** → modality-generic; text via OpenAI-compat today, multi-modal (CLIP / Qwen-VL / I-JEPA / Whisper / CLAP) on v0.5
-
-See [`backend/oransim/world_model/transformer.py`](backend/oransim/world_model/transformer.py) and [`backend/oransim/diffusion/neural_hawkes.py`](backend/oransim/diffusion/neural_hawkes.py) for the implementations.
+- **Problem 1 · Causal Transformer World Model** (6-layer · code in [`backend/oransim/world_model/transformer.py`](backend/oransim/world_model/transformer.py))
+  - balancing loss: HSIC (Gretton 2005) · adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
+  - per-arm counterfactual heads: TARNet (Shalit ICML 2017) · Dragonnet (Shi NeurIPS 2019)
+  - in-context amortization: CInA (Arik & Pfister NeurIPS 2023)
+- **Problem 2 · budget curves** (`world_model/budget.py`): Hill saturation (Dubé & Manchanda 2005) + frequency fatigue (Naik & Raman 2003)
+- **Problem 3 · Causal Neural Hawkes Process** (CNHP · code in [`backend/oransim/diffusion/neural_hawkes.py`](backend/oransim/diffusion/neural_hawkes.py))
+  - continuous-time neural intensity: Neural Hawkes Process (Mei & Eisner NeurIPS 2017)
+  - Transformer encoder: Transformer Hawkes (Zuo ICML 2020)
+  - counterfactual rollout: counterfactual TPP (Geng NeurIPS 2022)
+  - sampling + training: Intensity-free (Shchur ICLR 2020) · MC compensator (Chen ICLR 2021) · Ogata 1981 thinning
+- **Problem 4 · per-arm counterfactual head** (shares multi-head structure with the CT in Problem 1): TARNet / Dragonnet emit all treatment arms in a single forward pass
+- **Problem 5 · Universal Embedding Bus (UEB)**: modality-generic registry; text via OpenAI-compat today, multi-modal (CLIP / Qwen-VL / SigLIP / I-JEPA / Whisper / CLAP) on v0.5
+- **SCM** (`causal/scm.py` · `causal/counterfactual.py`): Pearl 3-step (abduction → action → prediction), 64 nodes / 117 edges, discourse + cascade mediators (Sunstein 2017 · Bikhchandani 1992)
+- **Agent population** (`data/population.py` · `data/synthesizers/`): IPF / Deming-Stephan 1940 baseline; Bayesian-network / CTGAN / TabDDPM variants on roadmap
+- **LightGBM Quantile baseline** (`world_model/lightgbm_quantile.py`): P35/P50/P65 quantile regressors, sub-ms inference, ablation counterpart to CT/NH
 
 </details>
 

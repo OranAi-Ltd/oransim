@@ -61,18 +61,23 @@ Robyn / LightweightMMM 那类只给总曲线，但营销决策往往是「我该
 把这 5 个问题都建对，就是 Oransim。每一层不是为了叫得好听，是为了一个具体问题必须这样建。
 
 <details>
-<summary>每层对应的研究谱系（点开展开）</summary>
+<summary>每层对应的架构 + 研究谱系（点开展开）</summary>
 
-- **问题 1 平衡损失** → HSIC (Gretton 2005) · adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
-- **问题 1 per-arm 反事实头** → TARNet (Shalit ICML 2017) · Dragonnet (Shi NeurIPS 2019)
-- **问题 1 in-context 摊销** → CInA (Arik & Pfister NeurIPS 2023)
-- **问题 2 预算曲线** → Hill 饱和 (Dubé & Manchanda 2005) + 频次疲劳 (Naik & Raman 2003)
-- **问题 3 Hawkes** → Mei & Eisner NeurIPS 2017 · Zuo ICML 2020 · Geng NeurIPS 2022 (counterfactual TPP)
-- **SCM** → Pearl 三步（溯因 → 干预 → 预测），64 节点 / 117 边，含话语 + 级联 mediator (Sunstein 2017)
-- **Agent 人口池** → IPF / Deming-Stephan 1940 baseline；Bayesian Network / TabDDPM 变体在路线图
-- **Embedding bus** → modality-generic；文本当前走 OpenAI-compat，多模态（CLIP / Qwen-VL / I-JEPA / Whisper / CLAP）v0.5
-
-实现代码：[`backend/oransim/world_model/transformer.py`](backend/oransim/world_model/transformer.py)、[`backend/oransim/diffusion/neural_hawkes.py`](backend/oransim/diffusion/neural_hawkes.py)。
+- **问题 1 · Causal Transformer World Model**（6-layer · 代码在 [`backend/oransim/world_model/transformer.py`](backend/oransim/world_model/transformer.py)）
+  - 平衡损失：HSIC (Gretton 2005) · adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
+  - per-arm 反事实头：TARNet (Shalit ICML 2017) · Dragonnet (Shi NeurIPS 2019)
+  - in-context 摊销：CInA (Arik & Pfister NeurIPS 2023)
+- **问题 2 · 预算曲线**（`world_model/budget.py`）：Hill 饱和 (Dubé & Manchanda 2005) + 频次疲劳 (Naik & Raman 2003)
+- **问题 3 · Causal Neural Hawkes Process**（CNHP · 代码在 [`backend/oransim/diffusion/neural_hawkes.py`](backend/oransim/diffusion/neural_hawkes.py)）
+  - 连续时间 neural intensity：Neural Hawkes Process (Mei & Eisner NeurIPS 2017)
+  - Transformer encoder：Transformer Hawkes (Zuo ICML 2020)
+  - counterfactual rollout：counterfactual TPP (Geng NeurIPS 2022)
+  - 采样 + 训练：Intensity-free (Shchur ICLR 2020) · MC compensator (Chen ICLR 2021) · Ogata 1981 thinning
+- **问题 4 · per-arm counterfactual head**（和问题 1 的 CT 共享多头结构）：TARNet / Dragonnet 一次 forward 出所有 arm
+- **问题 5 · Universal Embedding Bus (UEB)**：modality-generic registry；文本当前走 OpenAI-compat，多模态（CLIP / Qwen-VL / SigLIP / I-JEPA / Whisper / CLAP）v0.5
+- **SCM**（`causal/scm.py` · `causal/counterfactual.py`）：Pearl 三步（溯因 → 干预 → 预测），64 节点 / 117 边，含话语 + 级联 mediator (Sunstein 2017 · Bikhchandani 1992)
+- **Agent 人口池**（`data/population.py` · `data/synthesizers/`）：IPF / Deming-Stephan 1940 baseline；Bayesian Network / CTGAN / TabDDPM 变体在路线图
+- **LightGBM quantile baseline**（`world_model/lightgbm_quantile.py`）：P35/P50/P65 三个分位数回归器，亚毫秒推理，作为 CT/NH 的 ablation 对照
 
 </details>
 
