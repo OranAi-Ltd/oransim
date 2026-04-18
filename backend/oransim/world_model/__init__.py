@@ -21,7 +21,7 @@ Pick via the registry::
     wm = get_world_model("lightgbm_quantile")          # baseline
 
 Pretrained weights will ship at
-https://github.com/deterministically/oransim/releases (starting v0.2).
+https://github.com/OranAi-Ltd/oransim/releases (starting v0.2).
 """
 
 from .base import WorldModel, WorldModelConfig, WorldModelPrediction

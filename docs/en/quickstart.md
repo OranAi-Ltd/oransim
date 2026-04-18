@@ -2,7 +2,7 @@
 
 > **Status:** Coming soon (v0.2). This page will cover full installation, environment configuration, and running your first prediction.
 
-For v0.1.0-alpha, see the root [README.md](https://github.com/deterministically/oransim/blob/main/README.md#-quickstart-60-seconds).
+For v0.1.0-alpha, see the root [README.md](https://github.com/OranAi-Ltd/oransim/blob/main/README.md#-quickstart-60-seconds).
 
 ## Environment Variables Reference
 
@@ -17,4 +17,4 @@ For v0.1.0-alpha, see the root [README.md](https://github.com/deterministically/
 | `SOUL_POOL_N` | `100` | Number of LLM persona agents |
 | `PORT` | `8001` | Backend API port |
 
-See [ROADMAP.md](https://github.com/deterministically/oransim/blob/main/ROADMAP.md) for when the full backend lands.
+See [ROADMAP.md](https://github.com/OranAi-Ltd/oransim/blob/main/ROADMAP.md) for when the full backend lands.

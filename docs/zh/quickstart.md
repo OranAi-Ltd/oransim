@@ -2,7 +2,7 @@
 
 > **状态**：v0.2 到位（完整安装、环境配置、第一次跑预测）。
 
-v0.1.0-alpha 的快速上手见根目录 [README.zh-CN.md](https://github.com/deterministically/oransim/blob/main/README.zh-CN.md#-一分钟上手)。
+v0.1.0-alpha 的快速上手见根目录 [README.zh-CN.md](https://github.com/OranAi-Ltd/oransim/blob/main/README.zh-CN.md#-一分钟上手)。
 
 ## 环境变量
 
@@ -17,4 +17,4 @@ v0.1.0-alpha 的快速上手见根目录 [README.zh-CN.md](https://github.com/de
 | `SOUL_POOL_N` | `100` | LLM 人格 agent 数 |
 | `PORT` | `8001` | 后端 API 端口 |
 
-完整后端到位时间见 [ROADMAP.md](https://github.com/deterministically/oransim/blob/main/ROADMAP.md)。
+完整后端到位时间见 [ROADMAP.md](https://github.com/OranAi-Ltd/oransim/blob/main/ROADMAP.md)。

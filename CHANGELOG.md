@@ -160,7 +160,7 @@ site, and expanded model / data card v1.0 documentation.
 - LLM defaults in `agents/soul_llm.py` corrected from the ported
   `api.deepseek.com` / `deepseek-chat` to the README-documented
   `api.openai.com/v1` / `gpt-5.4`.
-- README broken Team link `[TBD: GITHUB_HANDLE]` → `@deterministically`.
+- README broken Team link `[TBD: GITHUB_HANDLE]` → `@OranAi-Ltd`.
 - `.gitignore` now excludes `*.pt` and `*.safetensors` checkpoints.
 - `(1.0 + 1.0) * r / ...` magic constant in `gen_synthetic_data.py`
   replaced with a named `K_SAT` constant and explanatory docstring.
@@ -244,5 +244,5 @@ site, and expanded model / data card v1.0 documentation.
 - Platform stubs (TikTok/Instagram/YouTube Shorts/Douyin) raise `NotImplementedError` when accessed; this is intentional and tracks the roadmap.
 - Benchmarks in README are based on synthetic data from the internal (non-public) data generator.
 
-[Unreleased]: https://github.com/deterministically/oransim/compare/v0.1.0-alpha...HEAD
-[0.1.0-alpha]: https://github.com/deterministically/oransim/releases/tag/v0.1.0-alpha
+[Unreleased]: https://github.com/OranAi-Ltd/oransim/compare/v0.1.0-alpha...HEAD
+[0.1.0-alpha]: https://github.com/OranAi-Ltd/oransim/releases/tag/v0.1.0-alpha

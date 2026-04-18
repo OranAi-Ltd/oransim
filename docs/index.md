@@ -37,8 +37,8 @@ Released under **Apache-2.0**. Version: **v0.2.0-alpha**.
 
 ## Community
 
-- **GitHub**: <https://github.com/deterministically/oransim>
-- **Issues**: <https://github.com/deterministically/oransim/issues>
+- **GitHub**: <https://github.com/OranAi-Ltd/oransim>
+- **Issues**: <https://github.com/OranAi-Ltd/oransim/issues>
 - **Enterprise inquiries**: `cto@orannai.com`
 
 ## Citing Oransim
@@ -49,7 +49,7 @@ Released under **Apache-2.0**. Version: **v0.2.0-alpha**.
   title        = {Oransim: A Causal Digital Twin for Marketing at Scale},
   version      = {0.2.0-alpha},
   date         = {2026-04-18},
-  url          = {https://github.com/deterministically/oransim},
+  url          = {https://github.com/OranAi-Ltd/oransim},
   organization = {OranAI Ltd.}
 }
 ```

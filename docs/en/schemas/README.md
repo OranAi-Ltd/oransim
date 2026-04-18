@@ -2,7 +2,7 @@
 
 > **Status:** Coming soon (v0.2: JSON Schema auto-export from Pydantic models).
 
-For v0.1.0-alpha, see the root README [Schemas section](https://github.com/deterministically/oransim/blob/main/README.md#-what-you-get--14-to-19-schemas) for a human-readable list of the 14–19 output schemas.
+For v0.1.0-alpha, see the root README [Schemas section](https://github.com/OranAi-Ltd/oransim/blob/main/README.md#-what-you-get--14-to-19-schemas) for a human-readable list of the 14–19 output schemas.
 
 ## Canonical Input Schemas (Phase 3)
 

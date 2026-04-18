@@ -27,7 +27,7 @@ def _not_yet(name: str, milestone: str) -> Callable[[], type[PopulationSynthesiz
         def __init__(self, *_args: Any, **_kwargs: Any) -> None:
             raise NotImplementedError(
                 f"{name} synthesizer is on the roadmap for {milestone}. "
-                "See https://github.com/deterministically/oransim/blob/main/ROADMAP.md. "
+                "See https://github.com/OranAi-Ltd/oransim/blob/main/ROADMAP.md. "
                 "Fall back: get_synthesizer('ipf')."
             )
 

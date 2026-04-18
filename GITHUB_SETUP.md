@@ -3,13 +3,13 @@
 This document walks you through the steps to publish the `oransim` repo and configure it for maximum visibility and star collection. All of these are **one-time setup steps** — complete once per repository.
 
 **Local repo location:** `/root/projects/oransim`
-**Target GitHub repo:** `https://github.com/deterministically/oransim`
+**Target GitHub repo:** `https://github.com/OranAi-Ltd/oransim`
 
 ---
 
 ## Step 1: Create the GitHub remote
 
-The live repo is hosted at **`https://github.com/deterministically/oransim`** (OranAI GitHub org handle `deterministically`). Early drafts of this doc referenced `oranai` as a placeholder before the org handle was finalized — if you see that in any archived file, treat it as historical.
+The live repo is hosted at **`https://github.com/OranAi-Ltd/oransim`** (OranAI GitHub org handle `OranAi-Ltd`). Early drafts of this doc referenced `oranai` as a placeholder before the org handle was finalized — if you see that in any archived file, treat it as historical.
 
 If you're forking or bootstrapping a mirror under a different handle:
 
@@ -31,16 +31,16 @@ Then create the repo:
 
 ```bash
 cd /root/projects/oransim
-git remote add origin https://github.com/deterministically/oransim.git
+git remote add origin https://github.com/OranAi-Ltd/oransim.git
 git branch -M main
 git push -u origin main
 ```
 
-If you used a different org/user, replace `deterministically` above and run a find-replace on the repo:
+If you used a different org/user, replace `OranAi-Ltd` above and run a find-replace on the repo:
 
 ```bash
 cd /root/projects/oransim
-grep -rIl "deterministically/oransim" . | xargs sed -i 's|deterministically/oransim|YOUR_HANDLE/oransim|g'
+grep -rIl "OranAi-Ltd/oransim" . | xargs sed -i 's|OranAi-Ltd/oransim|YOUR_HANDLE/oransim|g'
 grep -rIl "\[TBD: GITHUB_HANDLE\]" . | xargs sed -i 's|\[TBD: GITHUB_HANDLE\]|YOUR_HANDLE|g'
 git add -A && git commit -m "chore: point at real GitHub org/handle" -s
 git push
@@ -50,7 +50,7 @@ git push
 
 ## Step 3: Configure repo settings
 
-Go to https://github.com/deterministically/oransim/settings and set:
+Go to https://github.com/OranAi-Ltd/oransim/settings and set:
 
 ### General
 - [ ] **Features**: ✅ Issues · ✅ Discussions · ✅ Projects (optional) · ❌ Wiki (use `docs/` instead)
@@ -130,7 +130,7 @@ git push origin v0.1.0-alpha
 ```
 
 Then on GitHub:
-1. Go to https://github.com/deterministically/oransim/releases/new
+1. Go to https://github.com/OranAi-Ltd/oransim/releases/new
 2. Choose the tag `v0.1.0-alpha`
 3. **Release title**: `v0.1.0-alpha — Oransim goes public 🚀`
 4. **Describe this release**: copy from `CHANGELOG.md` → `## [0.1.0-alpha]` section
@@ -141,7 +141,7 @@ Then on GitHub:
 
 ## Step 5: Remaining placeholders (optional, post-launch)
 
-The GitHub handle `deterministically` is already substituted throughout the repo (Phase 1 close-out). A few optional placeholders remain for later:
+The GitHub handle `OranAi-Ltd` is already substituted throughout the repo (Phase 1 close-out). A few optional placeholders remain for later:
 
 ```bash
 cd /root/projects/oransim

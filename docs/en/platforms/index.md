@@ -27,7 +27,7 @@ need to change together.
 | ✒️ LinkedIn | Global | 📋 planned | — | v1.0 |
 
 Request a new adapter via the [adapter request
-template](https://github.com/deterministically/oransim/issues/new?template=adapter_request.yml).
+template](https://github.com/OranAi-Ltd/oransim/issues/new?template=adapter_request.yml).
 
 ## Further reading
 
