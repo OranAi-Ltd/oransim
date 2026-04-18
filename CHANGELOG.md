@@ -6,6 +6,67 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.2.0-alpha] — 2026-04-18
+
+The v0.2 release. Ships the platform-adapter axis (TikTok + Douyin MVPs),
+the second population synthesizer (Bayesian network), the canonical
+Pydantic schema contract, the public budget-response API, OpenAI-client
+hardening (retry + backoff + fallback), a MkDocs Material documentation
+site, and expanded model / data card v1.0 documentation.
+
+### Added
+- **Canonical schemas v1.1** (`oransim.data.schema`) — CanonicalKOL,
+  CanonicalNote, CanonicalNoteMetrics, CanonicalFanProfile,
+  CanonicalScenario Pydantic models. Every adapter and provider now
+  implements the same contract.
+- **Public budget-curve API** (`oransim.world_model.budget`) —
+  `hill_saturation`, `frequency_fatigue`, `apply_budget_curves`, and
+  `BudgetCurveConfig`. Previously-embedded formulas promoted to cited
+  first-class functions (Dubé & Manchanda 2005; Naik & Raman 2003).
+- **OpenAI-compat HTTP client** (`oransim.runtime.http_client.post_json`)
+  — exponential backoff with full jitter on retryable statuses,
+  short-circuit on non-retryable statuses, optional
+  `LLM_MODEL_FALLBACK` chain rotated per retry.
+- **.env.example** — new file documenting every env var with provider
+  cheatsheet for OpenAI / DeepSeek / Qwen (DashScope) / Moonshot / xAI /
+  Together AI / Fireworks AI / local vLLM.
+- **BayesianNetworkSynthesizer** — first non-IPF population synthesizer,
+  a hand-specified BN over 6 demographic variables. Respects
+  conditional dependencies (e.g., mean income increases with education)
+  that IPF cannot represent.
+- **TikTok adapter MVP** (`oransim.platforms.tiktok`) —
+  TikTokAdapter + TikTokAdapterConfig + TikTokSyntheticProvider with
+  global priors (USD CPM 5.8, FYP algorithm discovery, sub-minute
+  attention curve, young-skewed fan demographics). Replaces the day-one
+  NotImplementedError stub.
+- **Douyin adapter MVP** (`oransim.platforms.douyin`) —
+  DouyinAdapter + DouyinAdapterConfig + DouyinSyntheticProvider with
+  Greater-China priors (RMB CPM 35, livestream conversion boost 1.25×,
+  broader age spread). Replaces the stub.
+- **MkDocs Material documentation site** (`mkdocs.yml` + docs/*) —
+  strict-mode build clean; docs/en/platforms/index.md landing page.
+  CI workflow at `.github/workflows/docs.yml` runs `mkdocs build
+  --strict` on every docs change.
+- **Model card v1.0 / Data card v1.0** — full documentation for the
+  five-model zoo (CausalTransformerWM, LightGBMQuantileWM,
+  CausalNeuralHawkes, ParametricHawkes, IPFSynthesizer) with
+  per-model architecture, references, intended use, limitations, and
+  the shipped R² numbers on synthetic eval + OrancBench.
+
+### Fixed
+- Hill-saturation double-scaling bug in the newly-added TikTok + Douyin
+  adapters — baseline impressions now computed at `reference_budget` so
+  Hill acts as a budget-ratio multiplier, not a multiplier on top of the
+  linear `budget/CPM` scaling. Verified by
+  `test_tiktok_adapter_mvp` asserting doubled budget → < 2× impressions.
+
+### Tests
+- 34 pass in ~6 s (up from 27). New coverage: canonical schemas,
+  budget-curve public API, http_client retry/fallback semantics,
+  .env.example shipping, BayesNet synthesizer conditional dependency
+  (mean income rising with education), TikTok + Douyin adapter Hill /
+  livestream-boost paths.
+
 ## [0.1.2-alpha] — 2026-04-18
 
 ### Added
