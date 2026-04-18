@@ -134,7 +134,10 @@ def _bootstrap_index() -> None:
     import numpy as _np
 
     BUS.index("kol_audience", [_np.asarray(k.emb) for k in KOLS])
-    sample_idx = _np.random.default_rng(0).choice(POP.N, size=5000, replace=False)
+    # Cap sample at POP.N — small test/CI pops (POP_SIZE < 5000) would otherwise
+    # crash with "Cannot take a larger sample than population when replace is False".
+    sample_n = min(5000, POP.N)
+    sample_idx = _np.random.default_rng(0).choice(POP.N, size=sample_n, replace=False)
     BUS.index("user_interest", [POP.interest[i] for i in sample_idx])
     user_demo = _np.stack(
         [
