@@ -85,21 +85,37 @@ def _tag_activations(interest_vec: np.ndarray, signed: bool = False) -> Dict[str
 
 
 def _pick_archetype(abs_activations: Dict[str, float]) -> str:
+    total_act = sum(abs_activations.values())
+    # Zero / near-zero vector → 显式 fallback（避免任何 score=0 都排第一名的
+    # edge case）。真实 population 不会走这支，但生产数据清洗时有 zero vec 的
+    # 可能，不能静默分配成「Z 世代美妆早鸟」。
+    if total_act < 0.05:
+        return "通用中间派"
+
+    # L1 归一化权重后比较：每个 archetype 的 score 是加权**平均**，档次拉平。
+    # 没这一步时 tag 覆盖多的 archetype（比如理性科技中产 4 个 tag）会系统性
+    # 压过 tag 少的（游戏宅 3 个 tag），分布上出现 31% vs 0.2% 的不平衡。
     best_label = "通用中间派"
     best_score = -1.0
-    # 所有锚点的平均激活作为 fallback 阈值
-    mean_act = sum(abs_activations.values()) / max(1, len(abs_activations))
-    fallback_threshold = mean_act * 1.1
+    scores: Dict[str, float] = {}
     for label, weights in ARCHETYPE_ANCHORS.items():
         if not weights:
             continue
-        score = sum(abs_activations.get(t, 0.0) * w for t, w in weights.items())
+        total_w = sum(abs(w) for w in weights.values())
+        raw = sum(abs_activations.get(t, 0.0) * w for t, w in weights.items())
+        score = raw / (total_w + 1e-8)
+        scores[label] = score
         if score > best_score:
             best_score = score
             best_label = label
-    # 如果最高分和第二高分差距太小（archetype 不显著），回退到通用中间派
-    if best_score < fallback_threshold:
-        return "通用中间派"
+
+    # 如果第一名和第二名差距太小（< 2% 相对差），说明 persona 不典型，
+    # 回退到通用中间派。阈值是 bench 过的——5% 时通用占 36% 太多，
+    # 1% 时几乎没人 fallback，2% 是 15-20% 甜点。
+    if len(scores) >= 2:
+        ranked = sorted(scores.values(), reverse=True)
+        if ranked[1] > 0 and (ranked[0] - ranked[1]) / ranked[1] < 0.02:
+            return "通用中间派"
     return best_label
 
 
