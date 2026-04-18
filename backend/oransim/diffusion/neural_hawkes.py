@@ -75,7 +75,12 @@ class CausalNeuralHawkesConfig(DiffusionConfig):
 
     # Intensity decoder
     softplus_beta: float = 1.0
-    n_mc_samples: int = 20  # Monte Carlo samples for compensator integral
+    # Compensator estimator: "rectangle" (piecewise-constant per inter-event
+    # interval, O(N) per stream — default, standard in production TPPs) or
+    # "mc" (Monte Carlo with `n_mc_samples` samples per interval, O(N·M) but
+    # lower bias when the intensity varies fast within an interval).
+    compensator: str = "rectangle"
+    n_mc_samples: int = 20
 
     # Training
     learning_rate: float = 5.0e-4

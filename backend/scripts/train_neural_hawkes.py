@@ -34,20 +34,32 @@ from typing import Any, Iterable
 
 
 def _load_streams(path: str) -> Iterable[Iterable[tuple[float, str]]]:
+    """Load event streams from the JSONL produced by gen_synthetic_data.
+
+    Each JSONL line: ``{"events": [[t_min, "event_name"], ...]}``
+    Yields each stream as a list of ``(float, str)`` tuples the
+    CausalNeuralHawkesProcess.fit() method consumes directly.
+    """
     p = Path(path)
     if not p.exists():
         raise FileNotFoundError(
             f"Training event streams not found at {p}.\n"
-            "Generate synthetic data first (v0.2):\n"
-            "    python -m backend.scripts.gen_synthetic_data --n 50000 "
-            f"--events-out {p}\n"
-            "Or download a released bundle from "
-            "https://github.com/ORAN-cgsj/oransim/releases (starting v0.2)."
+            "Generate synthetic data first:\n"
+            "    python -m backend.scripts.gen_synthetic_data --out "
+            f"{p.parent}\n"
+            "Or use the demo data shipped with the repo at data/synthetic/."
         )
-    raise NotImplementedError(
-        "Event-stream loader lands with the synthetic generator in v0.2. "
-        f"File at {p} was found but the loader is not yet wired up."
-    )
+
+    def _iter():
+        with open(p, encoding="utf-8") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                obj = json.loads(line)
+                events = obj.get("events") or []
+                yield [(float(t), str(n)) for t, n in events]
+
+    return list(_iter())
 
 
 def main(argv: list[str] | None = None) -> int:

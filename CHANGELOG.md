@@ -6,6 +6,84 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.1.1-alpha] — 2026-04-18
+
+### Added
+- **Plug-and-play demo artifacts** — 2.3 MB of deterministic synthetic data
+  (200 KOLs, 500 notes, 2k scenarios, 100 event streams) + a pretrained
+  2.7 MB LightGBM quantile world model (R² on synthetic eval: impressions
+  0.886, clicks 0.778, conversions 0.727, revenue 0.687) shipped at
+  `data/synthetic/` and `data/models/world_model_demo.pkl`. Community can
+  clone → set `LLM_API_KEY` → run, no separate data-gen step required.
+- **`backend/scripts/train_lightgbm_demo.py`** — the trainer that produced
+  the shipped pkl; retrain on your own data via the documented CLI.
+- **Frontend `frontend/index.html`** — desensitized port of the 2422-line
+  internal demo UI. All vendor-specific references scrubbed.
+- **Training-script JSONL loaders** —
+  `_load_dataset(...)` in `train_transformer_wm.py` now reads the
+  scenario JSONL, applies a deterministic hash-based stand-in for the
+  1536-d creative embedding, expands 7 scalar features into the full
+  tensor dict CausalTransformerNet expects, and yields batched dicts
+  (factual + counterfactual targets + treatment_arm).
+  `_load_streams(...)` in `train_neural_hawkes.py` reads the event-stream
+  JSONL directly. End-to-end training now reachable on any machine with
+  `pip install 'oransim[ml]'`.
+- **RBF-kernel HSIC** — `CausalTransformerWorldModel` supports
+  `balancing_kernel="rbf"` in addition to linear, via new config fields
+  `balancing_kernel` (default "linear") and `balancing_rbf_sigma`.
+- **Compensator estimator choice** — `CausalNeuralHawkesConfig.compensator`
+  lets users pick between the default rectangle-rule approximation and a
+  (future) "mc" Monte Carlo estimator via `n_mc_samples`.
+
+### Fixed
+- Bulletproof desensitization: `test_no_sensitive_terms_in_package` now
+  runs a case-insensitive scan (`hui[-_]?tun`, `tu[-_]?zi`, `cg[-_]?api`,
+  `灰豚`, plus internal absolute paths) across 14 file extensions in
+  backend / frontend / docs / assets / .github / root markdown files.
+  Hardens the gate against capitalization regressions like the earlier
+  `Huitun` oversight.
+- `data/fan_profile.py` had four uncaught `Huitun` (capitalised) comments
+  left by the original migration; scrubbed.
+- `ROADMAP.md` + README "Roadmap Highlights" were listing already-shipped
+  Neural Hawkes + Transformer WM as future v0.5 targets. Reworded to mark
+  them as shipped; new v0.2 item is "pretrained weight release."
+- `gen_synthetic_data.py` docstring claimed `.parquet` output when actual
+  file is `.jsonl`; `train_transformer_wm.py` default `--data` path fixed.
+- `HANDOFF.md` removed — it leaked `/home/projects/sim/` absolute paths.
+- `ParametricHawkes.forecast` gained a hard `max_events=2000` cap alongside
+  the existing `max_iters=20000`, preventing hangs under aggressive
+  self-excitation priors.
+- Neural Hawkes compensator now uses the intensity at `lam[0, i-1]` (the
+  state BEFORE observing event `i`) rather than `lam[0, i]` — fixes a
+  subtle acausal leak in the training NLL.
+- `_hsic_unbiased` renamed to `_hsic_biased` (the formula was always the
+  biased estimator; docstring corrected).
+- `counterfactual_forecast` in Neural Hawkes now clones the intensity
+  tensor before in-place scaling to avoid leaf-variable errors in future
+  training-time rollouts.
+- Five stale `from ..world_model.model import ...` imports in
+  `causal/counterfactual.py`, `diffusion/legacy_hawkes.py`,
+  `agents/{agent_provider,cross_platform,statistical}.py` redirected to
+  the new `platforms.xhs.world_model_legacy` path.
+- LLM defaults in `agents/soul_llm.py` corrected from the ported
+  `api.deepseek.com` / `deepseek-chat` to the README-documented
+  `api.openai.com/v1` / `gpt-5.4`.
+- README broken Team link `[TBD: GITHUB_HANDLE]` → `@ORAN-cgsj`.
+- `.gitignore` now excludes `*.pt` and `*.safetensors` checkpoints.
+- `(1.0 + 1.0) * r / ...` magic constant in `gen_synthetic_data.py`
+  replaced with a named `K_SAT` constant and explanatory docstring.
+
+### Tests
+- **21 smoke tests**, all pass in ~12 s without PyTorch installed.
+  Cover package imports, registries, torch-deferral, parametric Hawkes
+  baseline, LightGBM demo pkl loading + prediction, synthetic data
+  generator determinism and regression (hang-guard), synthetic CLI e2e,
+  FastAPI bootstrap + route inventory, SCM graph shape (64 nodes /
+  117 edges), CATE union semantics, population determinism, creative
+  generator, and the desensitization gate.
+
+## [0.1.0-alpha] — 2026-04-18
+
 ### Added
 - **Causal Transformer World Model** (`oransim.world_model.CausalTransformerWorldModel`) —
   research-grade causal Transformer with token-type factorization

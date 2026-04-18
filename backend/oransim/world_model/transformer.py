@@ -108,6 +108,8 @@ class CausalTransformerWMConfig(WorldModelConfig):
     n_treatment_arms: int = 4  # distinct (creative, budget-bucket, KOL-tier) combos to mirror
     use_counterfactual_head: bool = True
     balancing_loss: str = "hsic"  # "hsic" | "iptw_adv" | "none"
+    balancing_kernel: str = "linear"  # "linear" | "rbf" — used only when balancing_loss="hsic"
+    balancing_rbf_sigma: float = 1.0
     balancing_weight: float = 0.1
     counterfactual_weight: float = 0.5
     dag_attention_bias: bool = True  # enable CausalDAG-Transformer attention mask
@@ -683,10 +685,15 @@ class CausalTransformerWorldModel(WorldModel):
                 ce = torch.nn.functional.cross_entropy(logits, arm)
                 bal_loss = -ce  # maximize ambiguity → minimize negative CE
             elif cfg.balancing_loss == "hsic":
-                # Lightweight HSIC between CLS representation and treatment
-                # assignment (Gretton et al. 2005, simplified unbiased estimator).
+                # HSIC (Gretton et al. 2005, biased estimator Eq. 4) between the
+                # CLS representation and the treatment assignment. Kernel
+                # defaults to linear but RBF is available via config.
                 h = self._net.encode(features)
-                bal_loss = self._hsic_biased(h, torch.nn.functional.one_hot(arm, cfg.n_treatment_arms).float())
+                y_onehot = torch.nn.functional.one_hot(arm, cfg.n_treatment_arms).float()
+                if cfg.balancing_kernel == "rbf":
+                    bal_loss = self._hsic_rbf(h, y_onehot, sigma=cfg.balancing_rbf_sigma)
+                else:
+                    bal_loss = self._hsic_biased(h, y_onehot)
 
         total = (
             cfg.pinball_weight * fact_loss
@@ -714,6 +721,28 @@ class CausalTransformerWorldModel(WorldModel):
             mse = (head_out[:, median_idx] - y.squeeze(-1)).pow(2).mean()
             total = total + cfg.pinball_weight * pinball + cfg.mse_aux_weight * mse
         return total
+
+    @staticmethod
+    def _hsic_rbf(X: Any, Y: Any, sigma: float = 1.0) -> Any:
+        """HSIC (Gretton et al. 2005, biased estimator Eq. 4) with RBF kernels.
+
+        ``K_x(i, j) = exp(-||x_i - x_j||^2 / (2 sigma^2))`` and similarly
+        ``K_y``. More sensitive to nonlinear dependence between the learned
+        representation and the treatment assignment than the linear kernel
+        variant :meth:`_hsic_biased`.
+        """
+        import torch
+
+        B = X.shape[0]
+        # Pairwise squared distance
+        def _rbf(A: "torch.Tensor") -> "torch.Tensor":
+            sq = (A * A).sum(-1, keepdim=True)
+            d2 = sq + sq.t() - 2.0 * (A @ A.t())
+            return torch.exp(-d2 / (2.0 * sigma * sigma))
+        Kx = _rbf(X)
+        Ky = _rbf(Y)
+        H = torch.eye(B, device=X.device) - (1.0 / B)
+        return (H @ Kx @ H @ Ky).diagonal().sum() / max(1, (B - 1)) ** 2
 
     @staticmethod
     def _hsic_biased(X: Any, Y: Any) -> Any:

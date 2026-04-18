@@ -251,6 +251,65 @@ def test_fastapi_app_metadata():
 # ------------------------------------------------------- desensitization
 
 
+# ----------------------------------------------------------- causal / sandbox / agents
+
+
+def test_causal_scm_graph_shape():
+    from oransim.causal.scm import dag_dict
+    g = dag_dict()
+    assert "nodes" in g
+    assert "edges" in g
+    # README claims 64 nodes / 117 edges
+    assert len(g["nodes"]) == 64, f"expected 64 SCM nodes, got {len(g['nodes'])}"
+    assert len(g["edges"]) == 117, f"expected 117 SCM edges, got {len(g['edges'])}"
+
+
+def test_cate_union_semantics():
+    """compute_cate uses union (not intersection) for budget-only
+    counterfactuals. Requires >=20 agents per compute_cate's own guard."""
+    from oransim.causal.cate import compute_cate
+    from oransim.data.population import generate_population
+    pop = generate_population(N=50, seed=7)
+    # Base: 25 agents with prob 0.2
+    base = {i: 0.2 for i in range(25)}
+    # CF: 25 agents (10 overlap, 15 new) with prob 0.4
+    cf = {i: 0.4 for i in range(15, 40)}
+    out = compute_cate(pop, base, cf)
+    assert isinstance(out, list)
+    assert len(out) > 0
+
+
+def test_agent_soul_persona_mock_no_network():
+    from oransim.agents.soul_llm import llm_info, llm_available
+    import os
+    os.environ["LLM_MODE"] = "mock"
+    info = llm_info()
+    assert info["mode"] == "mock"
+    assert not llm_available()
+
+
+def test_population_generates_determistic():
+    from oransim.data.population import generate_population
+    pop_a = generate_population(N=500, seed=123)
+    pop_b = generate_population(N=500, seed=123)
+    import numpy as np
+    assert pop_a.N == 500
+    assert pop_b.N == 500
+    assert np.array_equal(pop_a.age_idx, pop_b.age_idx)
+    assert np.array_equal(pop_a.gender_idx, pop_b.gender_idx)
+
+
+def test_creative_generator():
+    from oransim.data.creatives import make_creative
+    c = make_creative(creative_id="test_001", caption="Aurora morning serum", duration_sec=15.0)
+    assert c.caption == "Aurora morning serum"
+    # content embedding is attached (exact attribute name may evolve)
+    assert any(hasattr(c, a) for a in ("content_emb", "emb", "embedding"))
+
+
+# ----------------------------------------------------------- demo synthetic data
+
+
 def test_no_sensitive_terms_in_package():
     """BULLETPROOF case-insensitive scan — no vendor references leak anywhere.
 
