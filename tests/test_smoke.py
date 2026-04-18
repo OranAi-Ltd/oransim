@@ -303,9 +303,10 @@ def test_fastapi_app_metadata():
 
     assert api.app.title == "Oransim"
     assert api.app.version == "0.2.0a0"
-    # No huitun routes leaked
+    # No internal-vendor routes leaked to the public API
     routes = [r.path for r in api.app.routes if hasattr(r, "path")]
-    assert not any("huitun" in p for p in routes)
+    _forbidden_route = bytes.fromhex("68756974756e").decode()  # decoded at runtime
+    assert not any(_forbidden_route in p for p in routes)
     # Core routes present
     assert "/" in routes
     assert any("/api/health" in p for p in routes)
@@ -476,7 +477,10 @@ def test_ci_workflow_present():
     ci = root / ".github" / "workflows" / "ci.yml"
     assert ci.exists(), ".github/workflows/ci.yml missing"
     content = ci.read_text()
-    for stage in ("pytest", "ruff", "grep -rIEi"):
+    # The vendor-scrub grep was retired from public CI (self-defeating — it
+    # enumerated the terms it was guarding against). The check lives in
+    # test_no_sensitive_terms_in_package instead.
+    for stage in ("pytest", "ruff"):
         assert stage in content, f"CI workflow missing stage: {stage}"
 
 
@@ -615,10 +619,11 @@ def test_mc_compensator_branch():
         cfg = CausalNeuralHawkesConfig(
             n_layers=2, d_model=32, n_heads=4, compensator=mode, n_mc_samples=8
         )
-        nh = CausalNeuralHawkesProcess(cfg)
+        # Seed BEFORE model construction so default-init weights are
+        # reproducible AND non-degenerate (constant-intensity weights would
+        # collapse all three quadrature modes to the same integral).
         torch.manual_seed(0)
-        for p in nh._net.parameters():
-            p.data.mul_(0.0).add_(0.01)
+        nh = CausalNeuralHawkesProcess(cfg)
         return nh.log_likelihood(events)
 
     ll_rect = _ll("rectangle")
@@ -627,6 +632,9 @@ def test_mc_compensator_branch():
     for v in (ll_rect, ll_trap, ll_mc):
         assert isinstance(v, float)
         assert v == v  # not NaN
+    # Rectangle vs trapezoidal differ whenever λ changes between adjacent
+    # events; MC adds per-call sampling noise on top. Floor chosen to
+    # distinguish true mode-branch from "same code path ran twice".
     assert abs(ll_trap - ll_rect) > 1e-6
     assert abs(ll_mc - ll_rect) > 1e-6
 
@@ -866,32 +874,35 @@ def test_env_example_shipped():
 
 
 def test_no_sensitive_terms_in_package():
-    """BULLETPROOF case-insensitive scan — no vendor references leak anywhere.
+    """Case-insensitive scan — no internal-vendor / internal-path tokens leak.
 
-    Covers every shipped file type, every case permutation (huitun/HUITUN/
-    Huitun/HuItUn), both dashes and underscores in tu-zi/cg-api, plus the
-    Chinese 灰豚 character and internal absolute paths. This is the single
-    gate between desensitization regressions and the public repo.
+    Patterns are hex-decoded at runtime so this file itself does not contain
+    the plaintext tokens it's guarding against (which would defeat the check).
     """
     import subprocess
 
-    # Pattern built from hex / split strings to avoid matching this file.
-    # Parts:
-    #   hui[-_]?tun  — matches huitun, hui-tun, hui_tun (any case)
-    #   tu[-_]?zi    — matches tuzi, tu-zi, tu_zi
-    #   cg[-_]?api   — matches cgapi, cg-api, cg_api
-    #   \u7070\u8c5a — 灰豚 (Chinese)
-    #   /home/projects/sim — leaked internal absolute path
-    pattern = "|".join(
-        [
-            "hui" + "[-_]?tun",
-            "tu" + "[-_]?zi",
-            "cg" + "[-_]?api",
-            "\u7070\u8c5a",
-            "/home/projects/sim",
-            "/root/projects/sim",
-        ]
-    )
+    # Build grep pattern from hex-encoded fragments so this test file itself
+    # does not contain the plaintext tokens it's trying to detect. Two forms:
+    #   - full hex strings → literal substring
+    #   - "PREFIX+SEP+SUFFIX" → matches optional -/_ between PREFIX and SUFFIX
+    def _decode_hex(h: str) -> str:
+        return bytes.fromhex(h).decode("utf-8")
+
+    # literal tokens (will be matched verbatim, case-insensitive via -Ei)
+    _literal = [
+        "68756974756e",  # ascii vendor
+        "e781b0e8b19a",  # CJK vendor (utf-8)
+        "2f686f6d652f70726f6a656374732f73696d",  # internal path /home/projects/sim
+        "2f726f6f742f70726f6a656374732f73696d",  # internal path /root/projects/sim
+    ]
+    # (prefix_hex, suffix_hex) for tokens allowing optional -/_ between halves
+    _joined = [
+        ("7475", "7a69"),  # tu[-_]?zi
+        ("6367", "617069"),  # cg[-_]?api
+    ]
+    parts = [_decode_hex(t) for t in _literal]
+    parts.extend(f"{_decode_hex(p)}[-_]?{_decode_hex(s)}" for p, s in _joined)
+    pattern = "|".join(parts)
     root = Path(__file__).parent.parent
     # Note: CHANGELOG.md documents the scrub history (mentioning the terms is
     # expected + intentional). .github/workflows/ci.yml contains the scrub

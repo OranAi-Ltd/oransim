@@ -679,10 +679,11 @@ class CausalTransformerWorldModel(WorldModel):
         out: dict[str, Any] = {}
         for k, v in entry.items():
             t = torch.as_tensor(v, device=self._device)
-            if t.dim() == 0:
-                t = t.unsqueeze(0)
             t = t.long() if k == "platform_id" else t.float()
-            out[k] = t.unsqueeze(0)  # prepend batch dim
+            # Always prepend a batch dim. A 0-dim scalar (platform_id) becomes
+            # [1] — not [1,1] — so downstream nn.Embedding receives the
+            # expected index shape and doesn't emit a spurious extra axis.
+            out[k] = t.unsqueeze(0)
         return out
 
     def _materialize_prediction(self, raw: dict, *, latent: dict) -> WorldModelPrediction:
@@ -697,9 +698,9 @@ class CausalTransformerWorldModel(WorldModel):
         out: dict[str, Any] = {}
         for k, v in features.items():
             t = torch.as_tensor(v, device=self._device)
-            if t.dim() == 0:
-                t = t.unsqueeze(0)
             t = t.long() if k == "platform_id" else t.float()
+            # Always prepend a batch dim. A 0-dim scalar (platform_id) becomes
+            # [1] not [1,1] — keeps nn.Embedding input correctly rank-1.
             out[k] = t.unsqueeze(0)
         return out
 

@@ -293,16 +293,18 @@ JSON schema 定义见 [`docs/zh/schemas/`](docs/zh/schemas/)。
 <details>
 <summary><b>灵魂 Agent</b> —— 1 万个 LLM 人格给定性反馈</summary>
 
-每个场景取最显著的 10k agent 升级为 LLM 驱动的人格，默认模型 `gpt-5.4`。每个人格：
+每个场景取最显著的 top-K agent（`SOUL_POOL_N` 可配，默认 100 演示，Enterprise Edition 用 Ray 扩）升级为 LLM 驱动的人格，默认模型 `gpt-5.4`。每个人格：
 - 从人口学向量生成 persona card
 - 对素材给出反应 / 情绪 / 意图
 - 可选加入群聊模拟（Sunstein 2017 群体极化）
 - 二次传播信号反哺因果图
 
+**定位诚实说明** —— 这一层是叠在量化仿真上的**质性评论**，不是独立因果通道。点击/跳过的决策是统计层 `click_prob` 的 Bernoulli 抽样（垂类匹配时 +40%）；LLM 的职责是为该决策生成一段与其一致的自然语言解释。这样 CATE / ROI 的数值可复现，LLM 成本可控。"LLM 做决策主体"的 Park et al. 2023 Generative Agents 式变体单独放在 v0.5+ 路线图。
+
 成本控制：
 - 请求去重（leader/follower 合并同 key 请求）
 - Persona card 缓存
-- 可配 `SOUL_POOL_N`（默认 100 演示；生产用 Ray 扩容，见路线图）
+- 可配 `SOUL_POOL_N`
 </details>
 
 <details id="causal-transformer-world-model">

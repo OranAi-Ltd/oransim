@@ -305,7 +305,26 @@ def build_persona(pop: Population, idx: int, rng: np.random.Generator) -> Person
 
 
 class SoulAgentPool:
-    """A small set of persona-backed agents that produce qualitative reasoning."""
+    """Persona-backed qualitative feedback layer on top of the statistical model.
+
+    Architectural honesty note — this is not a Park-et-al.-style Generative
+    Agents decider. In the default path (``infer_one``), the click decision is
+    a Bernoulli draw against the per-agent ``click_prob`` from the statistical
+    model, optionally +40% if the persona's interests match the KOL niche. The
+    persona then picks a template-based reason / comment / feeling from the
+    decision outcome. Template mode runs with zero LLM calls.
+
+    When ``infer_batch(use_llm=True)`` is called, a real LLM is invoked, but
+    the click decision STILL comes from the click_prob Bernoulli — the LLM's
+    job is to generate a natural-language rationalization for a decision that
+    is already made by the statistical layer. This is intentional: it keeps
+    the CATE / ROI numerics reproducible and the LLM cost bounded. A full
+    LLM-decides variant (agent agency over the click event) is a separate
+    roadmap item (see ROADMAP.md → "LLM as primary decider" for v0.5+).
+
+    Think of this layer as structured qualitative commentary overlaid on the
+    quantitative simulator, not as an independent causal channel.
+    """
 
     def __init__(self, population: Population, n: int = 30, seed: int = 123):
         self.pop = population

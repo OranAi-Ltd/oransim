@@ -175,7 +175,7 @@ The frontend shows a yellow banner at the top whenever the backend is still in m
 
 - *Why explanation*: causal-graph path tracing (64 nodes, 117 edges, cyclic with long-term feedback loops — see [§causal graph](#causal-graph) for why it's not a strict DAG) + per-head attention maps + agent reasoning traces
 - *Counterfactual heads*: TARNet (Shalit ICML 2017), Dragonnet (Shi NeurIPS 2019); Pearl 3-step abduction → action → prediction
-- *LLM personas*: top-10k salient agents upgraded to LLM-backed personas (Park et al. 2023 Generative Agents)
+- *LLM personas*: top-K salient agents (`SOUL_POOL_N`) upgraded to LLM-backed personas for **qualitative rationalization** (commentary-style, click decision stays in the statistical layer — see §Soul Agents for the honest positioning). Park et al. 2023-style LLM-decides variant is on the v0.5+ roadmap
 - *14-day diffusion*: Causal Neural Hawkes (Mei & Eisner 2017 + Zuo ICML 2020 + Geng NeurIPS 2022 counterfactual TPP)
 - *Budget curves*: Hill saturation (Dubé & Manchanda 2005) + frequency fatigue (Naik & Raman 2003)
 - *Balancing loss*: HSIC (Gretton 2005) or adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
@@ -288,18 +288,20 @@ Generated via Iterative Proportional Fitting (IPF / Deming-Stephan 1940) against
 </details>
 
 <details>
-<summary><b>Soul Agents</b> — 10k LLM personas for qualitative feedback</summary>
+<summary><b>Soul Agents</b> — LLM personas for qualitative feedback</summary>
 
-The top-10k most salient agents for a scenario are upgraded to LLM-backed personas. Default model: `gpt-5.4`. Each persona:
+The top-K most salient agents for a scenario are upgraded to LLM-backed personas (`SOUL_POOL_N` configurable; default 100 for demo, scalable via Ray in the Enterprise Edition). Default model: `gpt-5.4`. Each persona:
 - Generates a persona card from its demographic vector
 - Evaluates the creative (reaction / emotional response / intent)
 - Optionally participates in simulated group chats (Sunstein 2017 group polarization)
 - Feeds second-wave mediators back into the causal graph
 
+**Honest positioning** — this layer is **qualitative commentary** on top of the quantitative simulator, not an independent causal channel. The click / skip decision is a Bernoulli draw against the statistical `click_prob` (+40% niche-match lift); the LLM's job is to generate a natural-language rationalization that is consistent with that decision. This keeps CATE / ROI numerics reproducible and LLM cost bounded. An "LLM as primary decider" variant (agent agency over the click event, Park et al. 2023 Generative Agents style) is separately tracked on the roadmap for v0.5+.
+
 Cost controlled via:
 - In-flight request coalescing (leader/follower dedup pattern)
 - Persona card caching
-- Configurable `SOUL_POOL_N` (default 100 for demo; production tiers scale via Ray, see roadmap)
+- Configurable `SOUL_POOL_N`
 </details>
 
 <details id="causal-transformer-world-model">

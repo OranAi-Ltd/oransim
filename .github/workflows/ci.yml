@@ -53,30 +53,9 @@ jobs:
       - run: ruff check backend tests --output-format=github
       - run: black --check backend tests
 
-  desensitization:
-    name: vendor-reference gate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Case-insensitive scan for vendor references
-        # Excluded from the scan:
-        #   CHANGELOG.md             — documents scrub history (mentions Huitun etc.)
-        #   .github/workflows/ci.yml — this file literally contains the search pattern
-        # Both ENCODE the gate; they don't leak the terms.
-        run: |
-          set -e
-          if grep -rIEi "hui[-_]?tun|tu[-_]?zi|cg[-_]?api|灰豚|/home/projects/sim|/root/projects/sim" \
-               backend frontend docs assets \
-               .github/ISSUE_TEMPLATE .github/PULL_REQUEST_TEMPLATE.md .github/FUNDING.yml .github/CODEOWNERS \
-               index.html README.md README.zh-CN.md ROADMAP.md \
-               CONTRIBUTING.md CODE_OF_CONDUCT.md SECURITY.md .github/SETUP.md \
-               CITATION.cff pyproject.toml \
-               --include='*.py' --include='*.md' --include='*.html' --include='*.yml' \
-               --include='*.yaml' --include='*.toml' --include='*.cff' --include='*.svg' \
-               --include='*.json' --include='*.jsonl' --include='*.css' --include='*.js' \
-               --include='*.txt' --include='*.ini' --include='*.cfg' \
-               --exclude-dir=__pycache__ --exclude-dir=data 2>/dev/null; then
-            echo "::error::🚨 sensitive vendor term leaked — see matches above"
-            exit 1
-          fi
-          echo "✅ no vendor-reference leaks detected"
+  # Previously: a public CI job that grep'd the source tree for forbidden terms.
+  # Removed because the job spec itself enumerated the terms it was looking for
+  # (self-defeating — any reader could read the patterns out of the workflow).
+  # Equivalent check now lives in tests/test_smoke.py::test_no_sensitive_terms
+  # with encoded patterns, and in a private pre-release hook maintained outside
+  # the public repo.

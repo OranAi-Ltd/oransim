@@ -128,14 +128,11 @@ site, and expanded model / data card v1.0 documentation.
   (future) "mc" Monte Carlo estimator via `n_mc_samples`.
 
 ### Fixed
-- Bulletproof desensitization: `test_no_sensitive_terms_in_package` now
-  runs a case-insensitive scan (`hui[-_]?tun`, `tu[-_]?zi`, `cg[-_]?api`,
-  `灰豚`, plus internal absolute paths) across 14 file extensions in
-  backend / frontend / docs / assets / .github / root markdown files.
-  Hardens the gate against capitalization regressions like the earlier
-  `Huitun` oversight.
-- `data/fan_profile.py` had four uncaught `Huitun` (capitalised) comments
-  left by the original migration; scrubbed.
+- Hardened the internal-reference scrub: `test_no_sensitive_terms_in_package`
+  now case-insensitively checks every shipped file type for internal
+  vendor / path tokens, covering capitalization + underscore / dash variants.
+- `data/fan_profile.py` had a few stray internal-only comment references
+  left by an earlier migration; scrubbed.
 - `ROADMAP.md` + README "Roadmap Highlights" were listing already-shipped
   Neural Hawkes + Transformer WM as future v0.5 targets. Reworded to mark
   them as shipped; new v0.2 item is "pretrained weight release."
