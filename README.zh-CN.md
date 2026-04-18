@@ -5,8 +5,8 @@
 
 <p>
   <a href="https://github.com/OranAi-Ltd/oransim/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/OranAi-Ltd/oransim?color=blue"></a>
-  <a href="https://pypi.org/project/oransim/"><img alt="PyPI" src="https://img.shields.io/pypi/v/oransim?label=PyPI"></a>
-  <a href="https://pypi.org/project/oransim/"><img alt="Python" src="https://img.shields.io/pypi/pyversions/oransim"></a>
+  <a href="https://github.com/OranAi-Ltd/oransim/releases"><img alt="Release" src="https://img.shields.io/github/v/tag/OranAi-Ltd/oransim?label=release&color=blue"></a>
+  <a href="#"><img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-blue"></a>
   <a href="https://github.com/OranAi-Ltd/oransim/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/OranAi-Ltd/oransim/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/OranAi-Ltd/oransim/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/OranAi-Ltd/oransim?style=social"></a>
   <a href="https://oran.cn/oransim"><img alt="Website" src="https://img.shields.io/badge/website-oran.cn-FF6B35"></a>
@@ -81,7 +81,7 @@ Robyn / LightweightMMM 那类只给总曲线，但营销决策往往是「我该
 
 </details>
 
-> 🏢 **OranAI Enterprise · 生产验证版** —— 同一套架构在**持续更新的 1M+ 真实 campaign** 上训练，跨行业线下验证过；提供 SLA-backed 托管推理、on-premise 私有部署、垂类专属模型（美妆 / 服装 / 3C / 食饮 / 奢品 / 汽车）以及定制 DAG / 品牌专属 persona 库。OSS 版是 reference implementation，企业版是真正跑过商业验证的生产系统。联系：`cto@orannai.com`。
+> 🏢 **OranAI Enterprise Edition** —— OSS 是合成数据上的 reference implementation。商业版（Enterprise Edition）在此之上加：真实面板 KOL / 笔记索引、SLA-backed 托管推理、on-premise 私有部署、垂类专属校准（美妆 / 服装 / 3C / 食饮 / 奢品 / 汽车）。联系 `cto@orannai.com` 试点。能力对照见 §[企业版](#enterprise)。
 
 ---
 

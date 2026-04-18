@@ -5,8 +5,8 @@
 
 <p>
   <a href="https://github.com/OranAi-Ltd/oransim/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/OranAi-Ltd/oransim?color=blue"></a>
-  <a href="https://pypi.org/project/oransim/"><img alt="PyPI" src="https://img.shields.io/pypi/v/oransim?label=PyPI"></a>
-  <a href="https://pypi.org/project/oransim/"><img alt="Python" src="https://img.shields.io/pypi/pyversions/oransim"></a>
+  <a href="https://github.com/OranAi-Ltd/oransim/releases"><img alt="Release" src="https://img.shields.io/github/v/tag/OranAi-Ltd/oransim?label=release&color=blue"></a>
+  <a href="#"><img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-blue"></a>
   <a href="https://github.com/OranAi-Ltd/oransim/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/OranAi-Ltd/oransim/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/OranAi-Ltd/oransim/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/OranAi-Ltd/oransim?style=social"></a>
   <a href="https://oran.cn/oransim"><img alt="Website" src="https://img.shields.io/badge/website-oran.cn-FF6B35"></a>
@@ -76,7 +76,7 @@ Get all 5 right and you have Oransim. Each layer isn't there to sound good — e
 
 </details>
 
-> 🏢 **OranAI Enterprise · production-validated** — 同一套架构在**持续更新的 1M+ 真实 campaign** 上训练，跨行业线下验证过；提供 SLA-backed hosted inference、on-premise 私有部署、垂类专属模型（美妆 / 服装 / 3C / 食饮 / 奢品 / 汽车）以及定制 DAG / 品牌专属 persona 库。OSS 版是 reference implementation，企业版是真正跑过商业验证的生产系统。联系 `cto@orannai.com`。
+> 🏢 **OranAI Enterprise Edition** — this OSS release is a reference implementation on synthetic data. The commercial Enterprise Edition extends it with a real-panel KOL/notes index, hosted inference with SLA, on-premise deployment, and vertical-specific calibration (beauty / fashion / 3C / food-and-beverage / luxury / automotive). Contact `cto@orannai.com` for pilot. See §[Enterprise](#enterprise) below for the capability matrix and fair-use boundary.
 
 ---
 
@@ -224,6 +224,8 @@ See [`docs/en/architecture.md`](docs/en/architecture.md) for the full design.
 | ⚪ Twitter / X       | Global   | 📋 planned | —                             | —                    | v0.5 |
 | 📺 Bilibili          | Greater China | 📋 planned | —                        | —                    | v1.0 |
 | ✒️ LinkedIn          | Global   | 📋 planned | —                             | —                    | v1.0 |
+
+> *What "MVP" actually means here*: XHS is the canonical v1 adapter with real data-provider paths (CSV / JSON / OpenAPI). TikTok / IG / YouTube Shorts / Douyin ship as **config-differentiated wrappers** over the same `PlatformAdapter` interface (each has distinct CPM / CTR / CVR / duration priors — see `backend/oransim/platforms/{platform}/adapter.py`), all driven by the synthetic LightGBM baseline. They pass shape tests end-to-end but don't yet have platform-specific DataProviders hooked up; that's what "v0.5 (real panels)" means in the milestone column.
 
 **Want another platform?** Open an [Adapter Request](https://github.com/OranAi-Ltd/oransim/issues/new?template=adapter_request.yml) — we prioritize based on community demand.
 
@@ -434,7 +436,7 @@ Phase 1 benchmarks are based on the shipped synthetic corpus (**2,000 scenarios 
 | `roi_point_estimate`    | 0.33 | 0.19 | Single-shot regression |
 | `retention_7d`          | 0.29 | 0.17 | Longitudinal |
 
-> ⚠️ **Reproducibility disclaimer** — these numbers reflect synthetic data. Real-world performance depends on (1) data quality of your chosen DataProvider, (2) platform match, (3) vertical/industry. **OranAI Enterprise Edition** trains on proprietary real-world data and publishes separate benchmarks under NDA.
+> ⚠️ **Honest reproducibility framing** — this is a **closed-loop evaluation**: the same synthetic data generator (`backend/scripts/gen_synthetic_data.py`) produces both training and held-out splits, and we evaluate our own model on our own generative process. This measures **"does the model fit our generative assumptions"**, not external validity. For real marketing-decision accuracy you need either (a) an independent real-panel benchmark (Enterprise Edition uses proprietary real-world data) or (b) a public benchmark with out-of-distribution campaigns — the OrancBench v0.5 plan (see ROADMAP.md) is our attempt at the latter.
 
 See [`docs/en/benchmarks/`](docs/en/benchmarks/) for the full protocol.
 
