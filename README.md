@@ -173,7 +173,7 @@ The frontend shows a yellow banner at the top whenever the backend is still in m
 <details>
 <summary>Technical references for each row</summary>
 
-- *Why explanation*: Pearl SCM path tracing (64 nodes, 117 edges) + per-head attention maps + agent reasoning traces
+- *Why explanation*: causal-graph path tracing (64 nodes, 117 edges, cyclic with long-term feedback loops — see [§causal graph](#causal-graph) for why it's not a strict DAG) + per-head attention maps + agent reasoning traces
 - *Counterfactual heads*: TARNet (Shalit ICML 2017), Dragonnet (Shi NeurIPS 2019); Pearl 3-step abduction → action → prediction
 - *LLM personas*: top-10k salient agents upgraded to LLM-backed personas (Park et al. 2023 Generative Agents)
 - *14-day diffusion*: Causal Neural Hawkes (Mei & Eisner 2017 + Zuo ICML 2020 + Geng NeurIPS 2022 counterfactual TPP)
@@ -191,7 +191,7 @@ The frontend shows a yellow banner at the top whenever the backend is still in m
 <img src="assets/architecture.svg" alt="Oransim architecture diagram" width="100%"/>
 </div>
 
-A typical prediction request flows: **Creative + Budget** → **PlatformAdapter** (pulls data via pluggable **DataProvider**) → **World Model** (factual + counterfactual predictions) + **Agent Layer** (POP_SIZE-scalable IPF + LLM personas) → **Causal Engine** (64-node Pearl SCM + 3-step `do()` counterfactuals) → **Diffusion** (14-day intervention-aware rollout) → **Prediction JSON** (14–19 schemas).
+A typical prediction request flows: **Creative + Budget** → **PlatformAdapter** (pulls data via pluggable **DataProvider**) → **World Model** (factual + counterfactual predictions) + **Agent Layer** (POP_SIZE-scalable IPF + LLM personas) → **Causal Engine** (64-node causal graph + `do()` counterfactuals) → **Diffusion** (14-day intervention-aware rollout) → **Prediction JSON** (14–19 schemas).
 
 **What runs where:**
 
@@ -259,15 +259,19 @@ See [`docs/en/schemas/`](docs/en/schemas/) for JSON schema definitions.
 
 ## 🧠 Under the Hood
 
-<details>
-<summary><b>Structural Causal Model (SCM)</b> — 64 nodes, 117 edges</summary>
+<details id="causal-graph">
+<summary><b>Causal Graph</b> — 64 nodes, 117 edges (cyclic, with long-term feedback loops)</summary>
 
-Pearl's SCM framework (Pearl 2009) with three-step counterfactual evaluation:
-1. **Abduction** — update latent noise terms given evidence
-2. **Action** — apply `do()` intervention
-3. **Prediction** — propagate through the modified SCM
+Hand-designed by domain experts covering the marketing funnel: impression → awareness → consideration → conversion → repeat purchase → brand memory, with mediators for group discourse (Sunstein 2017) and information cascades (Bikhchandani et al. 1992).
 
-The graph is hand-designed by domain experts covering the marketing funnel from impression → awareness → consideration → conversion → repeat purchase → brand memory, with mediators for group discourse (Sunstein 2017) and information cascades (Bikhchandani et al. 1992).
+**Honest caveat — not a strict DAG.** Networkx confirms 158 simple cycles concentrated in one 25-node SCC (e.g. `impression_dist → exposure → ... → repurchase → brand_equity → ecpm_bid → impression_dist`). This reflects real long-term marketing feedback: repeat purchases raise brand equity, brand equity raises CPM bid, higher bid changes next-cycle impression distribution. Strict Pearl-style abduction on cycles is undefined; we use the **cyclic-SCM generalization** of Bongers et al. 2021 ([Foundations of Structural Causal Models with Cycles and Latent Variables](https://arxiv.org/abs/1611.06221)), treating `do()` as a fixed-point solve over the SCC rather than a topological forward pass.
+
+The 3-step evaluation in code:
+1. **Abduction** — at the agent layer, re-use the sampled noise from baseline; at the graph layer, per-node residuals are frozen
+2. **Action** — apply `do()` intervention (supported nodes listed in `/api/dag`'s `intervenable: true` set)
+3. **Prediction** — topologically sort the acyclic condensation, solve each SCC by one sweep of numerical iteration (2–3 passes empirically converge on the shipped graph)
+
+Caveat: this is a pragmatic engineering choice. A fully principled cyclic-SCM solve would require either time-unrolling (explicit `t`/`t+1` variables) or an equilibrium-solver that guarantees fixed-point existence. On roadmap for v0.5.
 </details>
 
 <details>
@@ -302,7 +306,7 @@ Cost controlled via:
 A 6-layer × 256-dim causal Transformer that ingests heterogeneous campaign features and predicts three quantile levels (P35/P50/P65) for each funnel KPI. Architecture lifts ideas from the recent causal-Transformer literature:
 
 - **Token-type factorization** (CaT, Melnychuk et al. ICML 2022) — inputs split into *Covariate* (platform, demographic, time), *Treatment* (creative embedding, budget, KOL), and *Outcome* (KPIs) tokens with distinct type embeddings
-- **DAG-aware attention** (CausalDAG-Transformer) — attention mask derived from the 64-node Pearl SCM restricts each token to attend to topological ancestors; per-head learnable gate on the bias
+- **DAG-aware attention** (CausalDAG-Transformer) — attention mask derived from the 64-node causal graph restricts each token to attend to topological ancestors; per-head learnable gate on the bias. **Status:** code-complete in `CausalTransformerWorldModel.set_dag_from_edges()` but **not wired into the default training loop** (opt-in via the config `dag_attention_bias=True`). Open this up once the graph's non-DAG cycles are resolved by time-unrolling — see §[Causal Graph](#causal-graph) for why they exist today.
 - **Per-arm counterfactual heads** (TARNet, Shalit et al. ICML 2017 / Dragonnet, Shi et al. NeurIPS 2019) — one quantile head per discrete treatment arm enables `predict_factual` vs `predict_counterfactual(do(T=t'))` with a single forward pass
 - **Representation balancing** (BCAUSS + CaT) — HSIC (Gretton et al. 2005) or adversarial-IPTW loss decorrelates the learned representation from treatment assignment, reducing bias in counterfactual predictions
 - **In-context amortization** (CInA, Arik & Pfister NeurIPS 2023, optional) — model can condition on a context set of prior campaigns for amortized zero-shot causal inference
@@ -420,7 +424,7 @@ Scenario sessions persist state so users can iterate: "change budget from 100k t
 
 ## 📈 Benchmarks
 
-Phase 1 benchmarks are based on **100k synthetic samples** — see [`data/models/data_card.md`](data/models/data_card.md) for the data-generating process.
+Phase 1 benchmarks are based on the shipped synthetic corpus (**2,000 scenarios + 100 event streams + 50 OrancBench tasks** — reproducible from the files under [`data/synthetic/`](data/synthetic/) and [`data/benchmarks/`](data/benchmarks/)). See [`data/models/data_card.md`](data/models/data_card.md) for the data-generating process. The R² numbers below were run on 10% held-out of those 2k scenarios; larger-corpus numbers land with OrancBench v0.5.
 
 | Metric | R² (synthetic) | Baseline (linear) | Notes |
 |--------|---------------|-------------------|-------|
@@ -441,7 +445,7 @@ See [`docs/en/benchmarks/`](docs/en/benchmarks/) for the full protocol.
 See [ROADMAP.md](ROADMAP.md) for the full 3-horizon × 8-theme plan. Teasers:
 
 **v0.2 (Q3 2026) — shipping pretrained weights**
-- 📦 Trained Causal Transformer + Causal Neural Hawkes checkpoints on the 100k synthetic corpus
+- 📦 Trained Causal Transformer + Causal Neural Hawkes checkpoints on an expanded synthetic corpus (targeting ~100k scenarios for OrancBench v0.5)
 - TikTok + Douyin adapter MVPs
 - Docker Compose · MkDocs · CI
 

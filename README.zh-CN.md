@@ -178,7 +178,7 @@ python -m uvicorn oransim.api:app --port 8001 &
 <details>
 <summary>每一行对应的技术文献</summary>
 
-- *为什么解释*：Pearl SCM 路径追踪（64 节点、117 边）+ per-head attention + agent 推理链
+- *为什么解释*：因果图路径追踪（64 节点、117 边，含长周期反馈回路，不是严格 DAG — 见[§因果图](#causal-graph)）+ per-head attention + agent 推理链
 - *反事实头*：TARNet (Shalit ICML 2017)、Dragonnet (Shi NeurIPS 2019)；Pearl 三步：溯因 → 干预 → 预测
 - *LLM 人格*：取前 10k 显著 agent 升级为 LLM 驱动人格（Park et al. 2023 Generative Agents）
 - *14 天扩散*：因果神经 Hawkes (Mei & Eisner 2017 + Zuo ICML 2020 + Geng NeurIPS 2022 counterfactual TPP)
@@ -196,7 +196,7 @@ python -m uvicorn oransim.api:app --port 8001 &
 <img src="assets/architecture.svg" alt="Oransim 架构图" width="100%"/>
 </div>
 
-一次典型预测链路：**素材 + 预算** → **PlatformAdapter**（经可插拔 **DataProvider** 取数据）→ **世界模型**（事实 + 反事实预测）+ **Agent 层**（POP_SIZE-scalable IPF + LLM 人格）→ **因果引擎**（64 节点 Pearl SCM + 三步 `do()` 反事实）→ **扩散**（14 天干预感知 rollout）→ **预测 JSON**（14-19 个 schema）。
+一次典型预测链路：**素材 + 预算** → **PlatformAdapter**（经可插拔 **DataProvider** 取数据）→ **世界模型**（事实 + 反事实预测）+ **Agent 层**（POP_SIZE-scalable IPF + LLM 人格）→ **因果引擎**（64 节点因果图 + `do()` 反事实）→ **扩散**（14 天干预感知 rollout）→ **预测 JSON**（14-19 个 schema）。
 
 **默认走哪条 / 研究栈怎么开：**
 
@@ -264,15 +264,19 @@ JSON schema 定义见 [`docs/zh/schemas/`](docs/zh/schemas/)。
 
 ## 🧠 技术细节
 
-<details>
-<summary><b>结构因果模型 SCM</b> —— 64 节点、117 条边</summary>
-
-Pearl 的 SCM 框架（Pearl 2009）+ 三步反事实：
-1. **溯因（Abduction）** —— 在给定证据下更新隐变量分布
-2. **干预（Action）** —— 施加 `do()` 干预
-3. **预测（Prediction）** —— 在改造后的 SCM 上前向传播
+<details id="causal-graph">
+<summary><b>因果图</b> —— 64 节点 · 117 边 · 含长周期反馈回路</summary>
 
 图是由领域专家手工设计的，覆盖营销漏斗从 曝光 → 认知 → 考虑 → 转化 → 复购 → 品牌记忆，包含群体话语（Sunstein 2017）和信息级联（Bikhchandani et al. 1992）的 mediator。
+
+**诚实说明 — 不是严格 DAG。** networkx 验证有 158 条 simple cycles 集中在一个 25 节点 SCC 里（典型：`impression_dist → exposure → ... → repurchase → brand_equity → ecpm_bid → impression_dist`）。这反映了真实营销长周期反馈：复购抬高品牌资产，品牌资产抬高 CPM 出价，高出价又改变下一轮曝光分布。严格 Pearl 式的 abduction 在 cycle 上没定义；我们用 **Bongers 等 2021** 的 cyclic-SCM 推广（[Foundations of Structural Causal Models with Cycles and Latent Variables](https://arxiv.org/abs/1611.06221)），把 `do()` 当作 SCC 内的不动点求解，而不是拓扑前向传播。
+
+代码里的 3 步实际走的是：
+1. **溯因** —— agent 层重用 baseline 的采样噪声；图层面每节点残差 frozen
+2. **干预** —— 应用 `do()`（可干预节点集见 `/api/dag` 响应里的 `intervenable: true`）
+3. **预测** —— 对无环 condensation 拓扑排序，每个 SCC 扫 2–3 遍数值迭代收敛（shipped 图上实测足够）
+
+说明：这是工程折中选择。理论上应当时间展开（t / t+1 显式分离）或用保证不动点存在的 equilibrium solver，在 v0.5 路线图上。
 </details>
 
 <details>
@@ -307,7 +311,7 @@ Pearl 的 SCM 框架（Pearl 2009）+ 三步反事实：
 一个 6 层 × 256-dim 的因果 Transformer，吃异构 campaign 特征，输出每个漏斗 KPI 的三个分位数（P35/P50/P65）。架构结合近年因果 Transformer 文献：
 
 - **Token 类型分解**（CaT, Melnychuk et al. ICML 2022）—— 输入分为 *Covariate*（平台、人口学、时段）· *Treatment*（素材 embedding、预算、KOL）· *Outcome*（KPI）三类 token，各自带独立 type embedding
-- **DAG-aware 注意力**（CausalDAG-Transformer）—— 注意力 mask 从 64 节点 Pearl SCM 派生，每个 token 只能 attend 到它的拓扑祖先；每个 head 学一个 bias 门控
+- **DAG-aware 注意力**（CausalDAG-Transformer）—— 注意力 mask 从 64 节点因果图派生，每个 token 只能 attend 到拓扑祖先；每个 head 学一个 bias 门控。**当前状态**：代码在 `CausalTransformerWorldModel.set_dag_from_edges()` 完整实现但**默认训练循环未接入**（需配置 `dag_attention_bias=True` opt-in）。等因果图通过时间展开消除 cycle 后接入默认路径 — 详见[§因果图](#causal-graph)。
 - **Per-arm 反事实头**（TARNet, Shalit et al. ICML 2017 / Dragonnet, Shi et al. NeurIPS 2019）—— 每个离散 treatment arm 一个分位数 head，单次 forward 同时算 `predict_factual` 和 `predict_counterfactual(do(T=t'))`
 - **表征平衡正则**（BCAUSS + CaT）—— HSIC（Gretton et al. 2005）或对抗 IPTW loss 把学到的表征和 treatment 分配解耦，降低反事实偏差
 - **In-context 摊销**（CInA, Arik & Pfister NeurIPS 2023，可选）—— 模型可以条件于一组历史 campaign 做 amortized zero-shot 因果推断

@@ -4,9 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Oransim: Causal Digital Twin for Marketing at Scale</title>
-<meta name="description" content="Oransim: an open-source framework combining a Causal Transformer world model, a Causal Neural Hawkes diffusion forecaster, a 64-node Pearl SCM, and an IPF-calibrated virtual-consumer population (configurable POP_SIZE, 100k default) with LLM-driven soul agents for marketing performance prediction."/>
+<meta name="description" content="Oransim: an open-source framework combining a Causal Transformer world model, a Causal Neural Hawkes diffusion forecaster, a 64-node causal graph, and an IPF-calibrated virtual-consumer population (configurable POP_SIZE, 100k default) with LLM-driven soul agents for marketing performance prediction."/>
 <meta property="og:title" content="Oransim · Causal Digital Twin for Marketing at Scale"/>
-<meta property="og:description" content="Causal Transformer + Causal Neural Hawkes + Pearl SCM + agent-based simulation. Apache-2.0."/>
+<meta property="og:description" content="Causal Transformer + Causal Neural Hawkes + 64-node causal graph + agent-based simulation. Apache-2.0."/>
 <meta property="og:image" content="https://raw.githubusercontent.com/OranAi-Ltd/oransim/main/assets/social-preview.svg"/>
 <meta property="og:url" content="https://oranai-ltd.github.io/oransim/"/>
 <meta property="og:type" content="website"/>
@@ -533,8 +533,10 @@
       Mei &amp; Eisner<span class="cite"><a href="#r4">[4]</a></span>,
       Zuo et&nbsp;al.<span class="cite"><a href="#r5">[5]</a></span>, and
       Geng et&nbsp;al.<span class="cite"><a href="#r6">[6]</a></span>;
-      (iii) a hand-designed 64-node structural causal model with Pearl's
-      three-step <code>do</code>-calculus<span class="cite"><a href="#r7">[7]</a></span>;
+      (iii) a hand-designed 64-node causal graph with <code>do</code>-calculus<span class="cite"><a href="#r7">[7]</a></span>
+      interventions (the graph contains long-term marketing feedback loops, so
+      strict Pearl abduction is replaced by the cyclic-SCM generalization of
+      Bongers et&nbsp;al. 2021);
       and (iv) a population of one&nbsp;million IPF-calibrated virtual consumers with
       10k LLM-driven persona agents. The framework is released under Apache-2.0
       with a deterministic synthetic training corpus, a pretrained LightGBM
