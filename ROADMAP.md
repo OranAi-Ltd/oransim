@@ -129,6 +129,7 @@ Themes:
 ### 🧠 Models & Algorithms
 - 🎯 **Causal Foundation Model** — pretrain on 10M+ cross-industry, cross-platform campaigns; few-shot fine-tune per brand; the "BERT / GPT moment" for marketing causality
 - 🎯 **Closed-loop AI media buying** — real-time prediction + automatic campaign parameter adjustment; production-grade RL with safety constraints
+- 🎯 **Causal Population Synthesis** — move the 1M-agent population generator beyond marginal-matching (IPF / IPU) to jointly respect the 64-node Pearl SCM. Research-project line: `CausalDAGTabDDPMSynthesizer` combining tabular diffusion (Kotelnikov et al. 2023) with a DAG-guided score network. Intermediate stops: Bayesian-network synthesizer (v0.2) → CTGAN / TVAE on real data (v0.5) → DAG-guided TabDDPM (v1.0)
 - **Differential privacy** — (ε, δ)-DP training for brand-proprietary data; publish DP-utility tradeoff curves
 - **Federated learning** — cross-brand federated training without data egress from brand infrastructure
 - **Streaming real-time prediction** — Kafka-native, sub-second refresh on live campaign data

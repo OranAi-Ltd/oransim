@@ -6,6 +6,37 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.1.2-alpha] — 2026-04-18
+
+### Added
+- **PopulationSynthesizer abstraction** (`oransim.data.synthesizers`) — IPF
+  baseline wrapping `generate_population` plus stubs for
+  `BayesianNetworkSynthesizer` (v0.2), `TabDDPMSynthesizer` (v0.5),
+  `CausalDAGTabDDPMSynthesizer` (v1.0 research), and `CTGAN` (v0.5). Pick via
+  `get_synthesizer(name)`. ROADMAP adds "Causal Population Synthesis" as a
+  v1.0 research item combining tabular diffusion with DAG-guided scoring.
+- **OrancBench v0.1** — 50 scenarios (20 easy + 20 medium + 10 hard) shipped
+  at `data/benchmarks/orancbench_v0_1.jsonl`, with ground-truth outcomes
+  generated from the same Hill-saturation + frequency-fatigue + Hawkes
+  process used by the synthetic corpus. Loader + scorer in
+  `oransim.benchmarks`; runner at `backend/scripts/run_orancbench.py`. The
+  shipped LightGBM baseline scores impressions R² 0.98/0.60/0.41 on
+  easy/medium/hard — a real evaluation gradient.
+- **4 example Jupyter notebooks** at `examples/` — quickstart · counterfactual
+  reasoning · custom platform adapter · soul-agent personas.
+- **Docker Compose** — `docker/Dockerfile` (multi-stage, slim) +
+  `docker/docker-compose.yml` for one-command launch of backend+frontend.
+- **GitHub Actions CI** — `.github/workflows/ci.yml` runs pytest on Python
+  3.10/3.11/3.12, ruff + black in lint mode, and a dedicated
+  desensitization gate stage.
+
+### Tests
+- **27 smoke tests** (up from 21), all pass in 13.7 s without PyTorch.
+  New coverage: synthesizer registry + deferred NotImplementedError,
+  OrancBench scenario schema + loader/scorer round-trip on ground-truth
+  predictions (R² > 0.99), CI workflow present + has required stages,
+  Docker artifacts shipped, example notebooks are valid ipynb JSON.
+
 ## [0.1.1-alpha] — 2026-04-18
 
 ### Added

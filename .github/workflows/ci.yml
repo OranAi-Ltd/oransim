@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: pytest (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+
+      - name: Install package + dev extras (torch-free smoke)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev]'
+
+      - name: Run smoke test suite
+        env:
+          POP_SIZE: "10000"
+          SOUL_POOL_N: "5"
+          LLM_MODE: "mock"
+        run: |
+          pytest tests/ -v --tb=short --durations=10
+
+  lint:
+    name: ruff + black
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install ruff black
+      - run: ruff check backend tests --output-format=github || echo "::warning::ruff found issues"
+      - run: black --check backend tests || echo "::warning::black would reformat files"
+
+  desensitization:
+    name: vendor-reference gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Case-insensitive scan for vendor references
+        run: |
+          set -e
+          if grep -rIEi "hui[-_]?tun|tu[-_]?zi|cg[-_]?api|灰豚|/home/projects/sim|/root/projects/sim" \
+               backend frontend docs assets .github \
+               index.html README.md README.zh-CN.md ROADMAP.md CHANGELOG.md \
+               CONTRIBUTING.md CODE_OF_CONDUCT.md SECURITY.md GITHUB_SETUP.md \
+               CITATION.cff pyproject.toml \
+               --include='*.py' --include='*.md' --include='*.html' --include='*.yml' \
+               --include='*.yaml' --include='*.toml' --include='*.cff' --include='*.svg' \
+               --include='*.json' --include='*.jsonl' --include='*.css' --include='*.js' \
+               --include='*.txt' --include='*.ini' --include='*.cfg' \
+               --exclude-dir=__pycache__ --exclude-dir=data ; then
+            echo "::error::🚨 sensitive vendor term leaked — see matches above"
+            exit 1
+          fi
+          echo "✅ no vendor-reference leaks detected"

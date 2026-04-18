@@ -1,0 +1,58 @@
+# ============================================================================
+# Oransim · one-command launch
+# ----------------------------------------------------------------------------
+#   cd oransim
+#   docker compose -f docker/docker-compose.yml up --build
+#
+# Then open:
+#   http://localhost:8001/docs    — FastAPI auto-generated API docs
+#   http://localhost:8090         — frontend demo UI
+#
+# To enable real LLM persona agents, create a .env file in the repo root with:
+#   LLM_MODE=api
+#   LLM_API_KEY=sk-...
+#   LLM_BASE_URL=https://api.openai.com/v1
+#   LLM_MODEL=gpt-5.4
+# ============================================================================
+
+version: "3.9"
+
+services:
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: oransim/backend:v0.1.2-alpha
+    container_name: oransim-backend
+    ports:
+      - "8001:8001"
+    environment:
+      POP_SIZE:      ${POP_SIZE:-100000}
+      SOUL_POOL_N:   ${SOUL_POOL_N:-100}
+      LLM_MODE:      ${LLM_MODE:-mock}
+      LLM_BASE_URL:  ${LLM_BASE_URL:-https://api.openai.com/v1}
+      LLM_MODEL:     ${LLM_MODEL:-gpt-5.4}
+      LLM_API_KEY:   ${LLM_API_KEY:-}
+      PORT:          "8001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8001/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    image: python:3.12-slim
+    container_name: oransim-frontend
+    depends_on:
+      backend:
+        condition: service_started
+    working_dir: /app/frontend
+    volumes:
+      - ../frontend:/app/frontend:ro
+    command: python -m http.server 8090
+    ports:
+      - "8090:8090"
+    restart: unless-stopped
