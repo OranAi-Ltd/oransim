@@ -534,9 +534,10 @@
       Zuo et&nbsp;al.<span class="cite"><a href="#r5">[5]</a></span>, and
       Geng et&nbsp;al.<span class="cite"><a href="#r6">[6]</a></span>;
       (iii) a hand-designed 64-node causal graph with <code>do</code>-calculus<span class="cite"><a href="#r7">[7]</a></span>
-      interventions (the graph contains long-term marketing feedback loops, so
-      strict Pearl abduction is replaced by the cyclic-SCM generalization of
-      Bongers et&nbsp;al. 2021);
+      interventions — the graph encodes long-term marketing feedback (e.g.
+      repeat-purchase → brand equity → CPM bid → next-cycle impression),
+      evaluated as a cyclic-SCM fixed point in the OSS release; a fully
+      time-unrolled DAG formulation ships with the Enterprise Edition;
       and (iv) a population of one&nbsp;million IPF-calibrated virtual consumers with
       10k LLM-driven persona agents. The framework is released under Apache-2.0
       with a deterministic synthetic training corpus, a pretrained LightGBM

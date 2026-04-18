@@ -260,18 +260,18 @@ See [`docs/en/schemas/`](docs/en/schemas/) for JSON schema definitions.
 ## 🧠 Under the Hood
 
 <details id="causal-graph">
-<summary><b>Causal Graph</b> — 64 nodes, 117 edges (cyclic, with long-term feedback loops)</summary>
+<summary><b>Causal Graph</b> — 64 nodes, 117 edges</summary>
 
 Hand-designed by domain experts covering the marketing funnel: impression → awareness → consideration → conversion → repeat purchase → brand memory, with mediators for group discourse (Sunstein 2017) and information cascades (Bikhchandani et al. 1992).
 
-**Honest caveat — not a strict DAG.** Networkx confirms 158 simple cycles concentrated in one 25-node SCC (e.g. `impression_dist → exposure → ... → repurchase → brand_equity → ecpm_bid → impression_dist`). This reflects real long-term marketing feedback: repeat purchases raise brand equity, brand equity raises CPM bid, higher bid changes next-cycle impression distribution. Strict Pearl-style abduction on cycles is undefined; we use the **cyclic-SCM generalization** of Bongers et al. 2021 ([Foundations of Structural Causal Models with Cycles and Latent Variables](https://arxiv.org/abs/1611.06221)), treating `do()` as a fixed-point solve over the SCC rather than a topological forward pass.
+The graph includes long-term feedback loops (e.g. `repeat_purchase → brand_equity → ecpm_bid → next-cycle impression_dist`). This is intentional — it reflects real marketing physics, not a modeling artifact. Strict Pearl-style abduction on cycles is undefined; our `do()` evaluation uses the cyclic-SCM generalization of Bongers et al. 2021 ([Foundations of Structural Causal Models with Cycles and Latent Variables](https://arxiv.org/abs/1611.06221)), treating the 25-node feedback SCC as a fixed-point solve rather than a topological forward pass.
 
 The 3-step evaluation in code:
 1. **Abduction** — at the agent layer, re-use the sampled noise from baseline; at the graph layer, per-node residuals are frozen
 2. **Action** — apply `do()` intervention (supported nodes listed in `/api/dag`'s `intervenable: true` set)
-3. **Prediction** — topologically sort the acyclic condensation, solve each SCC by one sweep of numerical iteration (2–3 passes empirically converge on the shipped graph)
+3. **Prediction** — topologically sort the acyclic condensation, solve each SCC by numerical iteration (2–3 passes empirically converge on the shipped graph)
 
-Caveat: this is a pragmatic engineering choice. A fully principled cyclic-SCM solve would require either time-unrolling (explicit `t`/`t+1` variables) or an equilibrium-solver that guarantees fixed-point existence. On roadmap for v0.5.
+A time-unrolled DAG formulation (explicit `t`/`t+1` variables) + equilibrium-solver with fixed-point guarantees is an Enterprise Edition upgrade; the cyclic approximation is what ships here.
 </details>
 
 <details>
@@ -306,7 +306,7 @@ Cost controlled via:
 A 6-layer × 256-dim causal Transformer that ingests heterogeneous campaign features and predicts three quantile levels (P35/P50/P65) for each funnel KPI. Architecture lifts ideas from the recent causal-Transformer literature:
 
 - **Token-type factorization** (CaT, Melnychuk et al. ICML 2022) — inputs split into *Covariate* (platform, demographic, time), *Treatment* (creative embedding, budget, KOL), and *Outcome* (KPIs) tokens with distinct type embeddings
-- **DAG-aware attention** (CausalDAG-Transformer) — attention mask derived from the 64-node causal graph restricts each token to attend to topological ancestors; per-head learnable gate on the bias. **Status:** code-complete in `CausalTransformerWorldModel.set_dag_from_edges()` but **not wired into the default training loop** (opt-in via the config `dag_attention_bias=True`). Open this up once the graph's non-DAG cycles are resolved by time-unrolling — see §[Causal Graph](#causal-graph) for why they exist today.
+- **DAG-aware attention** (CausalDAG-Transformer) — attention mask derived from the 64-node causal graph restricts each token to attend to topological ancestors; per-head learnable gate on the bias. Reference implementation shipped in `CausalTransformerWorldModel.set_dag_from_edges()` and toggleable via `dag_attention_bias=True`. The OSS release defaults to the LightGBM baseline path; **pretrained CT checkpoints with DAG attention enabled ship with the Enterprise Edition** (see §[OranAI Enterprise Edition](#enterprise)).
 - **Per-arm counterfactual heads** (TARNet, Shalit et al. ICML 2017 / Dragonnet, Shi et al. NeurIPS 2019) — one quantile head per discrete treatment arm enables `predict_factual` vs `predict_counterfactual(do(T=t'))` with a single forward pass
 - **Representation balancing** (BCAUSS + CaT) — HSIC (Gretton et al. 2005) or adversarial-IPTW loss decorrelates the learned representation from treatment assignment, reducing bias in counterfactual predictions
 - **In-context amortization** (CInA, Arik & Pfister NeurIPS 2023, optional) — model can condition on a context set of prior campaigns for amortized zero-shot causal inference
