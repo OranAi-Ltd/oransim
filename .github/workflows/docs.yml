@@ -8,7 +8,8 @@ name: Docs
 #   /assets/*        → static assets (SVG / screenshots)
 #   /docs/           → MkDocs Material site
 #
-# First deploy requires repo Settings → Pages → Source = "GitHub Actions".
+# First deploy is self-bootstrapping: configure-pages has enablement: true so
+# we don't need the manual Settings → Pages → Source = "GitHub Actions" step.
 
 on:
   push:
@@ -57,6 +58,11 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
+        with:
+          # Auto-enable Pages on first run so we don't need the manual
+          # Settings → Pages → Source = "GitHub Actions" click. Without this
+          # the action returns HttpError: Not Found when Pages is disabled.
+          enablement: true
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
