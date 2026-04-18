@@ -404,6 +404,92 @@ def test_example_notebooks_valid_json():
         assert len(nb["cells"]) > 0
 
 
+# ----------------------------------------------------------- Phase J (v0.2 quick wins)
+
+
+def test_canonical_schemas():
+    from oransim.data.schema import (
+        CanonicalKOL, CanonicalNote, CanonicalFanProfile, CanonicalScenario, SCHEMA_VERSION
+    )
+    assert SCHEMA_VERSION == "1.1"
+    kol = CanonicalKOL(
+        kol_id="K1", nickname="AuroraStudio", platform="xhs",
+        niche="beauty", tier="mid", fan_count=200_000, avg_engagement_rate=0.035,
+    )
+    assert kol.schema_version == "1.1"
+    # FanProfile nested into KOL
+    fp = CanonicalFanProfile(
+        age_dist=[0.03, 0.36, 0.39, 0.15, 0.05, 0.015, 0.005],
+        gender_dist=[0.9, 0.1],
+    )
+    kol2 = CanonicalKOL(
+        kol_id="K2", nickname="CrimsonLab", platform="xhs",
+        niche="fashion", tier="micro", fan_count=40_000,
+        avg_engagement_rate=0.028, fan_profile=fp,
+    )
+    assert kol2.fan_profile is not None
+    assert len(kol2.fan_profile.age_dist) == 7
+    # Scenario
+    scn = CanonicalScenario(
+        scenario_id="S1", platform="xhs", creative_text="test",
+        budget=50_000.0, niche="beauty",
+    )
+    assert scn.budget == 50_000.0
+
+
+def test_budget_curves_public_api():
+    from oransim.world_model.budget import (
+        hill_saturation, frequency_fatigue, apply_budget_curves, BudgetCurveConfig
+    )
+    # Hill: doubling budget does not double impressions
+    assert abs(hill_saturation(2.0) - 4.0 / 3.0) < 1e-9
+    # Hill: at ratio=0 → 0
+    assert hill_saturation(0.0) == 0.0
+    # Hill: asymptotic toward 1 + K_sat
+    assert hill_saturation(1e9) > 1.99  # → 2.0 with K_sat=1
+
+    # Fatigue: below ref impressions → 1.0
+    assert frequency_fatigue(0.5) == 1.0
+    # Fatigue: floor at min_retained
+    assert frequency_fatigue(1e9) >= 0.5
+
+    # Composite path
+    r = apply_budget_curves(100_000, 3500, 60, budget_ratio=2.0)
+    assert r["impressions"] > 100_000
+    assert r["clicks"] < r["impressions"]
+    assert r["conversions"] < r["clicks"]
+    assert r["effective_impr_ratio"] > 1.0
+
+
+def test_http_client_module():
+    from oransim.runtime.http_client import (
+        post_json, _fallback_chain, _backoff_seconds,
+        RETRYABLE_STATUS, NON_RETRYABLE_STATUS,
+    )
+    assert 429 in RETRYABLE_STATUS
+    assert 401 in NON_RETRYABLE_STATUS
+    # Fallback chain parsing
+    import os
+    os.environ["LLM_MODEL_FALLBACK"] = "gpt-4o-mini,deepseek-chat"
+    chain = _fallback_chain("gpt-5.4")
+    assert chain == ["gpt-5.4", "gpt-4o-mini", "deepseek-chat"]
+    del os.environ["LLM_MODEL_FALLBACK"]
+    # Backoff monotone bounded
+    for n in range(5):
+        b = _backoff_seconds(n, 0.8, 20.0)
+        assert 0 <= b <= 20.0
+
+
+def test_env_example_shipped():
+    root = Path(__file__).parent.parent
+    envx = root / ".env.example"
+    assert envx.exists(), ".env.example missing — external users need it"
+    content = envx.read_text()
+    for key in ("LLM_MODE", "LLM_BASE_URL", "LLM_API_KEY", "LLM_MODEL",
+                "SOUL_POOL_N", "POP_SIZE", "PORT"):
+        assert key in content, f"missing env key: {key}"
+
+
 def test_no_sensitive_terms_in_package():
     """BULLETPROOF case-insensitive scan — no vendor references leak anywhere.
 

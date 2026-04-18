@@ -1,31 +1,34 @@
 # Model Card — Oransim Model Zoo
 
-> **Status as of v0.1.0-alpha:** architecture + training + inference code ship
-> for all models; pretrained weights (where applicable) land starting v0.2.
+- **Version**: **v1.0** (2026-04-18, matches repo v0.1.2-alpha)
+- **License**: Apache-2.0
+- **Companion data card**: [`data_card.md`](data_card.md)
 
-Oransim ships a model zoo across two layers:
+## Scope
 
-1. **World models** (funnel KPI prediction): Causal Transformer (primary),
-   LightGBM Quantile (baseline)
-2. **Diffusion forecasters** (14-day cascade): Causal Neural Hawkes (primary),
-   Parametric Hawkes (baseline)
+Five models are registered across two layers. The LightGBM demo pkl ships
+trained; the others provide architecture + training + inference code, with
+pretrained weights arriving in v0.2.
+
+```
+oransim.world_model   → {CausalTransformer (primary)   · LightGBM (shipped)}
+oransim.diffusion     → {CausalNeuralHawkes (primary) · ParametricHawkes}
+oransim.data.synth    → {IPF (shipped) · Bayesian-net · TabDDPM · CausalDAG-TabDDPM · CTGAN}
+```
 
 ---
 
-## 1. CausalTransformerWorldModel (primary)
+## 1. `CausalTransformerWorldModel` — world-model primary
 
-- **Family**: Causal Transformer for Treatment-Effect Prediction
-- **Architecture**: 6-layer × 256-dim encoder with explicit
-  *treatment / covariate / outcome* token factorization, DAG-aware attention
-  bias, per-arm counterfactual heads, representation-balancing regularizer
-- **Parameters**: ≈ 4.3M (default config)
-- **Code**: `oransim.world_model.CausalTransformerWorldModel`
-- **Config**: `CausalTransformerWMConfig`
-- **Inference**: requires PyTorch (`pip install 'oransim[ml]'`)
-- **Weights**: *coming_soon* — will train on 100k synthetic dataset and
-  ship at https://github.com/ORAN-cgsj/oransim/releases starting v0.2
+| Field | Value |
+|---|---|
+| **Family** | Causal Transformer for treatment-effect prediction |
+| **Architecture** | 6-layer × 256-dim encoder + 7-modality tokenizer + DAG-aware attention + per-arm counterfactual heads + HSIC balancing |
+| **Parameters** | ≈ 4.3 M (default config) |
+| **Runtime dep** | PyTorch (`pip install 'oransim[ml]'`) |
+| **Weights** | ❌ *Coming soon v0.2.* Training corpus: `data/synthetic/scenarios_v0_1.jsonl`. Train locally via `backend/scripts/train_transformer_wm.py`. |
 
-### Key references
+**Key references**
 
 - CaT — Melnychuk, Frauen, Feuerriegel, ICML 2022 (arXiv:2204.07258)
 - CausalDAG-Transformer — Zhang et al. 2023
@@ -33,141 +36,142 @@ Oransim ships a model zoo across two layers:
 - Dragonnet — Shi, Blei, Veitch, NeurIPS 2019
 - BCAUSS — Tesei et al. 2021
 - CInA — Arik & Pfister, NeurIPS 2023
-- HSIC — Gretton, Bousquet, Smola, Schölkopf, 2005
+- HSIC — Gretton, Bousquet, Smola, Schölkopf, ALT 2005
 
-### Intended use
+**Intended use**
 
-- Primary: marketing KPI prediction under explicit treatment assignment
-- Primary: counterfactual queries (`do(T = arm)`) for scenario comparison
-- Primary: reducing confounding via representation balancing when
-  treatment is non-random (most real-world marketing data)
-- Not intended: point prediction without uncertainty bands, attribution
-  modeling for fraud detection, or non-causal general regression tasks
+- Marketing-KPI quantile prediction under explicit treatment assignment
+- Counterfactual queries (`do(T = arm)`) via per-arm heads
+- Bias reduction when treatment is non-random, via representation balancing
 
-### Known limitations
+**Not intended for**: point prediction without uncertainty; fraud / ad-safety
+classification; non-causal general regression.
 
-1. Counterfactual heads use discretized treatment arms — continuous
-   interventions (budget = $127,438 vs. budget = $150,000) require
-   discretization to the nearest arm or use of the LightGBM baseline with
-   direct budget features.
-2. DAG attention bias is only as good as the provided DAG. Oransim ships
-   the 64-node Pearl SCM as the default DAG; custom DAGs can be installed
-   via `model.set_dag_from_edges(...)`.
-3. Balancing loss (HSIC) regularises but does not guarantee bias removal
-   under strong hidden confounding — standard caveat for observational
-   causal inference.
+**Known limitations**
+
+1. Per-arm head requires discretising continuous interventions into a small
+   number of treatment buckets.
+2. DAG attention bias is only as good as the provided DAG (default: the
+   64-node Pearl SCM; override via `model.set_dag_from_edges`).
+3. HSIC regularisation reduces confounding bias but cannot recover hidden
+   confounders.
 
 ---
 
-## 2. LightGBMQuantileWorldModel (baseline)
+## 2. `LightGBMQuantileWorldModel` — world-model baseline (shipped)
 
-- **Family**: Gradient-boosted quantile regression (Koenker 2005, Ke et al. 2017)
-- **Architecture**: ``len(kpis) × len(quantiles)`` independent LightGBM
-  boosters, optional PCA feature projection (default 32 components)
-- **Parameters**: ≈ 800k LightGBM leaves (depends on data size)
-- **Code**: `oransim.world_model.LightGBMQuantileWorldModel`
-- **Config**: `LightGBMWMConfig`
-- **Inference**: sub-millisecond CPU, zero GPU dependency
-- **Weights**: *coming_soon* — same 100k synthetic training corpus
+| Field | Value |
+|---|---|
+| **Family** | Gradient-boosted quantile regression |
+| **Architecture** | 4 KPIs × 3 quantiles (P35/P50/P65) = 12 independent boosters. 7-dim scalar feature vector: `[platform_id, niche_idx, budget, budget_bucket, kol_tier_idx, kol_fan_count, kol_engagement_rate]` |
+| **Parameters** | ≈ 12 LightGBM boosters totaling ~2.7 MB |
+| **Runtime dep** | `lightgbm >= 4.3` (core dep, no ML extras needed) |
+| **Weights** | ✅ **Shipped at `data/models/world_model_demo.pkl`** |
+| **Training data** | 2 000-scenario synthetic corpus with 10% val hold-out, seed 42 |
 
-### Intended use
+**Performance on synthetic validation split**
 
-- Production latency-sensitive deployments
-- Ablation baseline vs. Causal Transformer on OrancBench
-- Fallback when PyTorch is unavailable
+| KPI | R² (P50) | Pinball P35 | Pinball P50 | Pinball P65 |
+|---|---|---|---|---|
+| impressions | **0.886** | 10.56 | 12.53 | 12.32 |
+| clicks | **0.778** | 0.251 | 0.289 | 0.279 |
+| conversions | **0.727** | 0.002 | 0.002 | 0.003 |
+| revenue | **0.687** | 0.777 | 0.895 | 0.914 |
 
-### Known limitations
+**OrancBench v0.1 scores**
 
-- No explicit counterfactual head (treatment effect must be inferred
-  by feature perturbation, a weaker contract than the Transformer's
-  per-arm heads)
-- Quantile regressors are trained independently → can cross (P35 > P65);
-  default pipeline includes a post-hoc sort step, documented in v0.2
+| Difficulty | impressions R² | clicks R² |
+|---|---|---|
+| Easy (n=20) | 0.976 | 0.909 |
+| Medium (n=20) | 0.599 | 0.426 |
+| Hard (n=10) | 0.413 | 0.409 |
 
----
-
-## 3. CausalNeuralHawkesProcess (primary diffusion)
-
-- **Family**: Transformer Hawkes Process with causal / treatment typing
-- **Architecture**: 4-layer × 128-dim self-attention encoder over
-  (time, event_type, treatment_type), softplus intensity decoder; NLL
-  training with Monte Carlo compensator estimator
-- **Parameters**: ≈ 900k (default config)
-- **Code**: `oransim.diffusion.CausalNeuralHawkesProcess`
-- **Config**: `CausalNeuralHawkesConfig`
-- **Inference**: requires PyTorch (`pip install 'oransim[ml]'`)
-- **Weights**: *coming_soon* — will train on synthetic event streams and
-  ship at release starting v0.2
-
-### Key references
-
-- Neural Hawkes — Mei & Eisner, NeurIPS 2017
-- Transformer Hawkes — Zuo, Jiang, Zheng et al., ICML 2020
-- Intensity-Free TPPs — Shchur et al., ICLR 2020
-- Neural Spatio-Temporal Point Processes — Chen et al., ICLR 2021
-- Counterfactual TPPs — Geng, Xu, Huang et al., NeurIPS 2022
-- Counterfactual TPPs — Noorbakhsh & Rodriguez, 2022
-- Ogata thinning sampler — Ogata, 1981
-
-### Intended use
-
-- Primary: 14-day multivariate cascade forecasting (impressions, likes,
-  reshares, comments, saves, conversions)
-- Primary: counterfactual rollouts — e.g., "what if we had stopped
-  boosting on day 3" (`mute_at_min`) or "what if the boost factor had
-  been 2× / 0.5×" (`treatment_boost_factor`)
-- Not intended: sub-minute real-time forecasts (inference involves
-  Monte Carlo rollouts ≈ 100-500ms per scenario)
-
-### Known limitations
-
-1. Forecast sampler uses a simple thinning scheme — replaced with batched
-   importance sampling in v0.5 for a ~5× speedup
-2. Intervention grammar in v0.1-v0.2 supports `{mute_at_min,
-   treatment_boost_factor}`; richer per-event interventions (force event
-   type, force time) land in v0.5
+**Refs**: Ke et al. 2017 (LightGBM); Koenker 2005 (Quantile Regression).
 
 ---
 
-## 4. ParametricHawkes (baseline diffusion)
+## 3. `CausalNeuralHawkesProcess` — diffusion primary
 
-- **Family**: Classical multivariate Hawkes process (Hawkes 1971) with
-  exponential kernels
-- **Architecture**: ``len(event_types) × len(event_types)`` excitation
-  matrix + per-type baseline rates + per-type decay constants
-- **Parameters**: ≈ 50 (K² + 2K where K = number of event types)
-- **Code**: `oransim.diffusion.ParametricHawkes`
-- **Config**: `ParametricHawkesConfig`
-- **Inference**: millisecond CPU, zero-dependency
-- **Weights**: *coming_soon* — closed-form EM estimator; parameters small
-  enough to ship directly
+| Field | Value |
+|---|---|
+| **Family** | Transformer Hawkes with causal / counterfactual extensions |
+| **Architecture** | 4-layer × 128-dim encoder over (time, event_type, treatment_type); softplus intensity decoder; piecewise-constant compensator (default) or Monte-Carlo (`compensator="mc"`) |
+| **Parameters** | ≈ 900 k (default config) |
+| **Runtime dep** | PyTorch (`pip install 'oransim[ml]'`) |
+| **Weights** | ❌ *Coming soon v0.2.* Training corpus: `data/synthetic/event_streams_v0_1.jsonl`. |
 
-### Intended use
+**Key references**
 
-- OrancBench baseline against Causal Neural Hawkes
-- Minimum-viable diffusion forecast when no ML stack is available
-- Closed-form log-likelihood for likelihood-based calibration checks
+- Mei & Eisner, NeurIPS 2017 — Neural Hawkes Process
+- Zuo, Jiang, Zheng et al., ICML 2020 — Transformer Hawkes Process
+- Shchur et al., ICLR 2020 — Intensity-Free Learning of TPPs
+- Chen et al., ICLR 2021 — Neural Spatio-Temporal Point Processes
+- Geng et al., NeurIPS 2022 — Counterfactual Temporal Point Processes
+- Ogata, 1981 — Thinning sampler
 
----
+**Intended use**
 
-## 5. Training Data (shared across all models)
+- 14-day cascade forecasting across {impression, like, comment, share, save, conversion}
+- Counterfactual rollouts via `mute_at_min` or `treatment_boost_factor`
 
-- **Source**: Synthetic data generated by `scripts/gen_synthetic_data.py`
-  (landing with v0.2)
-- **Size**: 100k samples (planned)
-- **License**: Apache-2.0 / CC0
-- **Full documentation**: see [`data_card.md`](data_card.md)
+**Known limitations**
 
-**Crucially**: all shipped weights train on synthetic data. No real
-KOL / note / user / brand data enters the open-source model zoo.
-OranAI Enterprise Edition separately trains on proprietary real-world
-data; those benchmarks are published under NDA and are not part of the
-OSS release.
+1. Forecast sampler is a simple Ogata thinning procedure — not the most
+   sample-efficient. Batched importance sampling lands in v0.5.
+2. Intervention grammar is currently `{mute_at_min, treatment_boost_factor}`;
+   richer per-event forces come in v0.5.
 
 ---
 
-## 6. Reporting & Support
+## 4. `ParametricHawkes` — diffusion baseline
 
-- Bug reports: https://github.com/ORAN-cgsj/oransim/issues
-- Security: `cto@orannai.com` (see `SECURITY.md`)
-- Enterprise inquiries: `cto@orannai.com`
+| Field | Value |
+|---|---|
+| **Family** | Classical multivariate Hawkes, exponential kernels |
+| **Architecture** | `K × K` excitation matrix + per-type baselines + decays (≈ 50 params for 6 event types) |
+| **Parameters** | ≈ 50 |
+| **Runtime dep** | pure-Python (stdlib only) |
+| **Weights** | Not required — priors or EM fit at runtime |
+| **Bounds** | `max_iters=20_000`, `max_events=2 000` per stream (prevents runaway excitation) |
+
+**Refs**: Hawkes 1971; Ogata 1981; Laub, Taimre, Pollett 2015.
+
+---
+
+## 5. `IPFSynthesizer` — population baseline (shipped)
+
+| Field | Value |
+|---|---|
+| **Family** | Iterative Proportional Fitting (Deming & Stephan 1940) |
+| **Role** | Generates the 1M virtual-consumer population matching demographic marginals |
+| **Runtime dep** | numpy (core) |
+| **Weights** | n/a — generated on demand from published demographic aggregates |
+
+**Related roadmap synthesizers** (all registered in
+`oransim.data.synthesizers` but raising `NotImplementedError` pending
+implementation):
+
+| Name | Method | Milestone |
+|---|---|---|
+| `bayes_net` | Bayesian network over demographic attributes | v0.2 |
+| `ctgan` | Conditional tabular GAN (Xu et al. 2019) | v0.5 |
+| `tabddpm` | Tabular diffusion (Kotelnikov et al. 2023) | v0.5 |
+| `causal_dag_tabddpm` | DAG-guided tabular diffusion (novel) | v1.0 research |
+
+---
+
+## Enterprise edition
+
+The models shipped in the OSS release train exclusively on synthetic data.
+OranAI Enterprise Edition retrains the same architectures on continuously-
+updated proprietary real-world data (1M+ labeled campaigns) with vertical
+variants for beauty / fashion / 3C / F&B / luxury / auto, and bespoke
+on-premise customisation. Contact `cto@orannai.com` for enquiries;
+academic / non-commercial research use of the OSS release is unrestricted
+under Apache-2.0.
+
+## Reporting
+
+- Model-quality issues: <https://github.com/ORAN-cgsj/oransim/issues>
+- Security / ethics concerns: `cto@orannai.com`
+- Vulnerability disclosure: see [`SECURITY.md`](../../SECURITY.md)

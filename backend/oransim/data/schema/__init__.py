@@ -1,4 +1,23 @@
-"""Canonical schemas — Pydantic models that platform adapters consume.
+"""Canonical schemas — the cross-platform contract consumed by
+``PlatformAdapter`` and produced by ``DataProvider``.
 
-Phase 3 will define CanonicalKOL, CanonicalNote, CanonicalFanProfile, etc.
+See :mod:`oransim.data.schema.canonical` for the full type definitions.
 """
+
+from .canonical import (
+    SCHEMA_VERSION,
+    CanonicalFanProfile,
+    CanonicalKOL,
+    CanonicalNote,
+    CanonicalNoteMetrics,
+    CanonicalScenario,
+)
+
+__all__ = [
+    "SCHEMA_VERSION",
+    "CanonicalFanProfile",
+    "CanonicalKOL",
+    "CanonicalNote",
+    "CanonicalNoteMetrics",
+    "CanonicalScenario",
+]
