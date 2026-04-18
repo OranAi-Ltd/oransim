@@ -665,6 +665,67 @@ def test_cnhp_kv_cache_matches_full_forward():
 
 
 @pytest.mark.skipif(not _torch_available(), reason="requires torch")
+def test_dag_attention_handles_cyclic_scm_via_scc_condensation():
+    """`set_dag_from_edges` must produce a meaningful mask even when the
+    input graph has cycles. The shipped SCM contains a 25-node feedback
+    SCC (README §Causal Graph); the old transitive-closure code silently
+    collapsed every SCC member into the ancestor set of every other,
+    degrading the bias to no-op. We now condense the graph to its SCC
+    DAG and use "SCC-level" ancestry.
+    """
+    import torch
+    from oransim.causal.scm import dag_dict
+    from oransim.world_model import CausalTransformerWMConfig, CausalTransformerWorldModel
+
+    torch.manual_seed(0)
+    cfg = CausalTransformerWMConfig(n_layers=2, d_model=32, n_heads=4, dag_attention_bias=True)
+    wm = CausalTransformerWorldModel(cfg)
+    g = dag_dict()
+    name_to_idx = {n["name"]: i for i, n in enumerate(g["nodes"])}
+    edges = [(name_to_idx[p], name_to_idx[c]) for p, c in g["edges"]]
+
+    # CLS + early-graph + in-SCC mix of tokens
+    tokens = [
+        -1,  # CLS
+        name_to_idx["creative_caption"],
+        name_to_idx["kol_choice"],
+        name_to_idx["total_budget"],
+        name_to_idx["macro_env"],
+        name_to_idx["impression_dist"],  # in the 25-node feedback SCC
+    ]
+    wm.set_dag_from_edges(g["n_nodes"], edges, tokens)
+    mask = wm._net._dag_bias
+    assert mask is not None
+    L = len(tokens)
+    assert mask.shape == (L, L)
+
+    # Mask must be meaningful — not all-zero (no-op), not all-inf
+    n_blocked = int(torch.isinf(mask).sum().item())
+    assert 0 < n_blocked < L * L, f"mask degenerate: blocked {n_blocked}/{L * L}"
+
+    # CLS (token 0) is free → nobody blocks from/to CLS
+    for j in range(L):
+        assert not torch.isinf(mask[0, j]), "CLS row should have no -inf"
+        assert not torch.isinf(mask[j, 0]), "CLS col should have no -inf"
+
+    # impression_dist is in the feedback SCC, which is downstream of
+    # creative / kol / budget / macro — so its row should allow attending
+    # FROM all of those tokens (no -inf in its row across those cols).
+    impr_row = L - 1
+    for j in range(1, L - 1):  # the non-CLS, non-impr tokens
+        assert not torch.isinf(
+            mask[impr_row, j]
+        ), f"impression_dist should be able to attend from token {j}"
+
+    # creative_caption's row should block attention FROM impression_dist
+    # (the SCC is NOT an ancestor of creative_caption in the condensation).
+    creative_row = 1
+    assert torch.isinf(
+        mask[creative_row, impr_row]
+    ), "creative_caption should not receive attention from impression_dist"
+
+
+@pytest.mark.skipif(not _torch_available(), reason="requires torch")
 def test_cnhp_batched_fit_equivalence():
     """Batched NLL (padded mini-batch) over K streams equals the sum of
     unbatched log-likelihoods on each stream. Pins that fit()'s batch_size

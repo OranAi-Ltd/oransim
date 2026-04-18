@@ -591,18 +591,96 @@ class CausalTransformerWorldModel(WorldModel):
         L = len(token_to_node)
         bias = torch.zeros(L, L)
 
-        # Build ancestor set per node via transitive closure
+        edge_list = list(edges)
         parents: list[set[int]] = [set() for _ in range(n_nodes)]
-        for p, c in edges:
+        children: list[set[int]] = [set() for _ in range(n_nodes)]
+        for p, c in edge_list:
             parents[c].add(p)
+            children[p].add(c)
+
+        # --- Strongly-connected-component condensation ------------------
+        # The shipped causal graph contains long-term feedback loops (e.g.
+        # repurchase → brand_equity → ecpm_bid → impression_dist, see
+        # README §Causal Graph). Naive transitive closure on a cyclic graph
+        # collapses every SCC member into everyone else's ancestor set,
+        # which makes the attention bias effectively no-op inside the
+        # feedback loop. We instead take the SCC condensation (Tarjan) and
+        # define "ancestor of n" as:
+        #   SCC(n)  ∪  all nodes in SCCs that forward-reach SCC(n) in the
+        #             acyclic condensation.
+        # This is the standard extension of Pearl's ancestry to cyclic
+        # SCMs (e.g. Bongers et al. 2021 §3.2): within an SCC the nodes
+        # are mutually ancestral because they can all influence each other
+        # through the cycle.
+        scc_of = [-1] * n_nodes
+        sccs: list[list[int]] = []
+        # Tarjan's algorithm (iterative to avoid recursion-limit on 64-node graphs)
+        index = 0
+        stack: list[int] = []
+        on_stack = [False] * n_nodes
+        indices = [-1] * n_nodes
+        lowlink = [0] * n_nodes
+        for start in range(n_nodes):
+            if indices[start] != -1:
+                continue
+            work: list[tuple[int, int]] = [(start, 0)]  # (node, child-iter state)
+            while work:
+                v, child_idx = work[-1]
+                if child_idx == 0:
+                    indices[v] = index
+                    lowlink[v] = index
+                    index += 1
+                    stack.append(v)
+                    on_stack[v] = True
+                child_list = list(children[v])
+                if child_idx < len(child_list):
+                    work[-1] = (v, child_idx + 1)
+                    w = child_list[child_idx]
+                    if indices[w] == -1:
+                        work.append((w, 0))
+                    elif on_stack[w]:
+                        lowlink[v] = min(lowlink[v], indices[w])
+                else:
+                    # Post-order: propagate lowlink up and detect SCC root
+                    work.pop()
+                    if lowlink[v] == indices[v]:
+                        comp: list[int] = []
+                        while True:
+                            w = stack.pop()
+                            on_stack[w] = False
+                            scc_of[w] = len(sccs)
+                            comp.append(w)
+                            if w == v:
+                                break
+                        sccs.append(comp)
+                    if work:
+                        parent = work[-1][0]
+                        lowlink[parent] = min(lowlink[parent], lowlink[v])
+
+        # Build condensation DAG: edge (A → B) iff some edge u→v with
+        # scc_of[u]=A, scc_of[v]=B, A≠B.
+        scc_parents: list[set[int]] = [set() for _ in range(len(sccs))]
+        for p, c in edge_list:
+            a, b = scc_of[p], scc_of[c]
+            if a != b:
+                scc_parents[b].add(a)
+        # Ancestor SCCs (transitive closure on the acyclic condensation)
+        scc_ancestors: list[set[int]] = [set() for _ in range(len(sccs))]
+        for s in range(len(sccs)):
+            frontier = list(scc_parents[s])
+            while frontier:
+                a = frontier.pop()
+                if a not in scc_ancestors[s]:
+                    scc_ancestors[s].add(a)
+                    frontier.extend(scc_parents[a])
+        # Node-level ancestors = own SCC ∪ nodes in ancestor SCCs
         ancestors: list[set[int]] = [set() for _ in range(n_nodes)]
         for n in range(n_nodes):
-            stack = list(parents[n])
-            while stack:
-                m = stack.pop()
-                if m not in ancestors[n]:
-                    ancestors[n].add(m)
-                    stack.extend(parents[m])
+            s = scc_of[n]
+            ancestors[n].update(sccs[s])  # mutual ancestry inside SCC
+            for a in scc_ancestors[s]:
+                ancestors[n].update(sccs[a])
+            ancestors[n].discard(n)  # don't list self
 
         # For tokens attending to other tokens, disallow non-ancestor
         for i, ni in enumerate(token_to_node):

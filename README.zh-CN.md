@@ -313,7 +313,7 @@ JSON schema 定义见 [`docs/zh/schemas/`](docs/zh/schemas/)。
 一个 6 层 × 256-dim 的因果 Transformer，吃异构 campaign 特征，输出每个漏斗 KPI 的三个分位数（P35/P50/P65）。架构结合近年因果 Transformer 文献：
 
 - **Token 类型分解**（CaT, Melnychuk et al. ICML 2022）—— 输入分为 *Covariate*（平台、人口学、时段）· *Treatment*（素材 embedding、预算、KOL）· *Outcome*（KPI）三类 token，各自带独立 type embedding
-- **DAG-aware 注意力**（CausalDAG-Transformer）—— 注意力 mask 从 64 节点因果图派生，每个 token 只能 attend 到拓扑祖先；每个 head 学一个 bias 门控。参考实现在 `CausalTransformerWorldModel.set_dag_from_edges()`，`dag_attention_bias=True` 可以切开；OSS 版默认走 LightGBM baseline 路径，**接入 DAG 注意力的预训练 CT 权重随企业版发布**（见[§企业版](#enterprise)）。
+- **DAG-aware 注意力**（CausalDAG-Transformer）—— 注意力 mask 从 64 节点因果图派生，每个 token 只能 attend 到拓扑祖先；每个 head 学一个 bias 门控。图有长周期反馈回路（见[§因果图](#causal-graph)），所以祖先关系定义在 **SCC 凝缩（condensation）** 之上：反馈 SCC 内节点互为祖先，SCC 之间用标准 DAG 祖先关系（Bongers 2021 §3.2）。参考实现在 `CausalTransformerWorldModel.set_dag_from_edges()`，`dag_attention_bias=True` 可以切开；OSS 版默认走 LightGBM baseline 路径，**接入 DAG 注意力的预训练 CT 权重随企业版发布**（见[§企业版](#enterprise)）。
 - **Per-arm 反事实头**（TARNet, Shalit et al. ICML 2017 / Dragonnet, Shi et al. NeurIPS 2019）—— 每个离散 treatment arm 一个分位数 head，单次 forward 同时算 `predict_factual` 和 `predict_counterfactual(do(T=t'))`
 - **表征平衡正则**（BCAUSS + CaT）—— HSIC（Gretton et al. 2005）或对抗 IPTW loss 把学到的表征和 treatment 分配解耦，降低反事实偏差
 - **In-context 摊销**（CInA, Arik & Pfister NeurIPS 2023，可选）—— 模型可以条件于一组历史 campaign 做 amortized zero-shot 因果推断
