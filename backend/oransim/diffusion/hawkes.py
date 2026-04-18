@@ -259,7 +259,7 @@ class ParametricHawkes(DiffusionModel):
     def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> ParametricHawkes:
         if path is None:
             raise FileNotFoundError(
-                "No pretrained ParametricHawkes weights in v0.1.0-alpha.\n"
+                "No pretrained ParametricHawkes weights in v0.2.0-alpha.\n"
                 "Options:\n"
                 "  1. Train locally: "
                 "python -m backend.scripts.train_parametric_hawkes --config default\n"

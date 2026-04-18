@@ -39,7 +39,6 @@ if str(BACKEND) not in sys.path:
 
 import numpy as np  # noqa: E402
 
-
 # ---------------------------------------------------------- helper fixtures
 
 

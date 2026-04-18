@@ -393,6 +393,7 @@
   /* ============== PLATFORM MATRIX ============== */
 
   .plat-tbl td.stat-live    { color: #1F5F3B; font-weight: 500; }
+  .plat-tbl td.stat-mvp     { color: #7A5A10; font-weight: 500; }
   .plat-tbl td.stat-stub    { color: #7A5A10; }
   .plat-tbl td.stat-planned { color: var(--muted); font-style: italic; }
 
@@ -477,7 +478,7 @@
     <div class="mark">
       <img class="logo" src="assets/logo.svg" alt=""/>
       <a class="name" href="#">Oransim</a>
-      <span class="version">v0.1.1-alpha</span>
+      <span class="version">v0.2.0-alpha</span>
     </div>
     <div class="nav-links">
       <a href="#abstract" class="nv">Abstract</a>
@@ -504,11 +505,11 @@
     <sup>1</sup>OranAI&nbsp;Ltd. (橙果视界（深圳）科技有限公司)
   </div>
   <div class="paper-meta">
-    2026-04-18 · Apache-2.0 · Python&nbsp;≥&nbsp;3.10 · v0.1.1-alpha
+    2026-04-18 · Apache-2.0 · Python&nbsp;≥&nbsp;3.10 · v0.2.0-alpha
   </div>
   <div class="pill-row">
     <a href="https://github.com/OranAi-Ltd/oransim" class="pill primary">[Code]&nbsp;GitHub</a>
-    <a href="https://github.com/OranAi-Ltd/oransim/releases/tag/v0.1.1-alpha" class="pill">[Release]&nbsp;v0.1.1-alpha</a>
+    <a href="https://github.com/OranAi-Ltd/oransim/releases/tag/v0.2.0-alpha" class="pill">[Release]&nbsp;v0.2.0-alpha</a>
     <a href="#bibtex" class="pill">[Cite]&nbsp;BibTeX</a>
     <a href="README.zh-CN.md" class="pill ghost">[中文]</a>
   </div>
@@ -538,8 +539,9 @@
       10k LLM-driven persona agents. The framework is released under Apache-2.0
       with a deterministic synthetic training corpus, a pretrained LightGBM
       quantile baseline, and a reference <em>Xiaohongshu</em> (XHS) platform
-      adapter. TikTok, Instagram, YouTube Shorts, and Douyin scaffolds ship as
-      day-one stubs.
+      adapter. TikTok, Instagram, YouTube Shorts, and Douyin ship as
+      <em>MVP adapters</em> driven by the synthetic LightGBM baseline; real-panel
+      calibration lands in v0.5.
     </p>
   </div>
 </section>
@@ -583,7 +585,7 @@
       Oransim is organized as six composable engines, each separable and
       individually replaceable through a registry. Primary models are
       research-grade and ship architecture + training + inference code today
-      (v0.1.1-alpha); pretrained weights land with the v0.2 release.
+      (v0.2.0-alpha); pretrained weights land with the v0.2 release.
       Classical baselines accompany every primary model so that ablation
       comparisons remain tractable on commodity CPUs.
     </p>
@@ -656,7 +658,7 @@
       ship alongside the primary models as fast baselines. Both run on CPU at
       sub-millisecond latency and serve as ablation anchors. A pretrained
       LightGBM pkl trained on the shipped synthetic corpus accompanies the
-      v0.1.1-alpha release (R<sup>2</sup> of 0.89, 0.78, 0.73, and 0.69 for
+      v0.2.0-alpha release (R<sup>2</sup> of 0.89, 0.78, 0.73, and 0.69 for
       impressions, clicks, conversions, and revenue respectively).
     </p>
 
@@ -693,7 +695,7 @@
     <h2>Pretrained baseline on <em>synthetic</em> data</h2>
     <p style="max-width: var(--col); margin-left:auto; margin-right:auto;">
       Table&nbsp;1 reports the pretrained LightGBM quantile baseline shipped
-      with v0.1.1-alpha, trained on the deterministic 2k-scenario synthetic
+      with v0.2.0-alpha, trained on the deterministic 2k-scenario synthetic
       corpus (<code>data/synthetic/scenarios_v0_1.jsonl</code>). Numbers reflect
       performance on a 10% held-out split of synthetic data and should not be
       read as real-world calibration; the OranAI Enterprise Edition trains the
@@ -750,7 +752,7 @@
 
 <span class="cmt"># 3. Run. The LightGBM baseline + synthetic agents work without an LLM;</span>
 <span class="cmt">#    set LLM_API_KEY to enable the persona layer (soul agents).</span>
-<span class="cmd">LLM_API_KEY</span>=sk-... <span class="cmd">python</span> backend/run.py</pre>
+<span class="cmd">LLM_API_KEY</span>=sk-... <span class="cmd">python</span> -m uvicorn oransim.api:app --port 8001</pre>
     </div>
 
     <p>
@@ -786,17 +788,17 @@
         </thead>
         <tbody>
           <tr><td>Xiaohongshu (XHS)</td>   <td>Greater China</td>  <td class="stat-live">v1 live</td>      <td>Causal Transformer + LightGBM</td><td class="dash">—</td></tr>
-          <tr><td>TikTok</td>              <td>Global</td>         <td class="stat-stub">stub</td>        <td class="dash">—</td>                 <td>v0.5 · Q3 2026</td></tr>
-          <tr><td>Instagram Reels</td>     <td>Global</td>         <td class="stat-stub">stub</td>        <td class="dash">—</td>                 <td>v0.5 · Q4 2026</td></tr>
-          <tr><td>YouTube Shorts</td>      <td>Global</td>         <td class="stat-stub">stub</td>        <td class="dash">—</td>                 <td>v0.7 · Q1 2027</td></tr>
-          <tr><td>Douyin</td>              <td>Greater China</td>  <td class="stat-stub">stub</td>        <td class="dash">—</td>                 <td>v0.5 · Q3 2026</td></tr>
+          <tr><td>TikTok</td>              <td>Global</td>         <td class="stat-mvp">MVP (synthetic)</td>  <td>LightGBM baseline</td>          <td>v0.5 · real panels</td></tr>
+          <tr><td>Instagram Reels</td>     <td>Global</td>         <td class="stat-mvp">MVP (synthetic)</td>  <td>LightGBM baseline</td>          <td>v0.5 · real panels</td></tr>
+          <tr><td>YouTube Shorts</td>      <td>Global</td>         <td class="stat-mvp">MVP (synthetic)</td>  <td>LightGBM baseline</td>          <td>v0.5 · real panels</td></tr>
+          <tr><td>Douyin</td>              <td>Greater China</td>  <td class="stat-mvp">MVP (synthetic)</td>  <td>LightGBM baseline</td>          <td>v0.5 · real panels</td></tr>
           <tr><td>Twitter / X</td>         <td>Global</td>         <td class="stat-planned">planned</td>  <td class="dash">—</td>                 <td>v0.5</td></tr>
           <tr><td>Bilibili</td>            <td>Greater China</td>  <td class="stat-planned">planned</td>  <td class="dash">—</td>                 <td>v1.0</td></tr>
           <tr><td>LinkedIn</td>            <td>Global</td>         <td class="stat-planned">planned</td>  <td class="dash">—</td>                 <td>v1.0</td></tr>
         </tbody>
-        <caption><b>Table&nbsp;2.</b>&nbsp;Platform adapter matrix. Stubs ship
-          as day-one placeholders raising a <code>NotImplementedError</code>
-          with a pointer to their roadmap milestone. See
+        <caption><b>Table&nbsp;2.</b>&nbsp;Platform adapter matrix. MVP adapters
+          are wired end-to-end on the synthetic LightGBM baseline; real-panel
+          calibration lands in v0.5. See
           <a href="https://github.com/OranAi-Ltd/oransim/blob/main/ROADMAP.md">ROADMAP.md</a>.</caption>
       </table>
     </div>

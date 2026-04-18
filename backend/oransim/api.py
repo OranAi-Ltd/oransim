@@ -170,10 +170,23 @@ async def _lifespan(app_: FastAPI):
 app = FastAPI(
     title="Oransim",
     description="Causal Digital Twin for Marketing at Scale",
-    version="0.1.0a0",
+    version="0.2.0a0",
     lifespan=_lifespan,
 )
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+# CORS: configurable via OSIM_CORS_ORIGINS (comma-separated). Defaults to the
+# local dev frontend (:8090) + backend (:8001); set "*" only if you understand
+# the implications — wildcard + cookies is disallowed by the browser anyway.
+_cors_env = os.environ.get(
+    "OSIM_CORS_ORIGINS",
+    "http://localhost:8090,http://127.0.0.1:8090,http://localhost:8001,http://127.0.0.1:8001",
+)
+_cors_origins = [o.strip() for o in _cors_env.split(",") if o.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_cors_origins,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
@@ -181,7 +194,7 @@ def root():
     """Root health check."""
     return {
         "name": "Oransim",
-        "version": "0.1.0a0",
+        "version": "0.2.0a0",
         "status": "alpha",
         "docs": "/docs",
         "repo": "https://github.com/OranAi-Ltd/oransim",

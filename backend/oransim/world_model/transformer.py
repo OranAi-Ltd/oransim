@@ -902,12 +902,12 @@ class CausalTransformerWorldModel(WorldModel):
 
         If ``path`` is ``None``, tries the bundled release checkpoint.
         Raises :class:`FileNotFoundError` with a helpful message when no
-        checkpoint is available (current status in v0.1.0-alpha).
+        checkpoint is available (current status in v0.2.0-alpha).
         """
         if path is None:
             raise FileNotFoundError(
                 "No pretrained CausalTransformerWorldModel weights are available "
-                "in v0.1.0-alpha.\n"
+                "in v0.2.0-alpha.\n"
                 "Options:\n"
                 "  1. Train locally: "
                 "python -m backend.scripts.train_transformer_wm --config default\n"

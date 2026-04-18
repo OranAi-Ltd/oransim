@@ -12,5 +12,5 @@ Public API entry points (Phase 3 will populate these):
 See https://github.com/OranAi-Ltd/oransim for documentation.
 """
 
-__version__ = "0.1.0a0"
+__version__ = "0.2.0a0"
 __all__ = ["__version__"]

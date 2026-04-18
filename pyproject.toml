@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oransim"
-version = "0.1.0a0"
+version = "0.2.0a0"
 description = "Causal Digital Twin for Marketing at Scale — Predict any marketing decision before you spend a dollar."
 readme = "README.md"
 license = { text = "Apache-2.0" }

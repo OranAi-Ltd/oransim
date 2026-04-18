@@ -207,7 +207,7 @@ class LightGBMQuantileWorldModel(WorldModel):
     def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> LightGBMQuantileWorldModel:
         if path is None:
             raise FileNotFoundError(
-                "No bundled LightGBMQuantileWorldModel weights in v0.1.0-alpha.\n"
+                "No bundled LightGBMQuantileWorldModel weights in v0.2.0-alpha.\n"
                 "Options:\n"
                 "  1. Train locally: python -m backend.scripts.train_lightgbm_quantile --config default\n"
                 "  2. Watch v0.2 release for a pretrained pkl"

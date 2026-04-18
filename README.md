@@ -89,7 +89,7 @@ cd oransim
 pip install -e '.[dev]'
 
 # 2. Run backend (mock mode — no API key required)
-LLM_MODE=mock PORT=8001 python backend/run.py &
+LLM_MODE=mock python -m uvicorn oransim.api:app --port 8001 &
 
 # 3. Run frontend
 python -m http.server 8090 --directory frontend
@@ -103,7 +103,7 @@ Mock mode returns deterministic stubs — good for CI / first look, but every LL
 LLM_MODE=api \
 LLM_API_KEY=sk-xxxxx \
 LLM_MODEL=gpt-5.4 \
-PORT=8001 python backend/run.py &
+python -m uvicorn oransim.api:app --port 8001 &
 ```
 
 Pick the native request format with `LLM_PROVIDER` — defaults to `openai` (also covers DeepSeek / vLLM / any OpenAI-compat gateway):
@@ -296,7 +296,7 @@ A 6-layer × 256-dim causal Transformer that ingests heterogeneous campaign feat
 - **Representation balancing** (BCAUSS + CaT) — HSIC (Gretton et al. 2005) or adversarial-IPTW loss decorrelates the learned representation from treatment assignment, reducing bias in counterfactual predictions
 - **In-context amortization** (CInA, Arik & Pfister NeurIPS 2023, optional) — model can condition on a context set of prior campaigns for amortized zero-shot causal inference
 
-Core component: `oransim.world_model.CausalTransformerWorldModel`. Training loop, counterfactual rollout, and save/load are shipped in v0.1.0-alpha; pretrained weights land in v0.2.
+Core component: `oransim.world_model.CausalTransformerWorldModel`. Training loop, counterfactual rollout, and save/load are shipped today; pretrained weights land with OrancBench v0.5.
 
 ```python
 from oransim.world_model import get_world_model, CausalTransformerWMConfig
@@ -373,7 +373,7 @@ Architectural references:
 
 Explicit treatment/control event typing (`organic` vs `paid_boost`) and an intervention-aware intensity decoder enable queries like "what if we had stopped boosting on day 3" via a counterfactual rollout loop.
 
-Core component: `oransim.diffusion.CausalNeuralHawkesProcess`. Architecture, training loop (NLL with MC compensator), forecast sampler (Ogata thinning), and counterfactual rollout are shipped in v0.1.0-alpha; pretrained weights land in v0.2.
+Core component: `oransim.diffusion.CausalNeuralHawkesProcess`. Architecture, training loop (NLL with MC compensator), forecast sampler (Ogata thinning), and counterfactual rollout are shipped today; pretrained weights land with OrancBench v0.5.
 
 ```python
 from oransim.diffusion import get_diffusion_model
@@ -484,7 +484,7 @@ If you use Oransim in research, please cite:
 @software{oransim2026,
   author       = {Yin, Fakong and {Oransim contributors}},
   title        = {Oransim: Causal Digital Twin for Marketing at Scale},
-  version      = {0.1.0-alpha},
+  version      = {0.2.0-alpha},
   date         = {2026-04-18},
   url          = {https://github.com/OranAi-Ltd/oransim},
   organization = {OranAI Ltd.}

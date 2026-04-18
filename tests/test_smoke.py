@@ -30,7 +30,7 @@ if str(BACKEND) not in sys.path:
 def test_package_version():
     import oransim
 
-    assert oransim.__version__ == "0.1.0a0"
+    assert oransim.__version__ == "0.2.0a0"
 
 
 def test_package_docstring_present():
@@ -260,7 +260,7 @@ def test_fastapi_app_metadata():
     from oransim import api
 
     assert api.app.title == "Oransim"
-    assert api.app.version == "0.1.0a0"
+    assert api.app.version == "0.2.0a0"
     # No huitun routes leaked
     routes = [r.path for r in api.app.routes if hasattr(r, "path")]
     assert not any("huitun" in p for p in routes)
