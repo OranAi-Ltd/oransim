@@ -14,14 +14,28 @@ from ....data.schema import (
     CanonicalNoteMetrics,
 )
 
-
 NICHES = [
-    "beauty", "fashion", "food", "electronics", "travel",
-    "parenting", "fitness", "home", "beverage", "pet",
-    "finance", "ecommerce",
+    "beauty",
+    "fashion",
+    "food",
+    "electronics",
+    "travel",
+    "parenting",
+    "fitness",
+    "home",
+    "beverage",
+    "pet",
+    "finance",
+    "ecommerce",
 ]
 TIERS = ["nano", "micro", "mid", "macro", "mega"]
-TIER_FAN_MEAN = {"nano": 12_000, "micro": 90_000, "mid": 500_000, "macro": 3_500_000, "mega": 25_000_000}
+TIER_FAN_MEAN = {
+    "nano": 12_000,
+    "micro": 90_000,
+    "mid": 500_000,
+    "macro": 3_500_000,
+    "mega": 25_000_000,
+}
 
 CITY_TIERS = ["tier1", "tier2", "tier3", "tier4", "tier5"]
 REGION_LABELS = ["CN-East", "CN-South", "CN-North", "CN-West", "CN-Central"]

@@ -16,10 +16,10 @@ Usage:
 from __future__ import annotations
 
 import json
-import math
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 
 @dataclass
@@ -37,7 +37,7 @@ class OrancBenchScenario:
     ground_truth: dict[str, float] = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, d: dict) -> "OrancBenchScenario":
+    def from_dict(cls, d: dict) -> OrancBenchScenario:
         return cls(
             scenario_id=d["scenario_id"],
             niche=d["niche"],
@@ -58,8 +58,8 @@ class OrancBenchResult:
     """Per-difficulty metrics produced by :func:`score_predictions`."""
 
     n: int
-    r2: dict[str, float]                     # per-KPI R² on median prediction
-    mape: dict[str, float]                   # per-KPI MAPE (%)
+    r2: dict[str, float]  # per-KPI R² on median prediction
+    mape: dict[str, float]  # per-KPI MAPE (%)
     per_scenario: list[dict[str, Any]] = field(default_factory=list)
 
 

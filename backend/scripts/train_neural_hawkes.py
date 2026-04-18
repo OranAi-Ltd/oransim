@@ -29,8 +29,8 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
 
 
 def _load_streams(path: str) -> Iterable[Iterable[tuple[float, str]]]:

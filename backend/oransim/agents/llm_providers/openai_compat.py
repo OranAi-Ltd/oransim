@@ -77,9 +77,12 @@ class OpenAICompatProvider:
     ) -> GenerateResult:
         url = f"{self.base_url.rstrip('/')}/chat/completions"
         body = self.build_body(
-            system, user,
-            model=model, temperature=temperature,
-            max_tokens=max_tokens, stream=stream,
+            system,
+            user,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            stream=stream,
         )
         t0 = time.time()
         if stream:
@@ -99,8 +102,10 @@ class OpenAICompatProvider:
 
     def _stream(self, url: str, headers: dict, body: dict) -> tuple[str, dict]:
         req = urllib.request.Request(
-            url, data=json.dumps(body).encode("utf-8"),
-            headers=headers, method="POST",
+            url,
+            data=json.dumps(body).encode("utf-8"),
+            headers=headers,
+            method="POST",
         )
         collected: list[str] = []
         usage: dict = {}

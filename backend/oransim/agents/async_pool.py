@@ -12,21 +12,28 @@ Key gains:
 Cooperates with llm_dedup: each request goes through dedup_call(), so concurrent
 identical (persona, impression) collapse to one HTTP call.
 """
+
 from __future__ import annotations
-import os
-import json
+
 import asyncio
-import time
+import json
+import os
 import threading
-from typing import Dict, List, Optional, Callable
+import time
 
-from .soul import Persona
 from . import llm_dedup
+from .soul import Persona
 from .soul_llm import (
-    BASE_URL, API_KEY, MODEL, TIMEOUT, MODE,
-    SYSTEM, PROMPT_TEMPLATE, _extract_json, estimate_cost_cny,
+    API_KEY,
+    BASE_URL,
+    MODE,
+    MODEL,
+    PROMPT_TEMPLATE,
+    SYSTEM,
+    TIMEOUT,
+    _extract_json,
+    estimate_cost_cny,
 )
-
 
 _ENABLED = os.environ.get("ASYNC_POOL", "0") in ("1", "true", "True")
 _MAX_CONCURRENCY = int(os.environ.get("LLM_CONCURRENCY", "30"))
@@ -38,13 +45,14 @@ def enabled() -> bool:
 
 
 _session_lock = threading.Lock()
-_session_holder: Dict[str, object] = {"loop": None, "session": None}
+_session_holder: dict[str, object] = {"loop": None, "session": None}
 _pool_stats = {"requests": 0, "errors": 0, "total_ms": 0, "tokens_in": 0, "tokens_out": 0}
 
 
 async def _get_session():
     """Lazy aiohttp session keyed to the current loop."""
     import aiohttp
+
     loop = asyncio.get_event_loop()
     sess = _session_holder.get("session")
     if sess is None or _session_holder.get("loop") is not loop:
@@ -61,21 +69,34 @@ async def _get_session():
     return sess
 
 
-def _build_prompt(persona: Persona, caption: str, platform: str,
-                  kol_name: str, kol_niche: str, kol_fans: int,
-                  visual: str, music: str, duration: float,
-                  memory_hint: str = "") -> str:
+def _build_prompt(
+    persona: Persona,
+    caption: str,
+    platform: str,
+    kol_name: str,
+    kol_niche: str,
+    kol_fans: int,
+    visual: str,
+    music: str,
+    duration: float,
+    memory_hint: str = "",
+) -> str:
     base = PROMPT_TEMPLATE.format(
         persona_card=persona.full_card() + ("\n" + memory_hint if memory_hint else ""),
         interests=", ".join(persona.interests),
-        platform=platform, kol_name=kol_name, kol_niche=kol_niche,
+        platform=platform,
+        kol_name=kol_name,
+        kol_niche=kol_niche,
         kol_fans=f"{kol_fans/10000:.1f}万" if kol_fans else "无",
-        caption=caption, visual=visual, music=music, duration=duration,
+        caption=caption,
+        visual=visual,
+        music=music,
+        duration=duration,
     )
     return base
 
 
-async def _one_call_async(prompt: str) -> Dict:
+async def _one_call_async(prompt: str) -> dict:
     """Single async LLM call against OpenAI-compatible endpoint."""
     sess = await _get_session()
     body = {
@@ -87,18 +108,18 @@ async def _one_call_async(prompt: str) -> Dict:
         "temperature": 0.7,
         "max_tokens": 250,
     }
-    headers = {"Authorization": f"Bearer {API_KEY}",
-               "Content-Type": "application/json"}
+    headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
     t0 = time.time()
     try:
         if _USE_STREAM:
             body["stream"] = True
-            async with sess.post(f"{BASE_URL}/chat/completions",
-                                 headers=headers, json=body) as resp:
+            async with sess.post(
+                f"{BASE_URL}/chat/completions", headers=headers, json=body
+            ) as resp:
                 if resp.status >= 400:
                     text = (await resp.text())[:200]
                     return {"_error": f"HTTP {resp.status}: {text}"}
-                content_chunks: List[str] = []
+                content_chunks: list[str] = []
                 usage = {}
                 async for raw in resp.content:
                     line = raw.decode("utf-8", errors="ignore").strip()
@@ -121,8 +142,9 @@ async def _one_call_async(prompt: str) -> Dict:
                         content_chunks.append(delta)
                 content = "".join(content_chunks)
         else:
-            async with sess.post(f"{BASE_URL}/chat/completions",
-                                 headers=headers, json=body) as resp:
+            async with sess.post(
+                f"{BASE_URL}/chat/completions", headers=headers, json=body
+            ) as resp:
                 if resp.status >= 400:
                     text = (await resp.text())[:200]
                     return {"_error": f"HTTP {resp.status}: {text}"}
@@ -141,11 +163,18 @@ async def _one_call_async(prompt: str) -> Dict:
         return {"_error": f"{type(e).__name__}: {e}"}
 
 
-async def soul_infer_async(persona: Persona, caption: str, platform: str,
-                           kol_name: str = "无", kol_niche: str = "通用",
-                           kol_fans: int = 0, visual: str = "bright",
-                           music: str = "upbeat", duration: float = 15.0,
-                           memory_hint: str = "") -> Dict:
+async def soul_infer_async(
+    persona: Persona,
+    caption: str,
+    platform: str,
+    kol_name: str = "无",
+    kol_niche: str = "通用",
+    kol_fans: int = 0,
+    visual: str = "bright",
+    music: str = "upbeat",
+    duration: float = 15.0,
+    memory_hint: str = "",
+) -> dict:
     """Async equivalent of soul_infer_llm with proper in-flight coalescing.
 
     Before this revision (codex finding 中-1):
@@ -157,17 +186,34 @@ async def soul_infer_async(persona: Persona, caption: str, platform: str,
     Now keyed on full prompt inputs (incl. memory_hint) and routed through
     llm_dedup.async_coalesce / async_release for true leader/followers.
     """
-    prompt = _build_prompt(persona, caption, platform, kol_name, kol_niche,
-                           kol_fans, visual, music, duration, memory_hint)
+    prompt = _build_prompt(
+        persona,
+        caption,
+        platform,
+        kol_name,
+        kol_niche,
+        kol_fans,
+        visual,
+        music,
+        duration,
+        memory_hint,
+    )
 
     if not llm_dedup.enabled():
         result = await _one_call_async(prompt)
         _record_pool_stats(result)
         return result
 
-    key = llm_dedup.make_key(persona.full_card(), caption, platform,
-                              kol_name, visual, music, duration,
-                              memory_hint=memory_hint)
+    key = llm_dedup.make_key(
+        persona.full_card(),
+        caption,
+        platform,
+        kol_name,
+        visual,
+        music,
+        duration,
+        memory_hint=memory_hint,
+    )
     is_leader, event, cached = llm_dedup.async_coalesce(key)
 
     if cached is not None:
@@ -176,8 +222,7 @@ async def soul_infer_async(persona: Persona, caption: str, platform: str,
     if not is_leader:
         # Follower: park on the event off-loop so we don't block the asyncio
         # worker. When leader publishes, cache lookup returns the result.
-        await asyncio.get_event_loop().run_in_executor(
-            None, event.wait, 60.0)
+        await asyncio.get_event_loop().run_in_executor(None, event.wait, 60.0)
         hit = llm_dedup._cache.get(key)
         if hit is not None:
             return llm_dedup._clone(hit)
@@ -196,7 +241,7 @@ async def soul_infer_async(persona: Persona, caption: str, platform: str,
     return result
 
 
-def _record_pool_stats(result: Dict):
+def _record_pool_stats(result: dict):
     _pool_stats["requests"] += 1
     if "_error" in result:
         _pool_stats["errors"] += 1
@@ -206,20 +251,18 @@ def _record_pool_stats(result: Dict):
         _pool_stats["tokens_out"] += result.get("_tokens_out", 0)
 
 
-async def batch_infer_async(jobs: List[Dict],
-                            concurrency: Optional[int] = None) -> List[Dict]:
+async def batch_infer_async(jobs: list[dict], concurrency: int | None = None) -> list[dict]:
     """Run many soul inferences in parallel. Each job is a dict of soul_infer_async kwargs."""
     sem = asyncio.Semaphore(concurrency or _MAX_CONCURRENCY)
 
-    async def _run(j: Dict) -> Dict:
+    async def _run(j: dict) -> dict:
         async with sem:
             return await soul_infer_async(**j)
 
     return await asyncio.gather(*[_run(j) for j in jobs])
 
 
-def run_batch_sync(jobs: List[Dict],
-                   concurrency: Optional[int] = None) -> List[Dict]:
+def run_batch_sync(jobs: list[dict], concurrency: int | None = None) -> list[dict]:
     """Sync entry point for code that can't await. Spins a dedicated loop."""
     try:
         loop = asyncio.new_event_loop()
@@ -241,7 +284,7 @@ def run_batch_sync(jobs: List[Dict],
             pass
 
 
-def pool_stats() -> Dict:
+def pool_stats() -> dict:
     n = max(1, _pool_stats["requests"])
     cost = estimate_cost_cny(_pool_stats["tokens_in"], _pool_stats["tokens_out"])
     return {

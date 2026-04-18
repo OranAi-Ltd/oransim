@@ -74,15 +74,16 @@ class AnthropicProvider:
         # SSE; for now buffered mode is the safe cross-provider baseline.
         url = f"{self.base_url.rstrip('/')}/v1/messages"
         body = self.build_body(
-            system, user,
-            model=model, temperature=temperature, max_tokens=max_tokens,
+            system,
+            user,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
         )
         t0 = time.time()
         resp = post_json(url, self._headers(), body, timeout=self.timeout)
         blocks = resp.get("content") or []
-        content = "".join(
-            b.get("text", "") for b in blocks if b.get("type") == "text"
-        )
+        content = "".join(b.get("text", "") for b in blocks if b.get("type") == "text")
         usage = resp.get("usage") or {}
         return GenerateResult(
             content=content,

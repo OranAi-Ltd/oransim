@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from .base import DiffusionModel
 
@@ -34,9 +35,7 @@ def get_diffusion_model(name: str, **kwargs: Any) -> DiffusionModel:
     try:
         factory = REGISTRY[name]
     except KeyError:
-        raise KeyError(
-            f"Unknown diffusion model '{name}'. Available: {sorted(REGISTRY)}"
-        ) from None
+        raise KeyError(f"Unknown diffusion model '{name}'. Available: {sorted(REGISTRY)}") from None
     return factory()(**kwargs)
 
 

@@ -10,18 +10,22 @@ Given a brand name + list of competitor brand names + own budget, asks GPT-5.4
 Uses the same LLM client as soul_llm (urllib synchronous) with a strict JSON
 schema. One LLM call per competitor.
 """
+
 from __future__ import annotations
-import os
-import json
+
 import time
 import uuid
-from typing import Dict, List, Optional
 
 from .soul_llm import (
-    BASE_URL, API_KEY, MODEL, TIMEOUT, MODE, llm_available,
-    _http_post, _extract_json, estimate_cost_cny,
+    API_KEY,
+    BASE_URL,
+    MODEL,
+    TIMEOUT,
+    _extract_json,
+    _http_post,
+    estimate_cost_cny,
+    llm_available,
 )
-
 
 COMPETITOR_SYSTEM = """你是中国数字营销行业的竞品分析专家，熟悉小红书/抖音/微博的品牌生态。
 给定本品牌和一个竞品，你基于对两个品牌的已知认知（粉丝人群/调性/价格段/主流营销玩法），
@@ -60,11 +64,15 @@ COMPETITOR_PROMPT = """<我方品牌>
 }}"""
 
 
-def _call_llm(own_brand: str, category: str, platforms: List[str],
-              competitor: str, budget: float) -> Dict:
+def _call_llm(
+    own_brand: str, category: str, platforms: list[str], competitor: str, budget: float
+) -> dict:
     prompt = COMPETITOR_PROMPT.format(
-        own_brand=own_brand, category=category,
-        platforms=",".join(platforms), competitor=competitor, budget=int(budget),
+        own_brand=own_brand,
+        category=category,
+        platforms=",".join(platforms),
+        competitor=competitor,
+        budget=int(budget),
     )
     body = {
         "model": MODEL,
@@ -78,7 +86,7 @@ def _call_llm(own_brand: str, category: str, platforms: List[str],
     headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
     t0 = time.time()
     try:
-        resp = _http_post(f"{BASE_URL}/chat/completions", headers, body, timeout=TIMEOUT*2)
+        resp = _http_post(f"{BASE_URL}/chat/completions", headers, body, timeout=TIMEOUT * 2)
         content = resp["choices"][0]["message"]["content"]
         usage = resp.get("usage", {})
         parsed = _extract_json(content)
@@ -90,9 +98,9 @@ def _call_llm(own_brand: str, category: str, platforms: List[str],
         return {"_error": f"{type(e).__name__}: {e}"}
 
 
-def estimate_competitor_roi(own_brand: str, category: str,
-                            platforms: List[str], competitors: List[str],
-                            total_budget: float) -> Dict:
+def estimate_competitor_roi(
+    own_brand: str, category: str, platforms: list[str], competitors: list[str], total_budget: float
+) -> dict:
     """Batch estimate ROI against a list of competitors. Returns schema-aligned rows."""
     if not competitors:
         return {"rows": [], "total_cost_cny": 0.0, "llm_available": llm_available()}

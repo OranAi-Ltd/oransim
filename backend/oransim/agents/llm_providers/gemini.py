@@ -79,8 +79,10 @@ class GeminiProvider:
         safe_model = urllib.parse.quote(model, safe="")
         url = f"{self.base_url.rstrip('/')}/v1beta/models/{safe_model}:generateContent"
         body = self.build_body(
-            system, user,
-            temperature=temperature, max_tokens=max_tokens,
+            system,
+            user,
+            temperature=temperature,
+            max_tokens=max_tokens,
         )
         t0 = time.time()
         resp = post_json(url, self._headers(), body, timeout=self.timeout)

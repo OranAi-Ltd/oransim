@@ -25,6 +25,7 @@ https://github.com/OranAi-Ltd/oransim/releases (starting v0.2).
 """
 
 from .base import WorldModel, WorldModelConfig, WorldModelPrediction
+from .lightgbm_quantile import LightGBMQuantileWorldModel, LightGBMWMConfig
 from .registry import REGISTRY, get_world_model, list_world_models
 from .transformer import (
     CausalTransformerWMConfig,
@@ -32,7 +33,6 @@ from .transformer import (
     TransformerWMConfig,  # backward-compat alias
     TransformerWorldModel,  # backward-compat alias
 )
-from .lightgbm_quantile import LightGBMQuantileWorldModel, LightGBMWMConfig
 
 __all__ = [
     "WorldModel",

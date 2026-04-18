@@ -44,7 +44,6 @@ import urllib.error
 import urllib.request
 from typing import Any
 
-
 DEFAULT_TIMEOUT = float(os.environ.get("LLM_TIMEOUT", "15"))
 DEFAULT_MAX_RETRIES = int(os.environ.get("LLM_MAX_RETRIES", "3"))
 DEFAULT_BACKOFF_BASE = float(os.environ.get("LLM_BACKOFF_BASE", "0.8"))
@@ -71,7 +70,7 @@ def _fallback_chain(primary_model: str) -> list[str]:
 
 def _backoff_seconds(attempt: int, base: float, cap: float) -> float:
     """Full jitter exponential backoff (AWS recommendation)."""
-    return min(cap, random.random() * base * (2 ** attempt))
+    return min(cap, random.random() * base * (2**attempt))
 
 
 def post_json(

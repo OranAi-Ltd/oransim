@@ -1,10 +1,11 @@
 """Sandbox session + incremental recompute."""
+
 from __future__ import annotations
-import uuid
+
 import copy
 import time
+import uuid
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
 
 from ..causal.counterfactual import Scenario, ScenarioResult, ScenarioRunner
 
@@ -16,19 +17,23 @@ class SandboxSession:
     baseline_result: ScenarioResult
     current: Scenario
     current_result: ScenarioResult
-    history: List[Scenario] = field(default_factory=list)
+    history: list[Scenario] = field(default_factory=list)
     created_at: float = field(default_factory=time.time)
 
-    def snapshot(self) -> Dict:
+    def snapshot(self) -> dict:
         def kpi_round(d):
             return {k: round(float(v), 4) for k, v in d.items()}
+
         return {
             "id": self.id,
             "baseline_kpis": kpi_round(self.baseline_result.total_kpis),
             "current_kpis": kpi_round(self.current_result.total_kpis),
             "delta": {
-                k: round(self.current_result.total_kpis.get(k, 0)
-                         - self.baseline_result.total_kpis.get(k, 0), 4)
+                k: round(
+                    self.current_result.total_kpis.get(k, 0)
+                    - self.baseline_result.total_kpis.get(k, 0),
+                    4,
+                )
                 for k in self.current_result.total_kpis
             },
             "current_scenario": {
@@ -36,8 +41,7 @@ class SandboxSession:
                 "platform_alloc": self.current.platform_alloc,
             },
             "per_platform": {
-                p: kpi_round(d["kpi"])
-                for p, d in self.current_result.per_platform.items()
+                p: kpi_round(d["kpi"]) for p, d in self.current_result.per_platform.items()
             },
         }
 
@@ -47,7 +51,7 @@ class SandboxStore:
 
     def __init__(self, runner: ScenarioRunner):
         self.runner = runner
-        self.sessions: Dict[str, SandboxSession] = {}
+        self.sessions: dict[str, SandboxSession] = {}
 
     def create(self, baseline: Scenario) -> SandboxSession:
         baseline_result = self.runner.run(baseline, n_monte_carlo=5)
@@ -62,10 +66,10 @@ class SandboxStore:
         self.sessions[sid] = sess
         return sess
 
-    def get(self, sid: str) -> Optional[SandboxSession]:
+    def get(self, sid: str) -> SandboxSession | None:
         return self.sessions.get(sid)
 
-    def update(self, sid: str, patch: Dict) -> SandboxSession:
+    def update(self, sid: str, patch: dict) -> SandboxSession:
         """Apply a patch to current scenario and incrementally recompute.
 
         Decision tree:
@@ -89,7 +93,7 @@ class SandboxStore:
             # normalize
             a = patch["platform_alloc"]
             s = sum(a.values()) or 1
-            new.platform_alloc = {k: v/s for k,v in a.items() if v > 0}
+            new.platform_alloc = {k: v / s for k, v in a.items() if v > 0}
             alloc_changed = True
 
         budget_changed = False
@@ -104,7 +108,7 @@ class SandboxStore:
 
         if "audience_filter" in patch:
             new.audience_filter = patch["audience_filter"]
-            alloc_changed = True   # treat as dist change
+            alloc_changed = True  # treat as dist change
 
         # Dispatch to right compute path
         if creative_changed:
@@ -133,6 +137,7 @@ class SandboxStore:
             #   - revenue 跟着 impressions × CTR × CVR × AOV 算
             # 学术根据: Dubé & Manchanda 2005 (ad saturation); Naik & Raman 2003 (Adstock)
             import math as _m
+
             ratio = new.total_budget / max(prev.total_budget, 1e-6)
             scaled = copy.deepcopy(sess.current_result)
 
@@ -143,6 +148,7 @@ class SandboxStore:
             #           ratio=4.0x → 1.60x 曝光 (预算翻 4 倍只有 1.6 倍效果)
             #   K 小 = 饱和快 (小预算就触顶); K 大 = 饱和慢 (资源充裕)
             import os as _os
+
             K_sat = float(_os.environ.get("BUDGET_SATURATION_K", "1.0"))
             # 经验值：中小品牌 K≈0.5-1.5 (饱和快), 大品牌 K≈2-5 (资源充裕可持续投)
             # PoC 客户可按历史真实投放曲线回归出自己的 K
@@ -159,25 +165,31 @@ class SandboxStore:
             effective_rev_ratio = effective_conv_ratio  # revenue = conversions × AOV (AOV 不变)
 
             def scale_kpi(d):
-                if "impressions" in d: d["impressions"] *= effective_impr_ratio
-                if "clicks" in d:      d["clicks"]      *= effective_click_ratio
-                if "conversions" in d: d["conversions"] *= effective_conv_ratio
-                if "cost" in d:        d["cost"]        *= ratio  # 预算就是花费
-                if "revenue" in d:     d["revenue"]     *= effective_rev_ratio
+                if "impressions" in d:
+                    d["impressions"] *= effective_impr_ratio
+                if "clicks" in d:
+                    d["clicks"] *= effective_click_ratio
+                if "conversions" in d:
+                    d["conversions"] *= effective_conv_ratio
+                if "cost" in d:
+                    d["cost"] *= ratio  # 预算就是花费
+                if "revenue" in d:
+                    d["revenue"] *= effective_rev_ratio
                 # 重算 rate 类指标
-                if d.get("impressions",0) > 0:
-                    d["ctr"] = d.get("clicks",0) / d["impressions"]
-                if d.get("clicks",0) > 0:
-                    d["cvr"] = d.get("conversions",0) / d["clicks"]
+                if d.get("impressions", 0) > 0:
+                    d["ctr"] = d.get("clicks", 0) / d["impressions"]
+                if d.get("clicks", 0) > 0:
+                    d["cvr"] = d.get("conversions", 0) / d["clicks"]
 
             for plat, d in scaled.per_platform.items():
-                if "kpi" in d: scale_kpi(d["kpi"])
+                if "kpi" in d:
+                    scale_kpi(d["kpi"])
             scale_kpi(scaled.total_kpis)
 
             # ROI 会因为曝光/点击率下降而**下降**（规模不经济）
-            scaled.total_kpis["roi"] = (scaled.total_kpis.get("revenue", 0)
-                                        - scaled.total_kpis.get("cost", 0)) \
-                                       / max(scaled.total_kpis.get("cost", 1), 1)
+            scaled.total_kpis["roi"] = (
+                scaled.total_kpis.get("revenue", 0) - scaled.total_kpis.get("cost", 0)
+            ) / max(scaled.total_kpis.get("cost", 1), 1)
 
             # 附加 audit 元数据方便前端展示
             scaled.total_kpis["_budget_scaling_note"] = (

@@ -8,11 +8,13 @@ Abstracts over different agent backends so API can switch modes:
 Why: lets us benchmark Voronoi vs OASIS head-to-head, give enterprise clients
 a "high-fidelity mode" without rewriting pipelines.
 """
+
 from __future__ import annotations
+
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+
 import numpy as np
 
 from ..data.creatives import Creative
@@ -23,20 +25,21 @@ from ..platforms.xhs.world_model_legacy import ImpressionResult
 @dataclass
 class ProviderResult:
     """Unified output format from any agent provider."""
-    provider: str                # "voronoi" / "oasis" / ...
-    n_agents_total: int          # theoretical scale
-    n_agents_active: int         # actually computed this run
-    n_llm_calls: int             # real LLM calls made
+
+    provider: str  # "voronoi" / "oasis" / ...
+    n_agents_total: int  # theoretical scale
+    n_agents_active: int  # actually computed this run
+    n_llm_calls: int  # real LLM calls made
     cost_cny: float
     latency_s: float
     click_prob_mean: float
     click_prob_std: float
     ctr: float
     cvr: float
-    per_agent_samples: List[Dict] = field(default_factory=list)  # small sample for viz
+    per_agent_samples: list[dict] = field(default_factory=list)  # small sample for viz
     notes: str = ""
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "provider": self.provider,
             "n_agents_total": self.n_agents_total,
@@ -55,6 +58,7 @@ class ProviderResult:
 
 class AgentProvider(ABC):
     """Abstract agent provider — compute CTR/CVR for a scenario."""
+
     name: str = "abstract"
 
     @abstractmethod
@@ -62,13 +66,14 @@ class AgentProvider(ABC):
         self,
         impression: ImpressionResult,
         creative: Creative,
-        kol: Optional[KOL],
+        kol: KOL | None,
         platform: str,
         **kwargs,
     ) -> ProviderResult: ...
 
 
 # ---------------- OASIS-style provider (pure multi-agent LLM) ----------------
+
 
 class OASISProvider(AgentProvider):
     """Pure multi-agent LLM simulation — each activated agent calls LLM
@@ -82,10 +87,10 @@ class OASISProvider(AgentProvider):
     Tries to import real OASIS if available; otherwise runs the same algorithm
     with our LLM gateway (honest approximation).
     """
+
     name = "oasis"
 
-    def __init__(self, soul_pool, population, n_total: int = 10_000,
-                 activation_prob: float = 0.05):
+    def __init__(self, soul_pool, population, n_total: int = 10_000, activation_prob: float = 0.05):
         self.souls = soul_pool
         self.pop = population
         self.n_total = n_total
@@ -95,13 +100,16 @@ class OASISProvider(AgentProvider):
     def _check_oasis(self) -> bool:
         try:
             import oasis  # noqa
+
             return True
         except ImportError:
             return False
 
     def simulate(self, impression, creative, kol, platform, **kwargs) -> ProviderResult:
         from concurrent.futures import ThreadPoolExecutor, as_completed
-        from .soul_llm import (llm_available, soul_infer_llm, estimate_cost_cny)
+
+        from .soul_llm import estimate_cost_cny, llm_available, soul_infer_llm
+
         t0 = time.time()
 
         # activation_probability × N_total = how many LLM calls we should make
@@ -115,23 +123,29 @@ class OASISProvider(AgentProvider):
         # Sample n_active_real personas WITHOUT Voronoi-aware weighting
         # (pure random sample — this is the "OASIS way")
         import random
+
         rng = random.Random(int(time.time()))
-        persona_ids = rng.sample(list(self.souls.personas.keys()),
-                                  min(n_active_real, len(self.souls.personas)))
+        persona_ids = rng.sample(
+            list(self.souls.personas.keys()), min(n_active_real, len(self.souls.personas))
+        )
 
         def call_one(pid):
             p = self.souls.personas[pid]
             r = soul_infer_llm(
-                persona=p, caption=creative.caption, platform=platform,
+                persona=p,
+                caption=creative.caption,
+                platform=platform,
                 kol_name=kol.name if kol else "无",
                 kol_niche=kol.niche if kol else "通用",
                 kol_fans=kol.fan_count if kol else 0,
-                visual=creative.visual_style, music=creative.music_mood,
+                visual=creative.visual_style,
+                music=creative.music_mood,
                 duration=creative.duration_sec,
             )
             return pid, r
 
         import os
+
         workers = int(os.environ.get("LLM_CONCURRENCY", "15"))
         llm_calls = 0
         tok_in = tok_out = 0
@@ -144,19 +158,20 @@ class OASISProvider(AgentProvider):
                 if "_error" not in r:
                     tok_in += r.get("_tokens_in", 0)
                     tok_out += r.get("_tokens_out", 0)
-                    verdicts.append({
-                        "pid": pid,
-                        "clicked": bool(r.get("will_click", False)),
-                        "intent": float(r.get("purchase_intent_7d", 0.1)),
-                        "reason": r.get("reason", ""),
-                        "persona": self.souls.personas[pid].one_liner(),
-                    })
+                    verdicts.append(
+                        {
+                            "pid": pid,
+                            "clicked": bool(r.get("will_click", False)),
+                            "intent": float(r.get("purchase_intent_7d", 0.1)),
+                            "reason": r.get("reason", ""),
+                            "persona": self.souls.personas[pid].one_liner(),
+                        }
+                    )
 
         if not verdicts:
             return self._mock_result(n_active, n_active_real, t0, notes="all calls failed")
 
-        click_arr = np.array([1.0 if v["clicked"] else 0.0 for v in verdicts],
-                              dtype=np.float32)
+        click_arr = np.array([1.0 if v["clicked"] else 0.0 for v in verdicts], dtype=np.float32)
         ctr = float(click_arr.mean())
         cvr_arr = np.array([v["intent"] for v in verdicts], dtype=np.float32)
         cvr = float((cvr_arr > 0.3).mean())
@@ -174,25 +189,35 @@ class OASISProvider(AgentProvider):
             latency_s=time.time() - t0,
             click_prob_mean=ctr,
             click_prob_std=float(click_arr.std()),
-            ctr=ctr, cvr=cvr,
+            ctr=ctr,
+            cvr=cvr,
             per_agent_samples=verdicts,
-            notes=(f"nominal {n_active} agents active (of {self.n_total}), "
-                   f"actually computed {len(verdicts)} LLM calls. "
-                   f"Theoretical full-scale cost ≈ ¥{theoretical_cost:.2f}. "
-                   f"OASIS library {'available' if self._oasis_available else 'not installed — shim mode'}."),
+            notes=(
+                f"nominal {n_active} agents active (of {self.n_total}), "
+                f"actually computed {len(verdicts)} LLM calls. "
+                f"Theoretical full-scale cost ≈ ¥{theoretical_cost:.2f}. "
+                f"OASIS library {'available' if self._oasis_available else 'not installed — shim mode'}."
+            ),
         )
 
     def _mock_result(self, n_active, n_real, t0, notes):
         return ProviderResult(
-            provider="oasis:stub", n_agents_total=self.n_total,
-            n_agents_active=n_active, n_llm_calls=0,
-            cost_cny=0.0, latency_s=time.time() - t0,
-            click_prob_mean=0.02, click_prob_std=0.01,
-            ctr=0.02, cvr=0.1, notes=notes,
+            provider="oasis:stub",
+            n_agents_total=self.n_total,
+            n_agents_active=n_active,
+            n_llm_calls=0,
+            cost_cny=0.0,
+            latency_s=time.time() - t0,
+            click_prob_mean=0.02,
+            click_prob_std=0.01,
+            ctr=0.02,
+            cvr=0.1,
+            notes=notes,
         )
 
 
 # ---------------- Voronoi provider (our default) ----------------
+
 
 class SLOCProvider(AgentProvider):
     """Sparse LLM Oracle Calibration (SLOC) — Oransim's core IP.
@@ -201,6 +226,7 @@ class SLOCProvider(AgentProvider):
     importance weighting. Theoretical backbone: Kish 1965 survey sampling
     + McAllester 1999 PAC-Bayes.
     """
+
     name = "sloc"
 
     def __init__(self, statistical_agents, soul_pool, partition, persona_to_slot):
@@ -209,28 +235,45 @@ class SLOCProvider(AgentProvider):
         self.partition = partition
         self.persona_to_slot = persona_to_slot
 
-    def simulate(self, impression, creative, kol, platform,
-                  use_llm: bool = True, n_souls: int = 30,
-                  macro_ctr_lift: float = 1.0, macro_cvr_lift: float = 1.0,
-                  **kwargs) -> ProviderResult:
+    def simulate(
+        self,
+        impression,
+        creative,
+        kol,
+        platform,
+        use_llm: bool = True,
+        n_souls: int = 30,
+        macro_ctr_lift: float = 1.0,
+        macro_cvr_lift: float = 1.0,
+        **kwargs,
+    ) -> ProviderResult:
         from .calibration import calibrate_per_territory
-        from .soul_llm import llm_available, estimate_cost_cny
+        from .soul_llm import llm_available
+
         t0 = time.time()
 
         outcome = self.stat.simulate(
-            impression, creative, kol,
-            macro_ctr_lift=macro_ctr_lift, macro_cvr_lift=macro_cvr_lift,
+            impression,
+            creative,
+            kol,
+            macro_ctr_lift=macro_ctr_lift,
+            macro_cvr_lift=macro_cvr_lift,
         )
-        click_prob_by_agent = {int(a): float(p)
-                                for a, p in zip(outcome.agent_idx, outcome.click_prob)}
+        click_prob_by_agent = {
+            int(a): float(p) for a, p in zip(outcome.agent_idx, outcome.click_prob)
+        }
 
         llm_calls = 0
         cost = 0.0
         cal_info = {}
         if use_llm and llm_available():
             souls = self.souls.infer_batch(
-                creative, click_prob_by_agent, kol=kol, platform=platform,
-                n_sample=n_souls, use_llm=True,
+                creative,
+                click_prob_by_agent,
+                kol=kol,
+                platform=platform,
+                n_sample=n_souls,
+                use_llm=True,
             )
             llm_calls = sum(1 for s in souls if s.get("source") == "llm")
             cost = souls[0].get("_batch_cost_cny", 0.0) if souls else 0.0
@@ -238,15 +281,18 @@ class SLOCProvider(AgentProvider):
             llm_souls = [s for s in souls if s.get("source") == "llm"]
             if len(llm_souls) >= 5:
                 # Need stat probs at soul agent indices
-                soul_pids = [int(s.get("persona_id")) for s in llm_souls
-                              if s.get("persona_id") is not None]
+                soul_pids = [
+                    int(s.get("persona_id")) for s in llm_souls if s.get("persona_id") is not None
+                ]
                 # Quick approximation: get existing probs where overlap
                 stat_probs_at_souls = {
                     pid: click_prob_by_agent.get(pid, float(np.mean(outcome.click_prob)))
                     for pid in soul_pids
                 }
                 cal = calibrate_per_territory(
-                    llm_souls, self.partition, stat_probs_at_souls,
+                    llm_souls,
+                    self.partition,
+                    stat_probs_at_souls,
                     persona_id_to_slot=self.persona_to_slot,
                 )
                 cal_info = cal
@@ -257,7 +303,8 @@ class SLOCProvider(AgentProvider):
         convs = float(np.sum(outcome.convert_prob * impression.weight))
         if cal_info.get("global_factor"):
             f = cal_info["global_factor"]
-            clicks *= f; convs *= f
+            clicks *= f
+            convs *= f
         ctr = clicks / max(impressions, 1)
         cvr = convs / max(clicks, 1)
 
@@ -265,31 +312,38 @@ class SLOCProvider(AgentProvider):
         if use_llm:
             # Top 20 LLM souls for viz
             import random
+
             rng = random.Random(0)
-            sample_ids = rng.sample(list(self.souls.personas.keys()),
-                                      min(20, len(self.souls.personas)))
+            sample_ids = rng.sample(
+                list(self.souls.personas.keys()), min(20, len(self.souls.personas))
+            )
             for pid in sample_ids:
-                samples.append({
-                    "pid": pid,
-                    "persona": self.souls.personas[pid].one_liner(),
-                    "stat_click_prob": round(click_prob_by_agent.get(pid, 0.05), 3),
-                })
+                samples.append(
+                    {
+                        "pid": pid,
+                        "persona": self.souls.personas[pid].one_liner(),
+                        "stat_click_prob": round(click_prob_by_agent.get(pid, 0.05), 3),
+                    }
+                )
 
         return ProviderResult(
             provider="sloc",
             n_agents_total=self.stat.pop.N,
-            n_agents_active=self.stat.pop.N,   # all 100k evaluated (vectorized)
+            n_agents_active=self.stat.pop.N,  # all 100k evaluated (vectorized)
             n_llm_calls=llm_calls,
             cost_cny=cost,
             latency_s=time.time() - t0,
             click_prob_mean=float(outcome.click_prob.mean()),
             click_prob_std=float(outcome.click_prob.std()),
-            ctr=ctr, cvr=cvr,
+            ctr=ctr,
+            cvr=cvr,
             per_agent_samples=samples,
-            notes=(f"SLOC: 100k statistical fabric + {llm_calls} LLM oracles "
-                   f"+ stratified coreset weighting "
-                   f"({'with' if cal_info else 'without'} calibration factor "
-                   f"{cal_info.get('global_factor', 'N/A')})."),
+            notes=(
+                f"SLOC: 100k statistical fabric + {llm_calls} LLM oracles "
+                f"+ stratified coreset weighting "
+                f"({'with' if cal_info else 'without'} calibration factor "
+                f"{cal_info.get('global_factor', 'N/A')})."
+            ),
         )
 
 
@@ -297,23 +351,25 @@ class SLOCProvider(AgentProvider):
 VoronoiProvider = SLOCProvider
 
 
-def compare_providers(providers: List[ProviderResult]) -> Dict:
+def compare_providers(providers: list[ProviderResult]) -> dict:
     """Side-by-side comparison stats."""
     if not providers:
         return {}
     base = providers[0]
     rows = []
     for p in providers:
-        rows.append({
-            "provider": p.provider,
-            "n_agents_total": p.n_agents_total,
-            "n_agents_active": p.n_agents_active,
-            "n_llm_calls": p.n_llm_calls,
-            "latency_s": round(p.latency_s, 2),
-            "cost_cny": round(p.cost_cny, 4),
-            "ctr": round(p.ctr, 4),
-            "cvr": round(p.cvr, 4),
-            "ctr_delta_vs_first": round(p.ctr - base.ctr, 4),
-            "cost_ratio_vs_first": round(p.cost_cny / max(base.cost_cny, 0.0001), 1),
-        })
+        rows.append(
+            {
+                "provider": p.provider,
+                "n_agents_total": p.n_agents_total,
+                "n_agents_active": p.n_agents_active,
+                "n_llm_calls": p.n_llm_calls,
+                "latency_s": round(p.latency_s, 2),
+                "cost_cny": round(p.cost_cny, 4),
+                "ctr": round(p.ctr, 4),
+                "cvr": round(p.cvr, 4),
+                "ctr_delta_vs_first": round(p.ctr - base.ctr, 4),
+                "cost_ratio_vs_first": round(p.cost_cny / max(base.cost_cny, 0.0001), 1),
+            }
+        )
     return {"rows": rows}

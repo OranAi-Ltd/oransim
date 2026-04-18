@@ -10,16 +10,17 @@ Data sources:
 
 Returns schema T3-A6 payload with ε, R², CI, DW stat.
 """
+
 from __future__ import annotations
+
 import math
 import time
 import uuid
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
 
-def _fit_log_log(engage: List[float], search: List[float]) -> Dict:
+def _fit_log_log(engage: list[float], search: list[float]) -> dict:
     """OLS on ln(search) = α + ε·ln(engage). Return slope/intercept/R²/CI/DW."""
     eps = 1e-6
     x = np.log(np.clip(np.asarray(engage, dtype=float), eps, None))
@@ -34,7 +35,7 @@ def _fit_log_log(engage: List[float], search: List[float]) -> Dict:
     intercept = my - slope * mx
     y_hat = intercept + slope * x
     resid = y - y_hat
-    ss_res = np.sum(resid ** 2)
+    ss_res = np.sum(resid**2)
     ss_tot = np.sum((y - my) ** 2) or 1e-9
     r2 = 1 - ss_res / ss_tot
     # Std error of slope → 95% CI
@@ -59,17 +60,19 @@ def _fit_log_log(engage: List[float], search: List[float]) -> Dict:
 
 def _skew(a):
     a = np.asarray(a)
-    m = a.mean(); s = a.std() or 1e-9
+    m = a.mean()
+    s = a.std() or 1e-9
     return float(np.mean(((a - m) / s) ** 3))
 
 
 def _kurt(a):
     a = np.asarray(a)
-    m = a.mean(); s = a.std() or 1e-9
+    m = a.mean()
+    s = a.std() or 1e-9
     return float(np.mean(((a - m) / s) ** 4) - 3)
 
 
-def _fetch_provider_keyword_series(keyword: str, platform: str = "xhs") -> Optional[Dict]:
+def _fetch_provider_keyword_series(keyword: str, platform: str = "xhs") -> dict | None:
     """Attempt to fetch a keyword analysis time-series from a registered DataProvider.
 
     v0.1-alpha: no DataProvider is installed in the OSS skeleton, so this
@@ -86,22 +89,23 @@ def _fetch_provider_keyword_series(keyword: str, platform: str = "xhs") -> Optio
     return None
 
 
-def _synthesize_series_from_lifecycle(lifecycle: Dict,
-                                       base_elasticity: float = 0.35) -> Dict:
+def _synthesize_series_from_lifecycle(lifecycle: dict, base_elasticity: float = 0.35) -> dict:
     """Fallback: synthesize search-vs-engage series from Hawkes lifecycle.
 
     Generates search = engage^ε × noise, then backs out ε to demo methodology.
     """
     lc = lifecycle or {}
-    reach = (lc.get("total_daily") or lc.get("reach") or lc.get("organic_daily") or [])
+    reach = lc.get("total_daily") or lc.get("reach") or lc.get("organic_daily") or []
     if not reach or len(reach) < 3:
         return {"_error": f"insufficient lifecycle data for synthesis (keys={list(lc.keys())[:5]})"}
     rng = np.random.default_rng(42)
     engage = np.asarray(reach, dtype=float)
     # search = c · engage^ε · exp(N(0,σ)); σ small
     sigma = 0.12
-    search = np.exp(np.log(np.clip(engage, 1e-6, None)) * base_elasticity +
-                    rng.normal(0, sigma, size=len(engage)))
+    search = np.exp(
+        np.log(np.clip(engage, 1e-6, None)) * base_elasticity
+        + rng.normal(0, sigma, size=len(engage))
+    )
     search = search * 200  # scale to brand-search-index order
     return {
         "days": [f"day_{i}" for i in range(len(engage))],
@@ -112,10 +116,12 @@ def _synthesize_series_from_lifecycle(lifecycle: Dict,
     }
 
 
-def compute_elasticity(lifecycle: Optional[Dict] = None,
-                       keyword: Optional[str] = None,
-                       platform: str = "xhs",
-                       brand_id: str = "brand_mvp") -> Dict:
+def compute_elasticity(
+    lifecycle: dict | None = None,
+    keyword: str | None = None,
+    platform: str = "xhs",
+    brand_id: str = "brand_mvp",
+) -> dict:
     """Main entry. Tries data provider first, falls back to synthesized series."""
     series = None
     if keyword:
@@ -145,11 +151,15 @@ def compute_elasticity(lifecycle: Optional[Dict] = None,
     }
 
 
-def _interpret(stats: Dict) -> str:
+def _interpret(stats: dict) -> str:
     e = stats.get("elasticity_coeff", 0)
     r2 = stats.get("r_squared", 0)
-    if r2 < 0.3: return f"拟合较弱 (R²={r2})，弹性估计不可靠"
-    if e < 0.1: return f"互动对搜索几无推动 (ε={e})"
-    if e < 0.3: return f"互动→搜索弱正向传导 (ε={e})"
-    if e < 0.6: return f"互动→搜索中等正向传导 (ε={e})，每 10% 互动带动 {e*10:.1f}% 搜索"
+    if r2 < 0.3:
+        return f"拟合较弱 (R²={r2})，弹性估计不可靠"
+    if e < 0.1:
+        return f"互动对搜索几无推动 (ε={e})"
+    if e < 0.3:
+        return f"互动→搜索弱正向传导 (ε={e})"
+    if e < 0.6:
+        return f"互动→搜索中等正向传导 (ε={e})，每 10% 互动带动 {e*10:.1f}% 搜索"
     return f"互动→搜索强传导 (ε={e})，典型爆款现象"

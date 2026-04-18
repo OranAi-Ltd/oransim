@@ -32,18 +32,26 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
-
+from typing import Any
 
 NICHES = [
-    "beauty", "fashion", "food", "electronics", "travel",
-    "parenting", "fitness", "home", "beverage", "pet",
+    "beauty",
+    "fashion",
+    "food",
+    "electronics",
+    "travel",
+    "parenting",
+    "fitness",
+    "home",
+    "beverage",
+    "pet",
 ]
 KOL_TIERS = ["nano", "micro", "mid", "macro", "mega"]
 
 
-def _hash_embed(text: str, dim: int, seed: int = 0) -> "Any":
+def _hash_embed(text: str, dim: int, seed: int = 0) -> Any:
     """Deterministic pseudo-embedding for text via hashing.
 
     Stand-in for OpenAI text-embedding-3-small until the real embedder bus
@@ -52,14 +60,17 @@ def _hash_embed(text: str, dim: int, seed: int = 0) -> "Any":
     see stable targets during training.
     """
     import hashlib
+
     import numpy as np
     import torch
 
-    rng = np.random.default_rng(seed + int(hashlib.sha1(text.encode("utf-8")).hexdigest(), 16) % (2**31))
+    rng = np.random.default_rng(
+        seed + int(hashlib.sha1(text.encode("utf-8")).hexdigest(), 16) % (2**31)
+    )
     return torch.tensor(rng.standard_normal(dim).astype("float32") * 0.1)
 
 
-def _featurize_row(row: dict, seed: int) -> dict[str, "Any"]:
+def _featurize_row(row: dict, seed: int) -> dict[str, Any]:
     """Expand a scalar scenario row into the tensor dict the
     CausalTransformerNet.tokenize() method expects.
 
@@ -132,6 +143,7 @@ def _load_dataset(path: str, batch_size: int = 256, seed: int = 42) -> Iterable[
 
     # Deterministic shuffle per seed
     import random
+
     rng = random.Random(seed)
     rng.shuffle(rows)
 

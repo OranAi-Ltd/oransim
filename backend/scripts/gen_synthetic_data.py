@@ -37,94 +37,93 @@ import dataclasses
 import json
 import math
 import random
-import sys
-from dataclasses import dataclass, field
+from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
-
+from typing import Any
 
 # --------------------------------------------------------------------- config
 
 
 NICHES = [
-    ("beauty",     "美妆"),
-    ("fashion",    "服装"),
-    ("food",       "食饮"),
-    ("electronics","3C"),
-    ("travel",     "旅游"),
-    ("parenting",  "母婴"),
-    ("fitness",    "健身"),
-    ("home",       "家居"),
-    ("beverage",   "饮品"),
-    ("pet",        "宠物"),
+    ("beauty", "美妆"),
+    ("fashion", "服装"),
+    ("food", "食饮"),
+    ("electronics", "3C"),
+    ("travel", "旅游"),
+    ("parenting", "母婴"),
+    ("fitness", "健身"),
+    ("home", "家居"),
+    ("beverage", "饮品"),
+    ("pet", "宠物"),
 ]
 
 # Aggregate fan-count distribution (log-normal per niche, params rough-fit
 # against publicly-reported XHS creator economy stats)
 NICHE_FAN_COUNT_LN = {
     # (mu_log, sigma_log) for lognormal fan-count distribution
-    "beauty":      (9.5, 1.6),
-    "fashion":     (9.3, 1.6),
-    "food":        (9.2, 1.5),
+    "beauty": (9.5, 1.6),
+    "fashion": (9.3, 1.6),
+    "food": (9.2, 1.5),
     "electronics": (9.0, 1.4),
-    "travel":      (9.1, 1.5),
-    "parenting":   (8.9, 1.4),
-    "fitness":     (8.8, 1.4),
-    "home":        (8.7, 1.4),
-    "beverage":    (8.8, 1.4),
-    "pet":         (8.6, 1.3),
+    "travel": (9.1, 1.5),
+    "parenting": (8.9, 1.4),
+    "fitness": (8.8, 1.4),
+    "home": (8.7, 1.4),
+    "beverage": (8.8, 1.4),
+    "pet": (8.6, 1.3),
 }
 
 # Aggregate engagement-rate distribution (beta per niche)
 NICHE_ENGAGE_BETA = {
-    "beauty":      (2.0, 60.0),   # mean ≈ 3.2%
-    "fashion":     (2.1, 55.0),
-    "food":        (2.5, 50.0),
+    "beauty": (2.0, 60.0),  # mean ≈ 3.2%
+    "fashion": (2.1, 55.0),
+    "food": (2.5, 50.0),
     "electronics": (1.8, 65.0),
-    "travel":      (2.3, 55.0),
-    "parenting":   (2.4, 50.0),
-    "fitness":     (2.2, 55.0),
-    "home":        (1.9, 60.0),
-    "beverage":    (2.3, 55.0),
-    "pet":         (2.6, 48.0),
+    "travel": (2.3, 55.0),
+    "parenting": (2.4, 50.0),
+    "fitness": (2.2, 55.0),
+    "home": (1.9, 60.0),
+    "beverage": (2.3, 55.0),
+    "pet": (2.6, 48.0),
 }
 
 # Audience demographics (approx age-band distributions per niche, 7 bands)
 # Ages: 14-17, 18-24, 25-34, 35-44, 45-54, 55-64, 65+
 NICHE_AGE_DIST = {
-    "beauty":      [0.03, 0.36, 0.39, 0.15, 0.05, 0.015, 0.005],
-    "fashion":     [0.05, 0.32, 0.36, 0.17, 0.07, 0.025, 0.005],
-    "food":        [0.04, 0.22, 0.34, 0.22, 0.12, 0.05,  0.01],
-    "electronics": [0.03, 0.25, 0.38, 0.20, 0.09, 0.04,  0.01],
-    "travel":      [0.02, 0.18, 0.32, 0.25, 0.15, 0.06,  0.02],
-    "parenting":   [0.01, 0.08, 0.44, 0.35, 0.08, 0.03,  0.01],
-    "fitness":     [0.02, 0.25, 0.38, 0.22, 0.10, 0.025, 0.005],
-    "home":        [0.01, 0.10, 0.32, 0.30, 0.18, 0.07,  0.02],
-    "beverage":    [0.05, 0.28, 0.35, 0.18, 0.10, 0.03,  0.01],
-    "pet":         [0.02, 0.22, 0.40, 0.22, 0.10, 0.03,  0.01],
+    "beauty": [0.03, 0.36, 0.39, 0.15, 0.05, 0.015, 0.005],
+    "fashion": [0.05, 0.32, 0.36, 0.17, 0.07, 0.025, 0.005],
+    "food": [0.04, 0.22, 0.34, 0.22, 0.12, 0.05, 0.01],
+    "electronics": [0.03, 0.25, 0.38, 0.20, 0.09, 0.04, 0.01],
+    "travel": [0.02, 0.18, 0.32, 0.25, 0.15, 0.06, 0.02],
+    "parenting": [0.01, 0.08, 0.44, 0.35, 0.08, 0.03, 0.01],
+    "fitness": [0.02, 0.25, 0.38, 0.22, 0.10, 0.025, 0.005],
+    "home": [0.01, 0.10, 0.32, 0.30, 0.18, 0.07, 0.02],
+    "beverage": [0.05, 0.28, 0.35, 0.18, 0.10, 0.03, 0.01],
+    "pet": [0.02, 0.22, 0.40, 0.22, 0.10, 0.03, 0.01],
 }
 
 # Gender distribution per niche (female share)
 NICHE_FEMALE_SHARE = {
-    "beauty":      0.90,
-    "fashion":     0.78,
-    "food":        0.60,
+    "beauty": 0.90,
+    "fashion": 0.78,
+    "food": 0.60,
     "electronics": 0.32,
-    "travel":      0.56,
-    "parenting":   0.88,
-    "fitness":     0.54,
-    "home":        0.72,
-    "beverage":    0.62,
-    "pet":         0.68,
+    "travel": 0.56,
+    "parenting": 0.88,
+    "fitness": 0.54,
+    "home": 0.72,
+    "beverage": 0.62,
+    "pet": 0.68,
 }
 
 EVENT_TYPES = [
     ("impression", "organic"),
     ("impression", "paid_boost"),
-    ("like",       "organic"),
-    ("comment",    "organic"),
-    ("share",      "organic"),
-    ("save",       "organic"),
+    ("like", "organic"),
+    ("comment", "organic"),
+    ("share", "organic"),
+    ("save", "organic"),
     ("conversion", "organic"),
 ]
 
@@ -158,14 +157,47 @@ def _kol_tier(fan_count: int) -> str:
 
 
 FAKE_ADJ = [
-    "Aurora", "Crimson", "Velvet", "Solar", "Neon", "Oak", "Linen",
-    "Crystal", "Indigo", "Coral", "Ember", "Meadow", "Cloud", "Ivory",
-    "Amber", "Storm", "Silver", "Jade", "Harbor", "Prairie",
+    "Aurora",
+    "Crimson",
+    "Velvet",
+    "Solar",
+    "Neon",
+    "Oak",
+    "Linen",
+    "Crystal",
+    "Indigo",
+    "Coral",
+    "Ember",
+    "Meadow",
+    "Cloud",
+    "Ivory",
+    "Amber",
+    "Storm",
+    "Silver",
+    "Jade",
+    "Harbor",
+    "Prairie",
 ]
 FAKE_NOUN = [
-    "Studio", "Lab", "Journal", "Files", "Diary", "Club", "Notebook",
-    "Agenda", "Gallery", "Monthly", "Atelier", "Bureau", "Press",
-    "Chronicle", "Works", "Record", "Society", "Muse", "Archive",
+    "Studio",
+    "Lab",
+    "Journal",
+    "Files",
+    "Diary",
+    "Club",
+    "Notebook",
+    "Agenda",
+    "Gallery",
+    "Monthly",
+    "Atelier",
+    "Bureau",
+    "Press",
+    "Chronicle",
+    "Works",
+    "Record",
+    "Society",
+    "Muse",
+    "Archive",
 ]
 
 
@@ -226,9 +258,7 @@ ADJ_ZH = ["清新", "醇厚", "质朴", "现代", "古典", "极简", "温暖", 
 NOUN_ZH = ["方案", "体验", "选择", "搭配", "组合", "系列", "款式"]
 
 
-def generate_notes(
-    rng: random.Random, kols: list[SyntheticKOL], n: int
-) -> list[dict[str, Any]]:
+def generate_notes(rng: random.Random, kols: list[SyntheticKOL], n: int) -> list[dict[str, Any]]:
     """Generate ``n`` synthetic notes tied to random KOLs."""
     notes: list[dict[str, Any]] = []
     for i in range(n):
@@ -299,7 +329,7 @@ def _budget_effect(budget: float) -> float:
     ``r = budget / K`` and ``K_sat = 1.0`` — asymptote 2× the reference budget.
     """
     K = 50_000.0  # reference budget (RMB)
-    K_SAT = 1.0   # Hill saturation coefficient; asymptote = 1 + K_SAT
+    K_SAT = 1.0  # Hill saturation coefficient; asymptote = 1 + K_SAT
     r = budget / K
     return (1.0 + K_SAT) * r / (K_SAT + r)
 
@@ -361,8 +391,16 @@ def generate_scenarios(
         cf_arm = (arm + 1) % 4
         cf_budget = budget * {0: 0.6, 1: 1.0, 2: 1.4, 3: 1.8}[cf_arm]
         cf_budget_factor = _budget_effect(cf_budget)
-        cf_impressions = max(100.0, cf_budget * 0.002 * cf_budget_factor * tier_boost * rng.gauss(1.0, 0.15))
-        cf_clicks = max(0.0, cf_impressions * base_ctr * _freq_fatigue(cf_budget, kol.avg_engagement_rate) * rng.gauss(1.0, 0.2))
+        cf_impressions = max(
+            100.0, cf_budget * 0.002 * cf_budget_factor * tier_boost * rng.gauss(1.0, 0.15)
+        )
+        cf_clicks = max(
+            0.0,
+            cf_impressions
+            * base_ctr
+            * _freq_fatigue(cf_budget, kol.avg_engagement_rate)
+            * rng.gauss(1.0, 0.2),
+        )
         cf_conversions = max(0.0, cf_clicks * base_cvr * rng.gauss(1.0, 0.25))
         cf_revenue = cf_conversions * rng.uniform(80.0, 300.0)
 
@@ -380,15 +418,15 @@ def generate_scenarios(
             "cf_arm": cf_arm,
             "targets": {
                 "impressions": round(impressions, 1),
-                "clicks":      round(clicks, 1),
+                "clicks": round(clicks, 1),
                 "conversions": round(conversions, 1),
-                "revenue":     round(revenue, 2),
+                "revenue": round(revenue, 2),
             },
             "cf_targets": {
                 "impressions": round(cf_impressions, 1),
-                "clicks":      round(cf_clicks, 1),
+                "clicks": round(cf_clicks, 1),
                 "conversions": round(cf_conversions, 1),
-                "revenue":     round(cf_revenue, 2),
+                "revenue": round(cf_revenue, 2),
             },
         }
 
@@ -397,8 +435,11 @@ def generate_scenarios(
 
 
 def generate_event_streams(
-    rng: random.Random, kols: list[SyntheticKOL], n: int,
-    *, max_events_per_stream: int = 500,
+    rng: random.Random,
+    kols: list[SyntheticKOL],
+    n: int,
+    *,
+    max_events_per_stream: int = 500,
 ) -> Iterable[list[tuple[float, str]]]:
     """Yield ``n`` 14-day event streams for Neural Hawkes training.
 
@@ -417,11 +458,11 @@ def generate_event_streams(
     # Calibrated base rates (events/min). Previous values were ~10x too high
     # for macro/mega and caused runaway self-excitation.
     base_rate = {
-        "nano":  0.001,
+        "nano": 0.001,
         "micro": 0.004,
-        "mid":   0.010,
+        "mid": 0.010,
         "macro": 0.025,
-        "mega":  0.050,
+        "mega": 0.050,
     }
     excitement_per_recent = 0.0008  # was 0.003 — damp self-excitation
 
@@ -429,7 +470,7 @@ def generate_event_streams(
         kol = rng.choice(kols)
         base = base_rate[kol.tier]
         stream: list[tuple[float, str]] = []
-        recent_times: "deque[float]" = deque()
+        recent_times: deque[float] = deque()
         t = 0.0
 
         while t < horizon_min and len(stream) < max_events_per_stream:
@@ -509,7 +550,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[oransim] generating {args.n_kols} KOLs …")
         kols = generate_kols(rng, args.n_kols)
         if args.what in ("all", "kols"):
-            write_json(out / "synthetic_kols.json", [dataclasses.asdict(k) for k in kols], args.force)
+            write_json(
+                out / "synthetic_kols.json", [dataclasses.asdict(k) for k in kols], args.force
+            )
 
     if args.what in ("all", "notes"):
         print(f"[oransim] generating {args.n_notes} notes …")

@@ -15,47 +15,57 @@ Production: replace hash-based mock embedders with real models
 (Qwen3-Embedding for text, SigLIP for image, Whisper-v3 for audio,
 TabNet for tabular, GraphSAGE for graph, etc).
 """
+
 from __future__ import annotations
+
 import hashlib
 import threading
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
+
 import numpy as np
 
-
-EMB_DIM = 768   # standard production dim (Qwen3-Embedding-base / SigLIP-base default)
+EMB_DIM = 768  # standard production dim (Qwen3-Embedding-base / SigLIP-base default)
 
 
 # ---------------- Base ----------------
 
+
 class Embedder(ABC):
     """Plug-in for one data source.  Implement `embed(item) -> (D,) np.float32`."""
+
     name: str = "abstract"
-    modality: str = "unknown"      # text / image / audio / tabular / graph / event ...
+    modality: str = "unknown"  # text / image / audio / tabular / graph / event ...
     output_dim: int = EMB_DIM
-    fit_required: bool = False     # True for learnable embedders
+    fit_required: bool = False  # True for learnable embedders
 
     @abstractmethod
     def embed(self, item: Any) -> np.ndarray: ...
 
-    def embed_batch(self, items: List[Any]) -> np.ndarray:
+    def embed_batch(self, items: list[Any]) -> np.ndarray:
         return np.stack([self.embed(it) for it in items])
 
-    def fit(self, samples: List[Any]) -> None:
+    def fit(self, samples: list[Any]) -> None:
         """Override for online/continual learning embedders."""
         pass
 
-    def info(self) -> Dict:
-        return {"name": self.name, "modality": self.modality,
-                "output_dim": self.output_dim, "fit_required": self.fit_required}
+    def info(self) -> dict:
+        return {
+            "name": self.name,
+            "modality": self.modality,
+            "output_dim": self.output_dim,
+            "fit_required": self.fit_required,
+        }
 
 
 # ---------------- Built-in embedders (mock for MVP, swap real later) ----------------
 
+
 class HashTextEmbedder(Embedder):
     """Deterministic mock text embedder — replace with Qwen3-Embedding in prod."""
+
     name = "hash-text-mock"
     modality = "text"
 
@@ -73,6 +83,7 @@ class HashTextEmbedder(Embedder):
 
 class TabularEmbedder(Embedder):
     """Tabular features → vector via random projection.  In prod: TabNet/SAINT."""
+
     name = "tabular-rand-proj"
     modality = "tabular"
 
@@ -80,21 +91,21 @@ class TabularEmbedder(Embedder):
         self.in_dim = in_dim
         self.output_dim = out_dim
         rng = np.random.default_rng(seed)
-        self.W = rng.normal(0, 1.0/np.sqrt(in_dim),
-                             size=(in_dim, out_dim)).astype(np.float32)
+        self.W = rng.normal(0, 1.0 / np.sqrt(in_dim), size=(in_dim, out_dim)).astype(np.float32)
 
     def embed(self, item: np.ndarray) -> np.ndarray:
         x = np.asarray(item, dtype=np.float32).ravel()
         if len(x) < self.in_dim:
             x = np.concatenate([x, np.zeros(self.in_dim - len(x), np.float32)])
         elif len(x) > self.in_dim:
-            x = x[:self.in_dim]
+            x = x[: self.in_dim]
         v = x @ self.W
         return v / (np.linalg.norm(v) + 1e-8)
 
 
 class CategoricalEmbedder(Embedder):
     """Category labels → learnable lookup (mock = hash here)."""
+
     name = "categorical-hash"
     modality = "categorical"
 
@@ -111,6 +122,7 @@ class CategoricalEmbedder(Embedder):
 class TimeSeriesEmbedder(Embedder):
     """Variable-length numerical sequence → vector via Fourier features.
     In prod: PatchTST / TimesNet."""
+
     name = "ts-fourier"
     modality = "timeseries"
 
@@ -118,24 +130,25 @@ class TimeSeriesEmbedder(Embedder):
         self.n_freqs = n_freqs
         self.output_dim = dim
 
-    def embed(self, series: List[float]) -> np.ndarray:
+    def embed(self, series: list[float]) -> np.ndarray:
         x = np.asarray(series, dtype=np.float32)
         if len(x) == 0:
             return np.zeros(self.output_dim, dtype=np.float32)
         # FFT of normalized series
         x = (x - x.mean()) / (x.std() + 1e-8)
         F = np.fft.rfft(x, n=self.n_freqs * 2)
-        feat = np.concatenate([F.real, F.imag])[:self.n_freqs * 2]
+        feat = np.concatenate([F.real, F.imag])[: self.n_freqs * 2]
         # pad/project to output_dim
         if len(feat) < self.output_dim:
             feat = np.concatenate([feat, np.zeros(self.output_dim - len(feat))])
         else:
-            feat = feat[:self.output_dim]
+            feat = feat[: self.output_dim]
         return feat.astype(np.float32) / (np.linalg.norm(feat) + 1e-8)
 
 
 class GeoEmbedder(Embedder):
     """(lat, lon) → vector via positional encoding (Mercator-ish)."""
+
     name = "geo-pos-enc"
     modality = "geospatial"
 
@@ -147,20 +160,28 @@ class GeoEmbedder(Embedder):
         lat, lon = float(latlon[0]), float(latlon[1])
         feats = []
         for k in range(1, self.n_freqs + 1):
-            feats.extend([np.sin(k*lat*np.pi/180), np.cos(k*lat*np.pi/180),
-                          np.sin(k*lon*np.pi/180), np.cos(k*lon*np.pi/180)])
+            feats.extend(
+                [
+                    np.sin(k * lat * np.pi / 180),
+                    np.cos(k * lat * np.pi / 180),
+                    np.sin(k * lon * np.pi / 180),
+                    np.cos(k * lon * np.pi / 180),
+                ]
+            )
         feats = np.asarray(feats, dtype=np.float32)
         if len(feats) < self.output_dim:
-            feats = np.concatenate([feats, np.zeros(self.output_dim - len(feats),
-                                                     dtype=np.float32)])
+            feats = np.concatenate(
+                [feats, np.zeros(self.output_dim - len(feats), dtype=np.float32)]
+            )
         else:
-            feats = feats[:self.output_dim]
+            feats = feats[: self.output_dim]
         return feats / (np.linalg.norm(feats) + 1e-8)
 
 
 class EventEmbedder(Embedder):
     """A world event (dict with title/category/impact) → vector via concat of
     text emb + categorical emb + impact scalar projection."""
+
     name = "event-composite"
     modality = "event"
 
@@ -176,7 +197,7 @@ class EventEmbedder(Embedder):
         attn = float(event.get("attention_share", 0.1))
         # weighted sum: text dominates, category small bias, impact/attn modulates magnitude
         v = (v_text * 0.7 + v_cat * 0.3) * (1.0 + impact)
-        v *= (1.0 + attn)
+        v *= 1.0 + attn
         return v.astype(np.float32) / (np.linalg.norm(v) + 1e-8)
 
 
@@ -209,6 +230,7 @@ class ImageEmbedderStub(Embedder):
     Planned backends: CLIP (OpenAI), Qwen-VL (Alibaba), SigLIP (Google),
     ImageBind (Meta). Drop-in swap once the weights are selected.
     """
+
     name = "image-stub-v0.2"
     modality = "image"
 
@@ -226,6 +248,7 @@ class VideoEmbedderStub(Embedder):
     or Qwen-VL video mode. Typical choice is image-backbone + temporal
     pooling for short-form video (TikTok / Reels / Shorts 15-60s).
     """
+
     name = "video-stub-v0.2"
     modality = "video"
 
@@ -243,6 +266,7 @@ class AudioEmbedderStub(Embedder):
     (music / ambient), AudioMAE. Primary use case: BGM-mood recognition
     for short-video creatives.
     """
+
     name = "audio-stub-v0.2"
     modality = "audio"
 
@@ -254,6 +278,7 @@ class AudioEmbedderStub(Embedder):
 
 
 # ---------------- Registry ----------------
+
 
 @dataclass
 class _SourceRecord:
@@ -267,25 +292,29 @@ class EmbeddingBus:
     """Singleton registry of all data-source embedders + cached vector indexes."""
 
     def __init__(self):
-        self._sources: Dict[str, _SourceRecord] = {}
+        self._sources: dict[str, _SourceRecord] = {}
         self._lock = threading.Lock()
-        self._vector_indexes: Dict[str, np.ndarray] = {}  # source_name -> (N, D) vectors
-        self._items_meta: Dict[str, list] = {}             # source_name -> list of items
+        self._vector_indexes: dict[str, np.ndarray] = {}  # source_name -> (N, D) vectors
+        self._items_meta: dict[str, list] = {}  # source_name -> list of items
 
     def register(self, source_name: str, embedder: Embedder, notes: str = "") -> None:
         with self._lock:
             self._sources[source_name] = _SourceRecord(embedder=embedder, notes=notes)
 
-    def list_sources(self) -> List[Dict]:
+    def list_sources(self) -> list[dict]:
         with self._lock:
             return [
-                {"source": name, **r.embedder.info(),
-                 "n_items": r.n_items_indexed, "notes": r.notes,
-                 "last_updated": r.last_updated}
+                {
+                    "source": name,
+                    **r.embedder.info(),
+                    "n_items": r.n_items_indexed,
+                    "notes": r.notes,
+                    "last_updated": r.last_updated,
+                }
                 for name, r in self._sources.items()
             ]
 
-    def index(self, source_name: str, items: List[Any]) -> np.ndarray:
+    def index(self, source_name: str, items: list[Any]) -> np.ndarray:
         """Embed a batch from a registered source and append to its index."""
         with self._lock:
             if source_name not in self._sources:
@@ -298,18 +327,16 @@ class EmbeddingBus:
                 self._vector_indexes[source_name] = vectors
                 self._items_meta[source_name] = list(items)
             else:
-                self._vector_indexes[source_name] = np.concatenate(
-                    [existing, vectors], axis=0)
+                self._vector_indexes[source_name] = np.concatenate([existing, vectors], axis=0)
                 self._items_meta[source_name].extend(items)
             rec.n_items_indexed = len(self._items_meta[source_name])
             rec.last_updated = time.time()
         return vectors
 
-    def vectors(self, source_name: str) -> Optional[np.ndarray]:
+    def vectors(self, source_name: str) -> np.ndarray | None:
         return self._vector_indexes.get(source_name)
 
-    def search(self, query_vec: np.ndarray, source_name: str,
-               top_k: int = 5) -> List[Dict]:
+    def search(self, query_vec: np.ndarray, source_name: str, top_k: int = 5) -> list[dict]:
         vecs = self._vector_indexes.get(source_name)
         items = self._items_meta.get(source_name, [])
         if vecs is None or len(vecs) == 0:
@@ -319,8 +346,9 @@ class EmbeddingBus:
         order = np.argsort(-sims)[:top_k]
         return [{"item": items[i], "score": float(sims[i])} for i in order]
 
-    def fuse_to_unified(self, item_per_source: Dict[str, Any],
-                         weights: Optional[Dict[str, float]] = None) -> np.ndarray:
+    def fuse_to_unified(
+        self, item_per_source: dict[str, Any], weights: dict[str, float] | None = None
+    ) -> np.ndarray:
         """Fuse representations from multiple sources for a single conceptual entity
         (e.g. a brand has text caption + image + LBS + financial timeseries)."""
         weights = weights or {}
@@ -347,7 +375,7 @@ class EmbeddingBus:
             unified += w * v
         return unified / (np.linalg.norm(unified) + 1e-8)
 
-    def learning_stats(self) -> Dict:
+    def learning_stats(self) -> dict:
         """For online-learning tracking: how many items, how recent."""
         return {
             "n_sources": len(self._sources),
@@ -356,7 +384,7 @@ class EmbeddingBus:
             "scaling_law_estimate": self._scaling_law(),
         }
 
-    def _scaling_law(self) -> Dict:
+    def _scaling_law(self) -> dict:
         """Rough PAC-Bayes-style upper bound on generalization error vs N.
         Decreases as 1/sqrt(N) — gives the 'more data → more accurate' visualization."""
         n_total = sum(r.n_items_indexed for r in self._sources.values())
@@ -379,47 +407,55 @@ def bootstrap_default_sources() -> None:
     # Real text embedders via existing LLM API (OpenAI-compatible)
     try:
         from .real_embedder import RealTextEmbedder, is_real_embedder_available
+
         has_real = is_real_embedder_available()
     except Exception:
         has_real = False
 
     if has_real:
-        BUS.register("creative_caption", RealTextEmbedder(fallback_seed=1),
-                      notes="素材文案；真 embedder (OpenAI-compat endpoint)")
-        BUS.register("creative_visual", RealTextEmbedder(fallback_seed=2),
-                      notes="素材视觉描述；v2 接 SigLIP-2 / Qwen2.5-VL")
-        BUS.register("creative_audio", RealTextEmbedder(fallback_seed=3),
-                      notes="素材音频描述；v2 接 Whisper-v3 + CLAP")
+        BUS.register(
+            "creative_caption",
+            RealTextEmbedder(fallback_seed=1),
+            notes="素材文案；真 embedder (OpenAI-compat endpoint)",
+        )
+        BUS.register(
+            "creative_visual",
+            RealTextEmbedder(fallback_seed=2),
+            notes="素材视觉描述；v2 接 SigLIP-2 / Qwen2.5-VL",
+        )
+        BUS.register(
+            "creative_audio",
+            RealTextEmbedder(fallback_seed=3),
+            notes="素材音频描述；v2 接 Whisper-v3 + CLAP",
+        )
     else:
-        BUS.register("creative_caption", HashTextEmbedder(seed_offset=1),
-                      notes="素材文案；LLM_API_KEY 未设置 — hash fallback")
-        BUS.register("creative_visual", HashTextEmbedder(seed_offset=2),
-                      notes="素材视觉；hash fallback")
-        BUS.register("creative_audio", HashTextEmbedder(seed_offset=3),
-                      notes="素材音频；hash fallback")
-    BUS.register("user_demo", TabularEmbedder(in_dim=12),
-                  notes="用户人口属性；TabNet/SAINT")
-    BUS.register("user_interest", TabularEmbedder(in_dim=64),
-                  notes="用户兴趣 64-d；与 creative 共空间")
-    BUS.register("kol_audience", TabularEmbedder(in_dim=64),
-                  notes="KOL 粉丝画像")
-    BUS.register("brand_text_uplifting", HashTextEmbedder(seed_offset=10),
-                  notes="品牌官网/Wiki 文本")
-    BUS.register("world_event", EventEmbedder(),
-                  notes="全谱事件流（GPT 拉的）")
-    BUS.register("comment_text", HashTextEmbedder(seed_offset=20),
-                  notes="评论区文本")
-    BUS.register("hawkes_curve", TimeSeriesEmbedder(),
-                  notes="生命周期曲线")
-    BUS.register("brand_lift_curve", TimeSeriesEmbedder(),
-                  notes="90 天品牌曲线")
-    BUS.register("region_geo", GeoEmbedder(),
-                  notes="地理坐标 (lat, lon)")
-    BUS.register("competitor_signal", HashTextEmbedder(seed_offset=30),
-                  notes="竞品历史投放素材")
-    BUS.register("macro_econ", TabularEmbedder(in_dim=10),
-                  notes="宏观经济 / CPI / 消费信心")
-    BUS.register("weather", TabularEmbedder(in_dim=5),
-                  notes="天气：温度/湿度/降水/风速/能见度")
-    BUS.register("real_campaign_log", TabularEmbedder(in_dim=20),
-                  notes="客户真实投放历史（一方数据）")
+        BUS.register(
+            "creative_caption",
+            HashTextEmbedder(seed_offset=1),
+            notes="素材文案；LLM_API_KEY 未设置 — hash fallback",
+        )
+        BUS.register(
+            "creative_visual", HashTextEmbedder(seed_offset=2), notes="素材视觉；hash fallback"
+        )
+        BUS.register(
+            "creative_audio", HashTextEmbedder(seed_offset=3), notes="素材音频；hash fallback"
+        )
+    BUS.register("user_demo", TabularEmbedder(in_dim=12), notes="用户人口属性；TabNet/SAINT")
+    BUS.register(
+        "user_interest", TabularEmbedder(in_dim=64), notes="用户兴趣 64-d；与 creative 共空间"
+    )
+    BUS.register("kol_audience", TabularEmbedder(in_dim=64), notes="KOL 粉丝画像")
+    BUS.register(
+        "brand_text_uplifting", HashTextEmbedder(seed_offset=10), notes="品牌官网/Wiki 文本"
+    )
+    BUS.register("world_event", EventEmbedder(), notes="全谱事件流（GPT 拉的）")
+    BUS.register("comment_text", HashTextEmbedder(seed_offset=20), notes="评论区文本")
+    BUS.register("hawkes_curve", TimeSeriesEmbedder(), notes="生命周期曲线")
+    BUS.register("brand_lift_curve", TimeSeriesEmbedder(), notes="90 天品牌曲线")
+    BUS.register("region_geo", GeoEmbedder(), notes="地理坐标 (lat, lon)")
+    BUS.register("competitor_signal", HashTextEmbedder(seed_offset=30), notes="竞品历史投放素材")
+    BUS.register("macro_econ", TabularEmbedder(in_dim=10), notes="宏观经济 / CPI / 消费信心")
+    BUS.register("weather", TabularEmbedder(in_dim=5), notes="天气：温度/湿度/降水/风速/能见度")
+    BUS.register(
+        "real_campaign_log", TabularEmbedder(in_dim=20), notes="客户真实投放历史（一方数据）"
+    )

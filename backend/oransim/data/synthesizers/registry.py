@@ -7,18 +7,21 @@ with the corresponding roadmap milestone.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from .base import PopulationSynthesizer
 
 
 def _load_ipf() -> type[PopulationSynthesizer]:
     from .ipf import IPFSynthesizer
+
     return IPFSynthesizer
 
 
 def _load_bayes_net() -> type[PopulationSynthesizer]:
     from .bayes_net import BayesianNetworkSynthesizer
+
     return BayesianNetworkSynthesizer
 
 
@@ -42,10 +45,10 @@ def _not_yet(name: str, milestone: str) -> Callable[[], type[PopulationSynthesiz
 
 REGISTRY: dict[str, Callable[[], type[PopulationSynthesizer]]] = {
     "ipf": _load_ipf,
-    "bayes_net":          _load_bayes_net,
-    "tabddpm":            _not_yet("TabDDPM (tabular diffusion)",            "v0.5"),
-    "causal_dag_tabddpm": _not_yet("Causal-DAG-guided TabDDPM",              "v1.0 (research)"),
-    "ctgan":              _not_yet("CTGAN",                                  "v0.5"),
+    "bayes_net": _load_bayes_net,
+    "tabddpm": _not_yet("TabDDPM (tabular diffusion)", "v0.5"),
+    "causal_dag_tabddpm": _not_yet("Causal-DAG-guided TabDDPM", "v1.0 (research)"),
+    "ctgan": _not_yet("CTGAN", "v0.5"),
 }
 
 
@@ -53,9 +56,7 @@ def get_synthesizer(name: str, **kwargs: Any) -> PopulationSynthesizer:
     try:
         factory = REGISTRY[name]
     except KeyError:
-        raise KeyError(
-            f"Unknown synthesizer '{name}'. Available: {sorted(REGISTRY)}"
-        ) from None
+        raise KeyError(f"Unknown synthesizer '{name}'. Available: {sorted(REGISTRY)}") from None
     return factory()(**kwargs)
 
 

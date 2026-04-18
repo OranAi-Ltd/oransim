@@ -41,18 +41,17 @@ ship starting v0.2. Until then, ``load_pretrained()`` raises
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 from random import Random
-from typing import Any, Iterable
+from typing import Any
 
 from .base import (
-    DEFAULT_EVENT_TYPES,
     DiffusionConfig,
     DiffusionForecast,
     DiffusionModel,
 )
-
 
 # --------------------------------------------------------------------- config
 
@@ -162,13 +161,11 @@ class CausalNeuralHawkesProcess(DiffusionModel):
 
             def __init__(self, out_dim: int) -> None:
                 super().__init__()
-                self.freq = nn.Parameter(
-                    torch.randn(out_dim // 2) * 0.1, requires_grad=True
-                )
+                self.freq = nn.Parameter(torch.randn(out_dim // 2) * 0.1, requires_grad=True)
                 self.phase = nn.Parameter(torch.zeros(out_dim // 2))
                 self.proj = nn.Linear(out_dim, out_dim)
 
-            def forward(self, dt: "torch.Tensor") -> "torch.Tensor":
+            def forward(self, dt: torch.Tensor) -> torch.Tensor:
                 # dt: [B, N]
                 w = dt.unsqueeze(-1) * self.freq.view(1, 1, -1) + self.phase.view(1, 1, -1)
                 feat = torch.cat([torch.sin(w), torch.cos(w)], dim=-1)  # [B, N, out_dim]
@@ -190,9 +187,7 @@ class CausalNeuralHawkesProcess(DiffusionModel):
                     nn.Linear(d_ff, d_model),
                 )
 
-            def forward(
-                self, x: "torch.Tensor", causal_mask: "torch.Tensor"
-            ) -> "torch.Tensor":
+            def forward(self, x: torch.Tensor, causal_mask: torch.Tensor) -> torch.Tensor:
                 h = self.norm1(x)
                 attn_out, _ = self.attn(h, h, h, attn_mask=causal_mask, need_weights=False)
                 x = x + self.drop(attn_out)
@@ -218,10 +213,10 @@ class CausalNeuralHawkesProcess(DiffusionModel):
 
             def forward(
                 self,
-                type_ids: "torch.Tensor",       # [B, N] int
-                dt: "torch.Tensor",             # [B, N] float (inter-event times)
-                treatment_ids: "torch.Tensor",  # [B, N] int (0/1)
-            ) -> "torch.Tensor":
+                type_ids: torch.Tensor,  # [B, N] int
+                dt: torch.Tensor,  # [B, N] float (inter-event times)
+                treatment_ids: torch.Tensor,  # [B, N] int (0/1)
+            ) -> torch.Tensor:
                 """Return per-event pre-intensity state ``h`` of shape [B, N, d]."""
                 B, N = type_ids.shape
                 tok = (
@@ -238,7 +233,7 @@ class CausalNeuralHawkesProcess(DiffusionModel):
                     tok = blk(tok, causal)
                 return self.final_norm(tok)
 
-            def intensity(self, h: "torch.Tensor") -> "torch.Tensor":
+            def intensity(self, h: torch.Tensor) -> torch.Tensor:
                 """lambda_k(t) = softplus(W_k · h_t + b_k)."""
                 return F.softplus(self.intensity_head(h), beta=cfg.softplus_beta)
 
@@ -254,9 +249,7 @@ class CausalNeuralHawkesProcess(DiffusionModel):
         # Convention: events prefixed "paid_" are treatment/intervention events.
         return 1 if event_name.startswith("paid_") else 0
 
-    def _prep_stream(
-        self, events: list[tuple[float, str]]
-    ) -> tuple[Any, Any, Any, Any]:
+    def _prep_stream(self, events: list[tuple[float, str]]) -> tuple[Any, Any, Any, Any]:
         """Build tensors (type_ids, dt, treatment_ids, abs_times) for one stream."""
         torch = self._torch
         type_ids = [self._etype_idx(n) for _, n in events]
@@ -287,7 +280,9 @@ class CausalNeuralHawkesProcess(DiffusionModel):
         max_iters = 100_000
         while t < horizon_min and iters < max_iters:
             iters += 1
-            type_ids, dt, treatment_ids, _ = self._prep_stream(events or [(0.0, self.config.event_types[0])])
+            type_ids, dt, treatment_ids, _ = self._prep_stream(
+                events or [(0.0, self.config.event_types[0])]
+            )
             with torch.no_grad():
                 h = self._net(type_ids, dt, treatment_ids)
                 lam = self._net.intensity(h)[:, -1]  # [1, K]
@@ -347,7 +342,9 @@ class CausalNeuralHawkesProcess(DiffusionModel):
         max_iters = 100_000
         while t < horizon_min and iters < max_iters:
             iters += 1
-            type_ids, dt, treatment_ids, _ = self._prep_stream(events or [(0.0, self.config.event_types[0])])
+            type_ids, dt, treatment_ids, _ = self._prep_stream(
+                events or [(0.0, self.config.event_types[0])]
+            )
             # Under the do() intervention, zero-out future treatment tokens
             if t > mute_at:
                 treatment_ids = torch.zeros_like(treatment_ids)
@@ -439,7 +436,7 @@ class CausalNeuralHawkesProcess(DiffusionModel):
         comp = self._integrate_compensator(lam, times)
         return float((log_sum - comp).item())
 
-    def _integrate_compensator(self, lam: "Any", times: "Any") -> "Any":
+    def _integrate_compensator(self, lam: Any, times: Any) -> Any:
         torch = self._torch
         abs_times = times.squeeze(0)
         N = abs_times.shape[0]
@@ -534,7 +531,7 @@ class CausalNeuralHawkesProcess(DiffusionModel):
         )
 
     @classmethod
-    def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> "CausalNeuralHawkesProcess":
+    def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> CausalNeuralHawkesProcess:
         if path is None:
             raise FileNotFoundError(
                 "No pretrained CausalNeuralHawkesProcess weights in v0.1.0-alpha.\n"

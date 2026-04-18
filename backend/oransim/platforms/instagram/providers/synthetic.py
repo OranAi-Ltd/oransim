@@ -14,14 +14,28 @@ from ....data.schema import (
     CanonicalNoteMetrics,
 )
 
-
 NICHES = [
-    "beauty", "fashion", "food", "electronics", "travel",
-    "parenting", "fitness", "home", "beverage", "pet",
-    "wellness", "photography",  # Instagram-heavy niches
+    "beauty",
+    "fashion",
+    "food",
+    "electronics",
+    "travel",
+    "parenting",
+    "fitness",
+    "home",
+    "beverage",
+    "pet",
+    "wellness",
+    "photography",  # Instagram-heavy niches
 ]
 TIERS = ["nano", "micro", "mid", "macro", "mega"]
-TIER_FAN_MEAN = {"nano": 6_000, "micro": 50_000, "mid": 280_000, "macro": 1_800_000, "mega": 10_000_000}
+TIER_FAN_MEAN = {
+    "nano": 6_000,
+    "micro": 50_000,
+    "mid": 280_000,
+    "macro": 1_800_000,
+    "mega": 10_000_000,
+}
 
 FAKE_ADJ = ["Pastel", "Coral", "Ivory", "Amber", "Sage", "Dusk", "Meadow", "Linen"]
 FAKE_NOUN = ["Studio", "Atelier", "Collective", "Edit", "Journal", "Notes", "Library", "Story"]

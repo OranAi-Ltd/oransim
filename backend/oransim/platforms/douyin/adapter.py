@@ -22,11 +22,11 @@ class DouyinAdapterConfig:
     platform_id: str = "douyin"
     region: str = "CN"
 
-    cpm_rmb: float = 35.0               # Douyin CPM in RMB
+    cpm_rmb: float = 35.0  # Douyin CPM in RMB
     cold_start_days: float = 0.5
-    base_ctr: float = 0.022              # FYP-equivalent CTR
-    base_cvr: float = 0.014              # Higher than TikTok due to native ecommerce
-    livestream_boost: float = 1.25       # Multiplier when creative is a livestream ad
+    base_ctr: float = 0.022  # FYP-equivalent CTR
+    base_cvr: float = 0.014  # Higher than TikTok due to native ecommerce
+    livestream_boost: float = 1.25  # Multiplier when creative is a livestream ad
     duration_peak_sec: float = 18.0
     duration_half_sec: float = 35.0
 
@@ -78,13 +78,13 @@ class DouyinAdapter(PlatformAdapter):
             "clicks": curves["clicks"] * duration_retention,
             "conversions": curves["conversions"] * duration_retention,
             "factors": {
-                "cpm_rmb":              cfg.cpm_rmb,
-                "duration_retention":   round(duration_retention, 3),
-                "livestream_boost":     livestream,
+                "cpm_rmb": cfg.cpm_rmb,
+                "duration_retention": round(duration_retention, 3),
+                "livestream_boost": livestream,
                 "effective_impr_ratio": curves["effective_impr_ratio"],
-                "ctr_decay":            curves["ctr_decay"],
-                "cvr_decay":            curves["cvr_decay"],
-                "cold_start_days":      cfg.cold_start_days,
+                "ctr_decay": curves["ctr_decay"],
+                "cvr_decay": curves["cvr_decay"],
+                "cold_start_days": cfg.cold_start_days,
             },
         }
 

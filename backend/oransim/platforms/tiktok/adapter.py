@@ -109,12 +109,12 @@ class TikTokAdapter(PlatformAdapter):
             "clicks": clicks,
             "conversions": conversions,
             "factors": {
-                "cpm_usd":              cfg.cpm_usd,
-                "duration_retention":   round(duration_retention, 3),
+                "cpm_usd": cfg.cpm_usd,
+                "duration_retention": round(duration_retention, 3),
                 "effective_impr_ratio": curves["effective_impr_ratio"],
-                "ctr_decay":            curves["ctr_decay"],
-                "cvr_decay":            curves["cvr_decay"],
-                "cold_start_days":      cfg.cold_start_days,
+                "ctr_decay": curves["ctr_decay"],
+                "cvr_decay": curves["cvr_decay"],
+                "cold_start_days": cfg.cold_start_days,
             },
         }
 

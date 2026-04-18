@@ -22,7 +22,7 @@
 ---
 
 <p align="center">
-<img src="assets/screenshots/hero.png" alt="Oransim hero · 60-second prediction with counterfactual reasoning over a 1M-agent society" width="100%"/>
+<img src="assets/screenshots/hero.png" alt="Oransim hero · 60-second prediction with counterfactual reasoning over a agent-based society" width="100%"/>
 </p>
 
 ## What it does
@@ -47,7 +47,7 @@ Oransim's counterfactual path is native, not bolted on after a predictor:
 - 🧠 **Causal Transformer World Model** — 6-layer multi-head self-attention with explicit *treatment / covariate / outcome* factorization, DAG-aware attention bias, per-arm counterfactual heads, and a representation-balancing loss. Draws from recent work: **CaT** (Melnychuk et al. ICML 2022), **CausalDAG-Transformer**, **BCAUSS**, **CInA** (Arik & Pfister NeurIPS 2023), **TARNet / Dragonnet**. ([arch details](#causal-transformer-world-model))
 - ⚡ **Causal Neural Hawkes Process** — Transformer-parameterized temporal point process for 14-day diffusion with *treatment vs control* event typing and intervention-aware intensity. Follows **Mei & Eisner (NeurIPS 2017)**, **Zuo et al. (ICML 2020)**, **Geng et al. (NeurIPS 2022)** on counterfactual TPPs. ([arch details](#causal-neural-hawkes-process))
 - 🌐 **64-node Structural Causal Model** — Pearl's 3-step counterfactual evaluation (abduction → action → prediction) over a hand-designed marketing funnel graph (117 edges), with mediators for group discourse (Sunstein 2017) and information cascades.
-- 👥 **1M-agent population** — Iterative Proportional Fitting (IPF, Deming & Stephan 1940) baseline calibrated to demographic priors; pluggable `PopulationSynthesizer` interface with Bayesian-network (v0.2), CTGAN (v0.5), and Causal-DAG-guided TabDDPM (v1.0 research) variants on the roadmap. Top-10k salient agents get LLM personas for qualitative feedback.
+- 👥 **agent-based population** — Iterative Proportional Fitting (IPF, Deming & Stephan 1940) baseline calibrated to demographic priors; pluggable `PopulationSynthesizer` interface with Bayesian-network (v0.2), CTGAN (v0.5), and Causal-DAG-guided TabDDPM (v1.0 research) variants on the roadmap. Top-10k salient agents get LLM personas for qualitative feedback.
 - 🧪 **LightGBM Quantile baseline** — fast zero-dependency fallback, three quantile regressors (P35/P50/P65) per KPI. Retained for production latency targets and benchmark comparison.
 
 </details>
@@ -119,9 +119,9 @@ The frontend shows a yellow banner at the top whenever the backend is still in m
 </td>
 <td width="50%" valign="top">
 
-**Opinion-propagation through a 1M-agent society** — drop an ad copy, watch color-coded opinion waves (green=click / purple=high intent / red=skip / blue=curious) ripple outward from KOL seeds, cascading to their followers in real time.
+**Opinion-propagation through a agent-based society** — drop an ad copy, watch color-coded opinion waves (green=click / purple=high intent / red=skip / blue=curious) ripple outward from KOL seeds, cascading to their followers in real time.
 
-<img src="assets/screenshots/society-100m.png" alt="Opinion propagation over 1M agents" width="100%"/>
+<img src="assets/screenshots/society-100m.png" alt="Opinion propagation over the agent population" width="100%"/>
 
 </td>
 </tr>
@@ -135,7 +135,7 @@ The frontend shows a yellow banner at the top whenever the backend is still in m
 |---|---|---|---|
 | **Answers "why did the prediction change?"** | Partial — rule trace | ❌ Opaque (SHAP at best) | ✅ Every prediction traces back through the causal graph, per-agent reasoning, and attention paths |
 | **Answers "what if I'd done X instead?"** | ❌ Re-run from scratch | ❌ Model doesn't know | ✅ Native counterfactual heads — ask `do(creative=B)` in one forward pass |
-| **Sees individual user reactions** | Aggregates only | Aggregates only | ✅ 1M simulated consumers + 10k LLM personas reading your actual copy |
+| **Sees individual user reactions** | Aggregates only | Aggregates only | ✅ scalable simulated consumers + 10k LLM personas reading your actual copy |
 | **Predicts 14-day diffusion + intervention** | Linear decay | Generic time-series | ✅ Self-exciting point process that handles "what if we stopped boosting on day 3" |
 | **Realistic budget curves** | ❌ Linear = 2× budget = 2× results | ❌ Same | ✅ Diminishing returns + frequency fatigue (real-world marketing economics) |
 | **Removes spurious correlations** | ❌ | ❌ | ✅ Representation balancing loss decorrelates learned features from treatment assignment |
@@ -164,7 +164,7 @@ The frontend shows a yellow banner at the top whenever the backend is still in m
 <img src="assets/architecture.svg" alt="Oransim architecture diagram" width="100%"/>
 </div>
 
-A typical prediction request flows: **Creative + Budget** → **PlatformAdapter** (pulls data via pluggable **DataProvider**) → **Causal Transformer World Model** (factual + per-arm counterfactual quantile predictions) + **Agent Layer** (1M IPF + 10k LLM personas) → **Causal Engine** (64-node Pearl SCM + 3-step `do()` counterfactuals) → **Causal Neural Hawkes** (14-day diffusion with intervention rollout) → **Prediction JSON** (14–19 schemas). *LightGBM quantile and parametric Hawkes are available as fast baselines via the registry.*
+A typical prediction request flows: **Creative + Budget** → **PlatformAdapter** (pulls data via pluggable **DataProvider**) → **Causal Transformer World Model** (factual + per-arm counterfactual quantile predictions) + **Agent Layer** (POP_SIZE-scalable IPF + 10k LLM personas) → **Causal Engine** (64-node Pearl SCM + 3-step `do()` counterfactuals) → **Causal Neural Hawkes** (14-day diffusion with intervention rollout) → **Prediction JSON** (14–19 schemas). *LightGBM quantile and parametric Hawkes are available as fast baselines via the registry.*
 
 Two-axis extensibility:
 - **Platform** axis — XHS today; TikTok / Instagram / YouTube Shorts / Douyin on roadmap
@@ -233,7 +233,7 @@ The graph is hand-designed by domain experts covering the marketing funnel from 
 </details>
 
 <details>
-<summary><b>Agent Population</b> — 1M IPF-calibrated virtual consumers</summary>
+<summary><b>Agent Population</b> — POP_SIZE-scalable IPF-calibrated virtual consumers</summary>
 
 Generated via Iterative Proportional Fitting (IPF / Deming-Stephan 1940) against real Chinese demographic distributions (age × gender × region × income × platform). Each agent carries:
 - Demographics + psychographics
@@ -375,7 +375,7 @@ ph = get_diffusion_model("parametric_hawkes")
 <details>
 <summary><b>Sandbox</b> — incremental recomputation for "what if"</summary>
 
-Scenario sessions persist state so users can iterate: "change budget from 100k to 150k, how does ROI move?" Incremental recomputation avoids redoing the full agent simulation when only budget changes. The 1M-agent pool is cached; counterfactual evaluation uses union-semantics CATE over reached vs. unreached populations.
+Scenario sessions persist state so users can iterate: "change budget from 100k to 150k, how does ROI move?" Incremental recomputation avoids redoing the full agent simulation when only budget changes. The agent pool is cached; counterfactual evaluation uses union-semantics CATE over reached vs. unreached populations.
 </details>
 
 ---

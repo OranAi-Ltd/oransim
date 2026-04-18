@@ -9,17 +9,22 @@ that covers ALL schema outputs into one narrative. Two modes:
 
 Called from /api/predict as part of schema_outputs.report_strategy_case.
 """
+
 from __future__ import annotations
+
 import json
 import time
 import uuid
-from typing import Dict, List, Optional
 
 from .soul_llm import (
-    BASE_URL, API_KEY, MODEL, TIMEOUT, llm_available,
-    _http_post, _extract_json, estimate_cost_cny,
+    API_KEY,
+    BASE_URL,
+    MODEL,
+    TIMEOUT,
+    _http_post,
+    estimate_cost_cny,
+    llm_available,
 )
-
 
 REPORT_SYSTEM = """你是资深营销效果分析顾问（4A 公司水平），为品牌方 CMO 写投放前预测报告。
 你基于一批算法输出生成**一份专业、务实、带可执行建议的中文 Markdown 报告**。
@@ -71,14 +76,13 @@ REPORT_PROMPT_TEMPLATE = """# 输入数据
 
 def _truncate_json(obj, limit: int = 1200) -> str:
     """Compact JSON with hard char cap to keep prompt tokens predictable."""
-    s = json.dumps(obj, ensure_ascii=False, indent=None, separators=(',', ':'))
+    s = json.dumps(obj, ensure_ascii=False, indent=None, separators=(",", ":"))
     if len(s) > limit:
         s = s[:limit] + "...[截断]"
     return s
 
 
-def _template_report(scenario: Dict, kpis: Dict, ps: Optional[Dict],
-                     schema: Dict) -> str:
+def _template_report(scenario: dict, kpis: dict, ps: dict | None, schema: dict) -> str:
     """Deterministic fallback when LLM unavailable."""
     caption = scenario.get("caption", "?")
     budget = scenario.get("total_budget", 0)
@@ -98,8 +102,11 @@ def _template_report(scenario: Dict, kpis: Dict, ps: Optional[Dict],
     net = (ps or {}).get("net_sentiment_score", 0)
     pos_pct = ((ps or {}).get("sentiment_distribution", {}).get("positive", 0) or 0) * 100
 
-    recommend = "✅ 建议投放" if roi_v > 1.5 and net > 0.2 else (
-        "⚠️ 建议先小范围测试" if roi_v > 0.8 else "❌ 建议换素材/调方案")
+    recommend = (
+        "✅ 建议投放"
+        if roi_v > 1.5 and net > 0.2
+        else ("⚠️ 建议先小范围测试" if roi_v > 0.8 else "❌ 建议换素材/调方案")
+    )
 
     top_sens = (sens.get("parameters") or [])[:3]
     top_reinvest = reinvest[:3]
@@ -124,9 +131,13 @@ def _template_report(scenario: Dict, kpis: Dict, ps: Optional[Dict],
 
 ### 五阶漏斗 (P25 悲观 / P50 / P75 乐观)
 """
-    for stage, label in [("A1_awareness","曝光"), ("A2_interest","兴趣"),
-                         ("A3_engagement","互动"), ("A4_conversion","转化"),
-                         ("A5_loyalty","复购")]:
+    for stage, label in [
+        ("A1_awareness", "曝光"),
+        ("A2_interest", "兴趣"),
+        ("A3_engagement", "互动"),
+        ("A4_conversion", "转化"),
+        ("A5_loyalty", "复购"),
+    ]:
         b = funnel.get(stage)
         if b:
             md += f"- **{label}** ({stage}): P25={b.get('p25',0):,.0f} · P50=**{b.get('p50',0):,.0f}** · P75={b.get('p75',0):,.0f}\n"
@@ -168,7 +179,7 @@ def _template_report(scenario: Dict, kpis: Dict, ps: Optional[Dict],
 ## 7. 风险点（敏感性 Top 3）
 """
     for r in top_sens:
-        elas = r.get('elasticity', 0)
+        elas = r.get("elasticity", 0)
         direction = "正向" if elas > 0 else "负向"
         md += f"- **{r.get('parameter_name','?')}** ±20% → GMV 波动 ¥{r.get('gmv_change_amplitude',0):,.0f}（{direction}弹性 {elas:+.2f}）\n"
 
@@ -185,8 +196,7 @@ _报告生成：{time.strftime('%Y-%m-%d %H:%M:%S')} · 基于 {(ps or {}).get('
     return md
 
 
-def _llm_report(scenario: Dict, kpis: Dict, ps: Optional[Dict],
-                schema: Dict) -> Optional[str]:
+def _llm_report(scenario: dict, kpis: dict, ps: dict | None, schema: dict) -> str | None:
     """Ask GPT-5.4 to write a polished report. Returns None on failure."""
     if not llm_available():
         return None
@@ -200,21 +210,28 @@ def _llm_report(scenario: Dict, kpis: Dict, ps: Optional[Dict],
     elast = schema.get("T3_A6_search_elasticity") or {}
 
     # Strip heavy/noisy fields
-    comp_compact = [{
-        "name": r.get("competitor_name"),
-        "overlap_ratio": r.get("overlap_ratio"),
-        "estimated_roi": r.get("estimated_roi"),
-        "estimated_conversion": r.get("estimated_conversion"),
-        "tgi_top_tags": r.get("tgi_top_tags"),
-    } for r in comp_rows[:5]]
+    comp_compact = [
+        {
+            "name": r.get("competitor_name"),
+            "overlap_ratio": r.get("overlap_ratio"),
+            "estimated_roi": r.get("estimated_roi"),
+            "estimated_conversion": r.get("estimated_conversion"),
+            "tgi_top_tags": r.get("tgi_top_tags"),
+        }
+        for r in comp_rows[:5]
+    ]
 
-    kol_compact = {
-        "selected_count": kol.get("total_selected"),
-        "kol_koc_ratio": kol.get("kol_koc_ratio"),
-        "estimated_total_reach": kol.get("estimated_total_reach"),
-        "estimated_roi": kol.get("estimated_roi"),
-        "budget_utilization": kol.get("budget_utilization"),
-    } if kol else {}
+    kol_compact = (
+        {
+            "selected_count": kol.get("total_selected"),
+            "kol_koc_ratio": kol.get("kol_koc_ratio"),
+            "estimated_total_reach": kol.get("estimated_total_reach"),
+            "estimated_roi": kol.get("estimated_roi"),
+            "budget_utilization": kol.get("budget_utilization"),
+        }
+        if kol
+        else {}
+    )
 
     prompt = REPORT_PROMPT_TEMPLATE.format(
         scenario_json=_truncate_json(scenario, 400),
@@ -240,8 +257,7 @@ def _llm_report(scenario: Dict, kpis: Dict, ps: Optional[Dict],
     }
     headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
     try:
-        resp = _http_post(f"{BASE_URL}/chat/completions", headers, body,
-                          timeout=TIMEOUT * 4)
+        resp = _http_post(f"{BASE_URL}/chat/completions", headers, body, timeout=TIMEOUT * 4)
         content = resp["choices"][0]["message"]["content"].strip()
         if content.startswith("```"):
             content = content.strip("`")
@@ -253,10 +269,13 @@ def _llm_report(scenario: Dict, kpis: Dict, ps: Optional[Dict],
         return None
 
 
-def build_final_report(scenario: Dict, kpis: Dict,
-                       predicted_sentiment: Optional[Dict],
-                       schema_outputs: Dict,
-                       use_llm: bool = True) -> Dict:
+def build_final_report(
+    scenario: dict,
+    kpis: dict,
+    predicted_sentiment: dict | None,
+    schema_outputs: dict,
+    use_llm: bool = True,
+) -> dict:
     """Main entry. Returns schema report_strategy_case payload."""
     t0 = time.time()
     llm_result = None

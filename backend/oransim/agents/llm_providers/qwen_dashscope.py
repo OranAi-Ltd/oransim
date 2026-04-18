@@ -83,8 +83,11 @@ class QwenDashScopeProvider:
     ) -> GenerateResult:
         url = f"{self.base_url.rstrip('/')}/services/aigc/text-generation/generation"
         body = self.build_body(
-            system, user,
-            model=model, temperature=temperature, max_tokens=max_tokens,
+            system,
+            user,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
         )
         t0 = time.time()
         resp = post_json(url, self._headers(), body, timeout=self.timeout)

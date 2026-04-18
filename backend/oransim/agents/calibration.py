@@ -12,53 +12,54 @@ Algorithm:
   5. Apply factor to all population agents in that soul's territory
        → 100 LLM verdicts effectively rescale prediction for all N agents
 """
+
 from __future__ import annotations
-import numpy as np
-from typing import Dict, List, Tuple, Optional
+
 from dataclasses import dataclass
 
+import numpy as np
 
-def _build_features(population, indices: Optional[np.ndarray] = None) -> np.ndarray:
+
+def _build_features(population, indices: np.ndarray | None = None) -> np.ndarray:
     if indices is None:
         idx = np.arange(population.N)
     else:
         idx = np.asarray(indices)
-    interest = population.interest[idx]                       # (N, 64) L2-normed
+    interest = population.interest[idx]  # (N, 64) L2-normed
     age = (population.age_idx[idx][:, None] / 5.0).astype(np.float32)
     gender = population.gender_idx[idx][:, None].astype(np.float32)
     city = (population.city_idx[idx][:, None] / 4.0).astype(np.float32)
     income = (population.income[idx][:, None] / 9.0).astype(np.float32)
     edu = (population.edu_idx[idx][:, None] / 4.0).astype(np.float32)
-    return np.concatenate(
-        [interest * 0.4, age, gender, city, income, edu], axis=1
-    ).astype(np.float32)
+    return np.concatenate([interest * 0.4, age, gender, city, income, edu], axis=1).astype(
+        np.float32
+    )
 
 
 @dataclass
 class VoronoiPartition:
-    soul_indices: np.ndarray          # (S,) population indices of souls
-    nearest: np.ndarray               # (N,) for each agent → soul slot
-    weights: np.ndarray               # (S,) territory size / N
-    feat_pop: np.ndarray              # (N, D)
-    feat_souls: np.ndarray            # (S, D)
+    soul_indices: np.ndarray  # (S,) population indices of souls
+    nearest: np.ndarray  # (N,) for each agent → soul slot
+    weights: np.ndarray  # (S,) territory size / N
+    feat_pop: np.ndarray  # (N, D)
+    feat_souls: np.ndarray  # (S, D)
 
 
-def voronoi_partition(population, soul_indices: List[int],
-                      chunk: int = 20_000) -> VoronoiPartition:
+def voronoi_partition(population, soul_indices: list[int], chunk: int = 20_000) -> VoronoiPartition:
     """Compute Voronoi partition of population by soul features."""
-    feat_pop = _build_features(population)                     # (N, D)
+    feat_pop = _build_features(population)  # (N, D)
     feat_souls = _build_features(population, indices=np.array(soul_indices))  # (S, D)
     N, S = feat_pop.shape[0], feat_souls.shape[0]
 
     nearest = np.zeros(N, dtype=np.int32)
     # squared L2: ||a-b||^2 = ||a||^2 + ||b||^2 - 2 a.b
-    soul_sq = (feat_souls ** 2).sum(axis=1)                    # (S,)
+    soul_sq = (feat_souls**2).sum(axis=1)  # (S,)
     for s in range(0, N, chunk):
         e = min(s + chunk, N)
-        block = feat_pop[s:e]                                  # (B, D)
-        block_sq = (block ** 2).sum(axis=1, keepdims=True)     # (B, 1)
+        block = feat_pop[s:e]  # (B, D)
+        block_sq = (block**2).sum(axis=1, keepdims=True)  # (B, 1)
         # cross term
-        cross = block @ feat_souls.T                           # (B, S)
+        cross = block @ feat_souls.T  # (B, S)
         d = block_sq + soul_sq[None, :] - 2 * cross
         nearest[s:e] = d.argmin(axis=1)
 
@@ -66,18 +67,20 @@ def voronoi_partition(population, soul_indices: List[int],
     weights = counts / max(counts.sum(), 1)
     return VoronoiPartition(
         soul_indices=np.array(soul_indices, dtype=np.int64),
-        nearest=nearest, weights=weights,
-        feat_pop=feat_pop, feat_souls=feat_souls,
+        nearest=nearest,
+        weights=weights,
+        feat_pop=feat_pop,
+        feat_souls=feat_souls,
     )
 
 
 def calibrate_per_territory(
-    souls: List[Dict],
+    souls: list[dict],
     partition: VoronoiPartition,
-    stat_click_probs_by_persona: Dict[int, float],
+    stat_click_probs_by_persona: dict[int, float],
     eps: float = 0.05,
-    persona_id_to_slot: Optional[Dict[int, int]] = None,
-) -> Dict:
+    persona_id_to_slot: dict[int, int] | None = None,
+) -> dict:
     """For each soul → territory, compute correction factor; produce both
     a global (weighted-geomean) factor and per-segment factors.
 
@@ -109,15 +112,17 @@ def calibrate_per_territory(
 
     # Pick the subset of partition weights corresponding to these souls.
     if persona_id_to_slot is not None:
-        slots = np.array([persona_id_to_slot.get(int(s.get("persona_id", -1)), -1)
-                          for s in souls], dtype=np.int32)
+        slots = np.array(
+            [persona_id_to_slot.get(int(s.get("persona_id", -1)), -1) for s in souls],
+            dtype=np.int32,
+        )
         valid = slots >= 0
         if valid.any():
             weights = np.zeros(S, dtype=np.float32)
             weights[valid] = partition.weights[slots[valid]]
         else:
             weights = np.full(S, 1.0 / S, dtype=np.float32)
-    elif S == len(partition.weights):
+    elif len(partition.weights) == S:
         weights = partition.weights
     else:
         # uneven — fall back to uniform subset weights
@@ -137,7 +142,7 @@ def calibrate_per_territory(
     }
 
 
-def calibration_summary(cal: Dict) -> Dict:
+def calibration_summary(cal: dict) -> dict:
     """Compact summary for UI."""
     if not cal:
         return {}

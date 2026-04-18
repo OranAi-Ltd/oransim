@@ -20,7 +20,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from .base import PopulationSynthesizer, SynthesizerConfig, SynthesizedPopulation
+from .base import PopulationSynthesizer, SynthesizedPopulation, SynthesizerConfig
 
 
 @dataclass
@@ -51,12 +51,12 @@ class IPFSynthesizer(PopulationSynthesizer):
         return SynthesizedPopulation(
             N=pop.N,
             attributes={
-                "age_idx":    pop.age_idx,
+                "age_idx": pop.age_idx,
                 "gender_idx": pop.gender_idx,
-                "city_idx":   pop.city_idx,
-                "income":     pop.income,
-                "edu_idx":    pop.edu_idx,
-                "occ_idx":    pop.occ_idx,
+                "city_idx": pop.city_idx,
+                "income": pop.income,
+                "edu_idx": pop.edu_idx,
+                "occ_idx": pop.occ_idx,
             },
             latent={
                 "backend": "ipf",

@@ -3,17 +3,18 @@
 Replaces hash mock embedders with actual learned embeddings.
 Uses the same LLM gateway as soul_llm.py — no new API key needed.
 """
+
 from __future__ import annotations
-import os
-import json
+
 import hashlib
-import urllib.request
+import json
+import os
 import urllib.error
+import urllib.request
+
 import numpy as np
-from typing import List, Optional
 
-from .embedding_bus import Embedder, EMB_DIM
-
+from .embedding_bus import EMB_DIM, Embedder
 
 # Reuse the same env vars as soul_llm.py — one key for everything
 EMB_BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1").rstrip("/")
@@ -31,7 +32,7 @@ def _cache_key(text: str, model: str) -> str:
     return hashlib.sha256(f"{model}::{text}".encode()).hexdigest()[:24]
 
 
-def _embed_text_api(text: str, model: str = EMB_MODEL) -> Optional[np.ndarray]:
+def _embed_text_api(text: str, model: str = EMB_MODEL) -> np.ndarray | None:
     """Call the embeddings endpoint. Returns None on failure."""
     if not EMB_API_KEY:
         return None
@@ -43,8 +44,7 @@ def _embed_text_api(text: str, model: str = EMB_MODEL) -> Optional[np.ndarray]:
     req = urllib.request.Request(
         f"{EMB_BASE_URL}/embeddings",
         data=json.dumps(body).encode(),
-        headers={"Authorization": f"Bearer {EMB_API_KEY}",
-                 "Content-Type": "application/json"},
+        headers={"Authorization": f"Bearer {EMB_API_KEY}", "Content-Type": "application/json"},
         method="POST",
     )
     try:
@@ -70,6 +70,7 @@ class RealTextEmbedder(Embedder):
 
     Falls back to hash mock if API unavailable (graceful degradation).
     """
+
     name = "openai-compat-text"
     modality = "text"
 
@@ -88,28 +89,27 @@ class RealTextEmbedder(Embedder):
             return vec
         # Fallback to deterministic hash mock
         self._fallback_hits += 1
-        h = hashlib.sha256(
-            (text + str(self.fallback_seed)).encode()
-        ).digest()
+        h = hashlib.sha256((text + str(self.fallback_seed)).encode()).digest()
         rng = np.random.default_rng(int.from_bytes(h[:8], "big"))
         v = rng.normal(0, 1, self.output_dim).astype(np.float32)
         return v / (np.linalg.norm(v) + 1e-8)
 
-    def embed_batch(self, items: List) -> np.ndarray:
+    def embed_batch(self, items: list) -> np.ndarray:
         """Batch via the batch endpoint (OpenAI supports arrays)."""
         if not EMB_API_KEY or not items:
             return super().embed_batch(items)
         # split into chunks of 100 (OpenAI limit varies)
-        chunks = [items[i:i+64] for i in range(0, len(items), 64)]
-        all_vecs: List[np.ndarray] = []
+        chunks = [items[i : i + 64] for i in range(0, len(items), 64)]
+        all_vecs: list[np.ndarray] = []
         for chunk in chunks:
-            body = {"model": self.model,
-                    "input": [str(x) for x in chunk]}
+            body = {"model": self.model, "input": [str(x) for x in chunk]}
             req = urllib.request.Request(
                 f"{EMB_BASE_URL}/embeddings",
                 data=json.dumps(body).encode(),
-                headers={"Authorization": f"Bearer {EMB_API_KEY}",
-                         "Content-Type": "application/json"},
+                headers={
+                    "Authorization": f"Bearer {EMB_API_KEY}",
+                    "Content-Type": "application/json",
+                },
                 method="POST",
             )
             try:
@@ -118,8 +118,13 @@ class RealTextEmbedder(Embedder):
                 for d in resp["data"]:
                     vec = np.asarray(d["embedding"], dtype=np.float32)
                     if len(vec) != self.output_dim:
-                        vec = (vec[:self.output_dim] if len(vec) > self.output_dim
-                               else np.concatenate([vec, np.zeros(self.output_dim - len(vec), np.float32)]))
+                        vec = (
+                            vec[: self.output_dim]
+                            if len(vec) > self.output_dim
+                            else np.concatenate(
+                                [vec, np.zeros(self.output_dim - len(vec), np.float32)]
+                            )
+                        )
                     vec = vec / (np.linalg.norm(vec) + 1e-8)
                     all_vecs.append(vec)
                 self._api_hits += len(chunk)
@@ -130,11 +135,13 @@ class RealTextEmbedder(Embedder):
         return np.stack(all_vecs) if all_vecs else np.zeros((0, self.output_dim), np.float32)
 
     def info(self):
-        return {**super().info(),
-                "real_model": self.model,
-                "api_base": EMB_BASE_URL,
-                "api_hits": self._api_hits,
-                "fallback_hits": self._fallback_hits}
+        return {
+            **super().info(),
+            "real_model": self.model,
+            "api_base": EMB_BASE_URL,
+            "api_hits": self._api_hits,
+            "fallback_hits": self._fallback_hits,
+        }
 
 
 def is_real_embedder_available() -> bool:

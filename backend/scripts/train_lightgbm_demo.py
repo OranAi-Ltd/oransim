@@ -33,10 +33,17 @@ from typing import Any
 
 import numpy as np
 
-
 NICHES = [
-    "beauty", "fashion", "food", "electronics", "travel",
-    "parenting", "fitness", "home", "beverage", "pet",
+    "beauty",
+    "fashion",
+    "food",
+    "electronics",
+    "travel",
+    "parenting",
+    "fitness",
+    "home",
+    "beverage",
+    "pet",
 ]
 KOL_TIERS = ["nano", "micro", "mid", "macro", "mega"]
 KPIS = ("impressions", "clicks", "conversions", "revenue")
@@ -63,7 +70,7 @@ def _vectorize(row: dict) -> np.ndarray:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Train the demo LightGBM quantile world model.")
     parser.add_argument("--data", default="data/synthetic/scenarios_v0_1.jsonl")
-    parser.add_argument("--out",  default="data/models/world_model_demo.pkl")
+    parser.add_argument("--out", default="data/models/world_model_demo.pkl")
     parser.add_argument("--n-estimators", type=int, default=300)
     parser.add_argument("--max-depth", type=int, default=6)
     parser.add_argument("--learning-rate", type=float, default=0.05)
@@ -97,8 +104,7 @@ def main(argv: list[str] | None = None) -> int:
 
     X = np.stack([_vectorize(r) for r in rows])
     y_all = {
-        kpi: np.asarray([float(r["targets"][kpi]) for r in rows], dtype=np.float32)
-        for kpi in KPIS
+        kpi: np.asarray([float(r["targets"][kpi]) for r in rows], dtype=np.float32) for kpi in KPIS
     }
     print(f"[train]   feature shape: {X.shape}")
 
@@ -118,7 +124,7 @@ def main(argv: list[str] | None = None) -> int:
             params = {
                 "objective": "quantile",
                 "alpha": float(q),
-                "num_leaves": 2 ** args.max_depth - 1,
+                "num_leaves": 2**args.max_depth - 1,
                 "learning_rate": args.learning_rate,
                 "feature_fraction": 0.9,
                 "bagging_fraction": 0.9,
@@ -148,7 +154,9 @@ def main(argv: list[str] | None = None) -> int:
             r2 = 1.0 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
             metrics.setdefault(kpi, {})[f"pinball_q{int(q*100)}"] = pinball
             metrics[kpi][f"r2_q{int(q*100)}"] = r2
-            print(f"  q={q:.2f}  best_iter={booster.best_iteration}  pinball={pinball:.3f}  R²={r2:.3f}")
+            print(
+                f"  q={q:.2f}  best_iter={booster.best_iteration}  pinball={pinball:.3f}  R²={r2:.3f}"
+            )
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -157,8 +165,13 @@ def main(argv: list[str] | None = None) -> int:
             "kpis": KPIS,
             "quantiles": QUANTILES,
             "feature_names": [
-                "platform_id", "niche_idx", "budget", "budget_bucket",
-                "kol_tier_idx", "kol_fan_count", "kol_engagement_rate",
+                "platform_id",
+                "niche_idx",
+                "budget",
+                "budget_bucket",
+                "kol_tier_idx",
+                "kol_fan_count",
+                "kol_engagement_rate",
             ],
             "niches": NICHES,
             "kol_tiers": KOL_TIERS,

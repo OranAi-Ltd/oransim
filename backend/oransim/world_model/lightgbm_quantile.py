@@ -22,13 +22,12 @@ will land alongside the synthetic data generator in Phase 3.
 from __future__ import annotations
 
 import pickle
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from .base import (
-    DEFAULT_QUANTILES,
-    KPI_NAMES,
     WorldModel,
     WorldModelConfig,
     WorldModelPrediction,
@@ -90,7 +89,6 @@ class LightGBMQuantileWorldModel(WorldModel):
                 "LightGBMQuantileWorldModel has no trained boosters. "
                 "Either call fit() or load_pretrained(path)."
             )
-        import numpy as np
 
         x = self._featurize(features)
         out: dict[str, dict[float, float]] = {}
@@ -206,7 +204,7 @@ class LightGBMQuantileWorldModel(WorldModel):
             pickle.dump(dumped, f)
 
     @classmethod
-    def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> "LightGBMQuantileWorldModel":
+    def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> LightGBMQuantileWorldModel:
         if path is None:
             raise FileNotFoundError(
                 "No bundled LightGBMQuantileWorldModel weights in v0.1.0-alpha.\n"
@@ -220,9 +218,7 @@ class LightGBMQuantileWorldModel(WorldModel):
         model = cls(cfg)
         lgb = model._lgb
         for kpi, per_q in blob["boosters"].items():
-            model._boosters[kpi] = {
-                float(q): lgb.Booster(model_str=s) for q, s in per_q.items()
-            }
+            model._boosters[kpi] = {float(q): lgb.Booster(model_str=s) for q, s in per_q.items()}
         if blob.get("pca") is not None:
             model._pca = pickle.loads(blob["pca"])
         return model

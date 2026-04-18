@@ -18,14 +18,28 @@ from ....data.schema import (
     CanonicalNoteMetrics,
 )
 
-
 NICHES = [
-    "beauty", "fashion", "food", "electronics", "travel",
-    "parenting", "fitness", "home", "beverage", "pet",
-    "gaming", "comedy",   # TikTok-heavy niches
+    "beauty",
+    "fashion",
+    "food",
+    "electronics",
+    "travel",
+    "parenting",
+    "fitness",
+    "home",
+    "beverage",
+    "pet",
+    "gaming",
+    "comedy",  # TikTok-heavy niches
 ]
 TIERS = ["nano", "micro", "mid", "macro", "mega"]
-TIER_FAN_MEAN = {"nano": 8_000, "micro": 60_000, "mid": 350_000, "macro": 2_500_000, "mega": 15_000_000}
+TIER_FAN_MEAN = {
+    "nano": 8_000,
+    "micro": 60_000,
+    "mid": 350_000,
+    "macro": 2_500_000,
+    "mega": 15_000_000,
+}
 
 FAKE_ADJ = ["Velvet", "Neon", "Indigo", "Solar", "Cobalt", "Amber", "Jade", "Crimson"]
 FAKE_NOUN = ["Studio", "Diaries", "Club", "Lab", "Bureau", "Press", "Archive", "Works"]
@@ -128,8 +142,8 @@ class TikTokSyntheticProvider:
             max(0.0, rng.gauss(0.32, 0.05)),  # 25-34
             max(0.0, rng.gauss(0.14, 0.03)),  # 35-44
             max(0.0, rng.gauss(0.06, 0.02)),  # 45-54
-            max(0.0, rng.gauss(0.015, 0.01)), # 55-64
-            max(0.0, rng.gauss(0.005, 0.005)),# 65+
+            max(0.0, rng.gauss(0.015, 0.01)),  # 55-64
+            max(0.0, rng.gauss(0.005, 0.005)),  # 65+
         ]
         s = sum(age) or 1.0
         age = [a / s for a in age]

@@ -19,21 +19,23 @@ Daily brand-lift curve:
   brand_favor_pct(day)  = fraction with attitude > 0.2
   purchase_intent(day)  = fraction with attitude > 0.4
 """
+
 from __future__ import annotations
-import numpy as np
+
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+
+import numpy as np
 
 
 @dataclass
 class BrandMemoryState:
     pop_size: int
-    attitude: np.ndarray       # (N,)  in [-1, +1]
-    exposures: np.ndarray      # (N,)  int
+    attitude: np.ndarray  # (N,)  in [-1, +1]
+    exposures: np.ndarray  # (N,)  int
     last_seen_day: np.ndarray  # (N,)  int, -999 means never
 
     @classmethod
-    def empty(cls, pop_size: int) -> "BrandMemoryState":
+    def empty(cls, pop_size: int) -> BrandMemoryState:
         return cls(
             pop_size=pop_size,
             attitude=np.zeros(pop_size, dtype=np.float32),
@@ -41,11 +43,15 @@ class BrandMemoryState:
             last_seen_day=np.full(pop_size, -999, dtype=np.int32),
         )
 
-    def apply_exposure(self, agent_idx: np.ndarray, day: int,
-                       creative_quality: float,
-                       engage_mask: Optional[np.ndarray] = None,
-                       penalty_mask: Optional[np.ndarray] = None,
-                       decay_lambda: float = 0.03):
+    def apply_exposure(
+        self,
+        agent_idx: np.ndarray,
+        day: int,
+        creative_quality: float,
+        engage_mask: np.ndarray | None = None,
+        penalty_mask: np.ndarray | None = None,
+        decay_lambda: float = 0.03,
+    ):
         """Apply one day's ad exposure to a subset of agents.
 
         creative_quality: 0..1, >0.5 means positive impact
@@ -60,7 +66,7 @@ class BrandMemoryState:
         decay = np.exp(-decay_lambda * np.clip(days_since, 0, 365))
 
         # base impact from creative quality (much smaller; ads rarely move hearts)
-        base = (creative_quality - 0.5) * 0.06   # ±0.03 per exposure
+        base = (creative_quality - 0.5) * 0.06  # ±0.03 per exposure
 
         # engagement amplifies positive impact (clicking/saving actually shifted belief)
         if engage_mask is not None:
@@ -77,15 +83,15 @@ class BrandMemoryState:
         self.exposures[agent_idx] += 1
         self.last_seen_day[agent_idx] = day
 
-    def daily_metrics(self) -> Dict:
+    def daily_metrics(self) -> dict:
         a = self.attitude
         reached = self.exposures > 0
         return {
             "n_reached": int(reached.sum()),
-            "brand_recall_pct": float((np.abs(a) > 0.3).mean()),      # 记得这个品牌
-            "brand_favor_pct":  float((a > 0.2).mean()),              # 好感度
-            "brand_aversion_pct": float((a < -0.2).mean()),           # 反感
-            "purchase_intent_pct": float((a > 0.4).mean()),           # 高购意
+            "brand_recall_pct": float((np.abs(a) > 0.3).mean()),  # 记得这个品牌
+            "brand_favor_pct": float((a > 0.2).mean()),  # 好感度
+            "brand_aversion_pct": float((a < -0.2).mean()),  # 反感
+            "purchase_intent_pct": float((a > 0.4).mean()),  # 高购意
             "mean_attitude": float(a.mean()),
             "mean_attitude_reached": float(a[reached].mean()) if reached.any() else 0.0,
         }
@@ -97,9 +103,9 @@ def simulate_campaign_days(
     state: BrandMemoryState,
     scenario,
     n_days: int = 90,
-    daily_budget_curve: Optional[np.ndarray] = None,
+    daily_budget_curve: np.ndarray | None = None,
     reset_attitudes: bool = False,
-) -> List[Dict]:
+) -> list[dict]:
     """Simulate N days. Days 1..campaign_duration get fresh budget spend; after
     that, no new exposures (just decay).
 
@@ -124,13 +130,16 @@ def simulate_campaign_days(
         if budget_today > 1.0:
             # single-day impression pass — just use first platform for brand exposure
             imp = world_model.simulate_impression(
-                scenario.creative, first_plat, budget_today,
+                scenario.creative,
+                first_plat,
+                budget_today,
                 audience_filter=scenario.audience_filter,
                 kol=(scenario.kol_per_platform or {}).get(first_plat),
                 rng_seed=scenario.seed + day,
             )
             oc = agents_layer.simulate(
-                imp, scenario.creative,
+                imp,
+                scenario.creative,
                 kol=(scenario.kol_per_platform or {}).get(first_plat),
                 rng_seed=scenario.seed + day,
                 macro_ctr_lift=scenario.macro_ctr_lift,
@@ -142,7 +151,8 @@ def simulate_campaign_days(
             if scenario.creative.audit_risk > 0.3 or scenario.creative.aigc_score > 0.7:
                 penalty_mask = np.ones(len(oc.agent_idx), dtype=bool) * 0.4
             state.apply_exposure(
-                imp.agent_idx, day,
+                imp.agent_idx,
+                day,
                 creative_quality=scenario.creative.predicted_quality,
                 engage_mask=engage_mask,
                 penalty_mask=penalty_mask,

@@ -11,15 +11,22 @@ Under the hood: KNN coreset partition → per-anchor territory → log-weighted
 calibration factor. This module re-exports the implementation from
 `calibration.py` with Oransim-official naming.
 """
+
 from __future__ import annotations
+
+from .calibration import (
+    VoronoiPartition as SLOCCoreset,
+)
+from .calibration import (
+    calibrate_per_territory as sloc_calibrate,
+)
+from .calibration import (
+    calibration_summary as sloc_summary,
+)
 
 # Re-export canonical implementation under Oransim naming
 from .calibration import (
     voronoi_partition as build_sloc_coreset,
-    calibrate_per_territory as sloc_calibrate,
-    calibration_summary as sloc_summary,
-    VoronoiPartition as SLOCCoreset,
-    _build_features,
 )
 
 __all__ = [

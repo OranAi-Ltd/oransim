@@ -6,13 +6,14 @@ Given a creative + author fans + niche, predicts (exp, read, like, coll, comm).
 This replaces the hand-coded structural formula in PlatformWorldModel with
 empirically-calibrated predictions from real data.
 """
-from __future__ import annotations
-import pickle
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, Optional
-import numpy as np
 
+from __future__ import annotations
+
+import pickle
+from datetime import datetime
+from pathlib import Path
+
+import numpy as np
 
 V25_QUANTILE_PATH = Path("data/models/xhs_world_model_v25_quantile.pkl")
 V2_PCA_PATH = Path("data/models/xhs_world_model_v2_pca.pkl")
@@ -22,8 +23,8 @@ V1_PATH = Path("data/models/xhs_world_model.pkl")
 
 class XHSPRS:
     def __init__(self):
-        self.model = None            # v1 single model or None
-        self.models = None           # v2 dict of per-target models
+        self.model = None  # v1 single model or None
+        self.models = None  # v2 dict of per-target models
         self.target_names = []
         self.niche_list = []
         self.top_topics = []
@@ -38,7 +39,7 @@ class XHSPRS:
         if V25_QUANTILE_PATH.exists():
             with open(V25_QUANTILE_PATH, "rb") as f:
                 blob = pickle.load(f)
-            self.quantile_models = blob["models"]   # {target: {p10, p50, p90}}
+            self.quantile_models = blob["models"]  # {target: {p10, p50, p90}}
             self.version = blob.get("version", "v2.5-quantile")
             self.target_names = blob["target_names"]
             self.niche_list = blob["niche_list"]
@@ -86,13 +87,16 @@ class XHSPRS:
             self.n_training = blob.get("n_training", 0)
             self.eval_cv = blob.get("eval_cv", {})
 
-    quantile_models = None   # default unset
+    quantile_models = None  # default unset
 
     def is_ready(self) -> bool:
-        return (self.model is not None or self.models is not None
-                or getattr(self, 'quantile_models', None) is not None)
+        return (
+            self.model is not None
+            or self.models is not None
+            or getattr(self, "quantile_models", None) is not None
+        )
 
-    def info(self) -> Dict:
+    def info(self) -> dict:
         if not self.is_ready():
             return {"loaded": False}
         return {
@@ -103,23 +107,33 @@ class XHSPRS:
             "niches": self.niche_list,
             "feature_dim": self.feature_dim,
             "n_topics": len(self.top_topics),
-            "eval_cv_r2": {k: round(v.get("r2", v.get("r2_p50", 0)), 3)
-                            for k, v in self.eval_cv.items()},
+            "eval_cv_r2": {
+                k: round(v.get("r2", v.get("r2_p50", 0)), 3) for k, v in self.eval_cv.items()
+            },
         }
 
     def _project_emb(self, emb, dim=768):
-        if len(emb) == dim: return emb
-        return (emb[:dim] if len(emb) > dim
-                else np.concatenate([emb, np.zeros(dim - len(emb), np.float32)]))
+        if len(emb) == dim:
+            return emb
+        return (
+            emb[:dim]
+            if len(emb) > dim
+            else np.concatenate([emb, np.zeros(dim - len(emb), np.float32)])
+        )
 
-    def predict(self, caption_emb: np.ndarray, author_fans: int,
-                niche: str, duration_sec: float = 15.0,
-                post_time: Optional[datetime] = None,
-                desc_emb: Optional[np.ndarray] = None,
-                topics: Optional[list] = None,
-                has_img: bool = False,
-                img_count: int = 0,
-                post_type: str = "video") -> Dict:
+    def predict(
+        self,
+        caption_emb: np.ndarray,
+        author_fans: int,
+        niche: str,
+        duration_sec: float = 15.0,
+        post_time: datetime | None = None,
+        desc_emb: np.ndarray | None = None,
+        topics: list | None = None,
+        has_img: bool = False,
+        img_count: int = 0,
+        post_type: str = "video",
+    ) -> dict:
         """Returns dict of {exp, read, like, coll, comm}."""
         if not self.is_ready():
             return {}
@@ -136,9 +150,12 @@ class XHSPRS:
             n_topics = len(self.top_topics)
             hand = np.zeros(3 + len(self.niche_list) + n_topics + 6, dtype=np.float32)
             col = 0
-            hand[col] = np.log1p(max(author_fans, 0)); col += 1
-            hand[col] = min(duration_sec, 600) / 60.0; col += 1
-            hand[col] = 1.0 if duration_sec > 0 else 0.0; col += 1
+            hand[col] = np.log1p(max(author_fans, 0))
+            col += 1
+            hand[col] = min(duration_sec, 600) / 60.0
+            col += 1
+            hand[col] = 1.0 if duration_sec > 0 else 0.0
+            col += 1
             if niche in self.niche_list:
                 hand[col + self.niche_list.index(niche)] = 1.0
             col += len(self.niche_list)
@@ -148,12 +165,17 @@ class XHSPRS:
                     hand[col + ti] = 1.0
             col += n_topics
             h, wd = post_time.hour, post_time.weekday()
-            hand[col]     = np.sin(2*np.pi*h/24); col += 1
-            hand[col]     = np.cos(2*np.pi*h/24); col += 1
-            hand[col]     = np.sin(2*np.pi*wd/7); col += 1
-            hand[col]     = np.cos(2*np.pi*wd/7); col += 1
-            hand[col]     = min(img_count, 20) / 20.0; col += 1
-            hand[col]     = 0.0 if post_type == "video" else 1.0
+            hand[col] = np.sin(2 * np.pi * h / 24)
+            col += 1
+            hand[col] = np.cos(2 * np.pi * h / 24)
+            col += 1
+            hand[col] = np.sin(2 * np.pi * wd / 7)
+            col += 1
+            hand[col] = np.cos(2 * np.pi * wd / 7)
+            col += 1
+            hand[col] = min(img_count, 20) / 20.0
+            col += 1
+            hand[col] = 0.0 if post_type == "video" else 1.0
             X = np.concatenate([X_pca, hand.reshape(1, -1)], axis=1).astype(np.float32)
             out = {}
             for name, qm in self.quantile_models.items():
@@ -182,9 +204,12 @@ class XHSPRS:
             n_topics = len(self.top_topics)
             hand = np.zeros(3 + len(self.niche_list) + n_topics + 6, dtype=np.float32)
             col = 0
-            hand[col] = np.log1p(max(author_fans, 0)); col += 1
-            hand[col] = min(duration_sec, 600) / 60.0; col += 1
-            hand[col] = 1.0 if duration_sec > 0 else 0.0; col += 1
+            hand[col] = np.log1p(max(author_fans, 0))
+            col += 1
+            hand[col] = min(duration_sec, 600) / 60.0
+            col += 1
+            hand[col] = 1.0 if duration_sec > 0 else 0.0
+            col += 1
             if niche in self.niche_list:
                 hand[col + self.niche_list.index(niche)] = 1.0
             col += len(self.niche_list)
@@ -194,12 +219,17 @@ class XHSPRS:
                     hand[col + ti] = 1.0
             col += n_topics
             h, wd = post_time.hour, post_time.weekday()
-            hand[col]     = np.sin(2*np.pi*h/24); col += 1
-            hand[col]     = np.cos(2*np.pi*h/24); col += 1
-            hand[col]     = np.sin(2*np.pi*wd/7); col += 1
-            hand[col]     = np.cos(2*np.pi*wd/7); col += 1
-            hand[col]     = min(img_count, 20) / 20.0; col += 1
-            hand[col]     = 0.0 if post_type == "video" else 1.0
+            hand[col] = np.sin(2 * np.pi * h / 24)
+            col += 1
+            hand[col] = np.cos(2 * np.pi * h / 24)
+            col += 1
+            hand[col] = np.sin(2 * np.pi * wd / 7)
+            col += 1
+            hand[col] = np.cos(2 * np.pi * wd / 7)
+            col += 1
+            hand[col] = min(img_count, 20) / 20.0
+            col += 1
+            hand[col] = 0.0 if post_type == "video" else 1.0
             X = np.concatenate([X_pca, hand.reshape(1, -1)], axis=1).astype(np.float32)
             out = {}
             for name, m in self.models.items():
@@ -212,9 +242,12 @@ class XHSPRS:
             n_topics = len(self.top_topics)
             hand = np.zeros(3 + len(self.niche_list) + n_topics + 6, dtype=np.float32)
             col = 0
-            hand[col] = np.log1p(max(author_fans, 0)); col += 1
-            hand[col] = min(duration_sec, 600) / 60.0; col += 1
-            hand[col] = 1.0 if duration_sec > 0 else 0.0; col += 1
+            hand[col] = np.log1p(max(author_fans, 0))
+            col += 1
+            hand[col] = min(duration_sec, 600) / 60.0
+            col += 1
+            hand[col] = 1.0 if duration_sec > 0 else 0.0
+            col += 1
             if niche in self.niche_list:
                 hand[col + self.niche_list.index(niche)] = 1.0
             col += len(self.niche_list)
@@ -223,13 +256,19 @@ class XHSPRS:
                 if t in topic_set:
                     hand[col + ti] = 1.0
             col += n_topics
-            h = post_time.hour; wd = post_time.weekday()
-            hand[col]     = np.sin(2*np.pi*h/24); col += 1
-            hand[col]     = np.cos(2*np.pi*h/24); col += 1
-            hand[col]     = np.sin(2*np.pi*wd/7); col += 1
-            hand[col]     = np.cos(2*np.pi*wd/7); col += 1
-            hand[col]     = min(img_count, 20) / 20.0; col += 1
-            hand[col]     = 0.0 if post_type == "video" else 1.0
+            h = post_time.hour
+            wd = post_time.weekday()
+            hand[col] = np.sin(2 * np.pi * h / 24)
+            col += 1
+            hand[col] = np.cos(2 * np.pi * h / 24)
+            col += 1
+            hand[col] = np.sin(2 * np.pi * wd / 7)
+            col += 1
+            hand[col] = np.cos(2 * np.pi * wd / 7)
+            col += 1
+            hand[col] = min(img_count, 20) / 20.0
+            col += 1
+            hand[col] = 0.0 if post_type == "video" else 1.0
             X = np.concatenate([caption_emb, de, hand]).reshape(1, -1).astype(np.float32)
             out = {}
             for name, m in self.models.items():
@@ -247,7 +286,8 @@ class XHSPRS:
         hand[3 + len(self.niche_list) + 1] = post_time.weekday() / 6.0
         X = np.concatenate([caption_emb, hand]).reshape(1, -1).astype(np.float32)
         log_pred = self.model.predict(X)[0]
-        if np.isscalar(log_pred): log_pred = np.array([log_pred])
+        if np.isscalar(log_pred):
+            log_pred = np.array([log_pred])
         vals = np.expm1(log_pred)
         return {name: float(max(0, v)) for name, v in zip(self.target_names, vals)}
 

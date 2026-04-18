@@ -17,21 +17,20 @@ Difference vs Discourse module (one-shot comments):
 
 Output is a SCM mediator node, intervenable via do(consensus=...).
 """
+
 from __future__ import annotations
-import json
-import time
-import os
+
 import random
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from dataclasses import dataclass
+
 import numpy as np
 
 from ..data.creatives import Creative
 from ..data.kols import KOL
-from .soul import SoulAgentPool, Persona
-
+from .soul import Persona, SoulAgentPool
 
 # ---------------- Message layer (AgentSociety-inspired) ----------------
+
 
 @dataclass
 class Message:
@@ -39,16 +38,19 @@ class Message:
     sender_id: int
     sender_oneliner: str
     text: str
-    sentiment: float            # -1..+1, agent's stance after speaking
-    addresses_to: Optional[int] = None   # if replying to specific message
-    is_silent: bool = False     # agent chose not to speak this turn
+    sentiment: float  # -1..+1, agent's stance after speaking
+    addresses_to: int | None = None  # if replying to specific message
+    is_silent: bool = False  # agent chose not to speak this turn
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
-            "turn": self.turn, "sender_id": self.sender_id,
-            "sender": self.sender_oneliner, "text": self.text,
+            "turn": self.turn,
+            "sender_id": self.sender_id,
+            "sender": self.sender_oneliner,
+            "text": self.text,
             "sentiment": round(self.sentiment, 3),
-            "replies_to": self.addresses_to, "silent": self.is_silent,
+            "replies_to": self.addresses_to,
+            "silent": self.is_silent,
         }
 
 
@@ -57,20 +59,20 @@ class GroupChatReport:
     creative_caption: str
     n_agents: int
     n_rounds: int
-    messages: List[Message]                 # full transcript
-    final_stances: Dict[int, float]         # agent_id → final sentiment
-    initial_stances: Dict[int, float]
-    consensus: float                        # mean final
-    polarization: float                     # std final
-    converged: bool                         # std dropped over rounds?
-    dominant_frame: str                     # what topic dominates the chat
-    second_wave_impact: float               # SCM mediator value, [-0.3, +0.3]
+    messages: list[Message]  # full transcript
+    final_stances: dict[int, float]  # agent_id → final sentiment
+    initial_stances: dict[int, float]
+    consensus: float  # mean final
+    polarization: float  # std final
+    converged: bool  # std dropped over rounds?
+    dominant_frame: str  # what topic dominates the chat
+    second_wave_impact: float  # SCM mediator value, [-0.3, +0.3]
     cost_cny: float
     tokens_in: int
     tokens_out: int
-    rounds_summary: List[Dict]              # per-round mean+std
+    rounds_summary: list[dict]  # per-round mean+std
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "n_agents": self.n_agents,
             "n_rounds": self.n_rounds,
@@ -138,14 +140,23 @@ GC_SUMMARY_PROMPT = """以下是 {n_agents} 个虚拟用户经过 {n_rounds} 轮
 
 # ---------------- Mock impl ----------------
 
-MOCK_OPENERS = ["这价格我先看看", "这达人挺真诚", "广子+1 跳过", "求链接姐妹",
-                 "看起来不错", "AIGC 一眼假", "等降价再说", "已下单"]
+MOCK_OPENERS = [
+    "这价格我先看看",
+    "这达人挺真诚",
+    "广子+1 跳过",
+    "求链接姐妹",
+    "看起来不错",
+    "AIGC 一眼假",
+    "等降价再说",
+    "已下单",
+]
 MOCK_REPLIES_POS = ["楼上说得对", "我也这么觉得", "+1", "种草了", "也想试试"]
 MOCK_REPLIES_NEG = ["楼上水军吧", "别被忽悠", "我去年被骗过", "醒醒"]
 
 
-def _mock_message(p: Persona, turn: int, prior_stance: float, transcript: List[Message],
-                   rng) -> Message:
+def _mock_message(
+    p: Persona, turn: int, prior_stance: float, transcript: list[Message], rng
+) -> Message:
     if turn == 0:
         text = rng.choice(MOCK_OPENERS)
         new_stance = prior_stance + rng.uniform(-0.1, 0.2)
@@ -160,13 +171,16 @@ def _mock_message(p: Persona, turn: int, prior_stance: float, transcript: List[M
             new_stance = prior_stance + rng.uniform(-0.15, 0)
     new_stance = max(-1, min(1, new_stance))
     return Message(
-        turn=turn, sender_id=p.id, sender_oneliner=p.one_liner(),
-        text=text, sentiment=new_stance,
+        turn=turn,
+        sender_id=p.id,
+        sender_oneliner=p.one_liner(),
+        text=text,
+        sentiment=new_stance,
         addresses_to=transcript[-1].turn if transcript else None,
     )
 
 
-def _mock_summary(messages: List[Message], n_agents: int, n_rounds: int) -> Dict:
+def _mock_summary(messages: list[Message], n_agents: int, n_rounds: int) -> dict:
     sents = [m.sentiment for m in messages if not m.is_silent]
     mean = float(np.mean(sents)) if sents else 0
     return {
@@ -180,9 +194,10 @@ def _mock_summary(messages: List[Message], n_agents: int, n_rounds: int) -> Dict
 
 # ---------------- Main entry ----------------
 
+
 def simulate_group_chat(
     creative: Creative,
-    kol: Optional[KOL],
+    kol: KOL | None,
     platform: str,
     souls: SoulAgentPool,
     n_agents: int = 8,
@@ -192,13 +207,12 @@ def simulate_group_chat(
 ) -> GroupChatReport:
     """Run a multi-turn LLM group chat simulation."""
     rng = random.Random(seed)
-    chosen_ids = rng.sample(list(souls.personas.keys()),
-                              min(n_agents, len(souls.personas)))
+    chosen_ids = rng.sample(list(souls.personas.keys()), min(n_agents, len(souls.personas)))
     personas = {pid: souls.personas[pid] for pid in chosen_ids}
 
     # Initial stance: noisy prior based on persona/creative match
     np_rng = np.random.default_rng(seed)
-    initial_stances: Dict[int, float] = {}
+    initial_stances: dict[int, float] = {}
     for pid in chosen_ids:
         p = personas[pid]
         match = 0.3 if any(i in creative.caption for i in p.interests) else 0
@@ -206,15 +220,23 @@ def simulate_group_chat(
         initial_stances[pid] = s
 
     current_stances = dict(initial_stances)
-    messages: List[Message] = []
-    rounds_summary: List[Dict] = []
+    messages: list[Message] = []
+    rounds_summary: list[dict] = []
     tok_in = tok_out = 0
     cost_cny = 0.0
 
     if use_llm:
         try:
-            from .soul_llm import (llm_available, _http_stream_post, _extract_json,
-                                    MODEL, BASE_URL, API_KEY, estimate_cost_cny)
+            from .soul_llm import (
+                API_KEY,
+                BASE_URL,
+                MODEL,
+                _extract_json,
+                _http_stream_post,
+                estimate_cost_cny,
+                llm_available,
+            )
+
             llm_ok = llm_available()
         except Exception:
             llm_ok = False
@@ -227,93 +249,118 @@ def simulate_group_chat(
 
     for r in range(n_rounds):
         # randomize agent speaking order each round
-        order = list(chosen_ids); rng.shuffle(order)
+        order = list(chosen_ids)
+        rng.shuffle(order)
         for pid in order:
             p = personas[pid]
-            transcript_text = "\n".join([
-                f"  T{m.turn} #{m.sender_id} [{m.sender_oneliner}]: {m.text}"
-                for m in messages[-12:]   # cap context
-            ]) or "  (尚无人发言)"
+            transcript_text = (
+                "\n".join(
+                    [
+                        f"  T{m.turn} #{m.sender_id} [{m.sender_oneliner}]: {m.text}"
+                        for m in messages[-12:]  # cap context
+                    ]
+                )
+                or "  (尚无人发言)"
+            )
 
             if llm_ok:
                 body = {
-                    "model": MODEL, "temperature": 0.85, "max_tokens": 200,
+                    "model": MODEL,
+                    "temperature": 0.85,
+                    "max_tokens": 200,
                     "messages": [
                         {"role": "system", "content": GC_SYSTEM},
-                        {"role": "user", "content": GC_PROMPT.format(
-                            persona=p.full_card(), interests=", ".join(p.interests),
-                            prior_stance=round(current_stances[pid], 2),
-                            caption=creative.caption, platform=platform,
-                            kol=kol.name if kol else "无",
-                            transcript=transcript_text, turn=r,
-                        )},
+                        {
+                            "role": "user",
+                            "content": GC_PROMPT.format(
+                                persona=p.full_card(),
+                                interests=", ".join(p.interests),
+                                prior_stance=round(current_stances[pid], 2),
+                                caption=creative.caption,
+                                platform=platform,
+                                kol=kol.name if kol else "无",
+                                transcript=transcript_text,
+                                turn=r,
+                            ),
+                        },
                     ],
                 }
                 try:
                     content, usage = _http_stream_post(
-                        f"{BASE_URL}/chat/completions", headers, body)
+                        f"{BASE_URL}/chat/completions", headers, body
+                    )
                     tok_in += usage.get("prompt_tokens", 0)
                     tok_out += usage.get("completion_tokens", 0)
                     parsed = _extract_json(content)
                     will_speak = bool(parsed.get("will_speak", True))
                     text = (parsed.get("text") or "").strip()
                     addresses = parsed.get("addresses_to")
-                    new_stance = float(parsed.get("new_stance",
-                                                    current_stances[pid]))
+                    new_stance = float(parsed.get("new_stance", current_stances[pid]))
                     new_stance = max(-1, min(1, new_stance))
                     if will_speak and text:
                         msg = Message(
-                            turn=len(messages), sender_id=pid,
-                            sender_oneliner=p.one_liner(), text=text,
-                            sentiment=new_stance, addresses_to=addresses,
+                            turn=len(messages),
+                            sender_id=pid,
+                            sender_oneliner=p.one_liner(),
+                            text=text,
+                            sentiment=new_stance,
+                            addresses_to=addresses,
                         )
                     else:
                         msg = Message(
-                            turn=len(messages), sender_id=pid,
+                            turn=len(messages),
+                            sender_id=pid,
                             sender_oneliner=p.one_liner(),
-                            text="(划过，未发言)", sentiment=current_stances[pid],
+                            text="(划过，未发言)",
+                            sentiment=current_stances[pid],
                             is_silent=True,
                         )
-                except Exception as e:
-                    msg = _mock_message(p, len(messages), current_stances[pid],
-                                          messages, rng)
+                except Exception:
+                    msg = _mock_message(p, len(messages), current_stances[pid], messages, rng)
             else:
-                msg = _mock_message(p, len(messages), current_stances[pid],
-                                      messages, rng)
+                msg = _mock_message(p, len(messages), current_stances[pid], messages, rng)
 
             messages.append(msg)
             current_stances[pid] = msg.sentiment
 
         # Per-round summary
         sents = list(current_stances.values())
-        rounds_summary.append({
-            "round": r,
-            "mean_stance": round(float(np.mean(sents)), 3),
-            "std_stance": round(float(np.std(sents)), 3),
-            "n_speakers_total": sum(1 for m in messages if not m.is_silent),
-        })
+        rounds_summary.append(
+            {
+                "round": r,
+                "mean_stance": round(float(np.mean(sents)), 3),
+                "std_stance": round(float(np.std(sents)), 3),
+                "n_speakers_total": sum(1 for m in messages if not m.is_silent),
+            }
+        )
 
     if llm_ok:
         cost_cny = estimate_cost_cny(tok_in, tok_out)
 
     # Final summary via 1 LLM call (or mock)
-    transcript_full = "\n".join([
-        f"T{m.turn} {m.sender_oneliner}: {m.text}" for m in messages if not m.is_silent
-    ])
+    transcript_full = "\n".join(
+        [f"T{m.turn} {m.sender_oneliner}: {m.text}" for m in messages if not m.is_silent]
+    )
     summary = None
     if llm_ok and len(messages) > 3:
         try:
-            from .soul_llm import _http_stream_post, _extract_json, MODEL, BASE_URL
+            from .soul_llm import BASE_URL, MODEL, _extract_json, _http_stream_post
+
             body = {
-                "model": MODEL, "temperature": 0.4, "max_tokens": 300,
+                "model": MODEL,
+                "temperature": 0.4,
+                "max_tokens": 300,
                 "messages": [
                     {"role": "system", "content": GC_SUMMARY_SYSTEM},
-                    {"role": "user", "content": GC_SUMMARY_PROMPT.format(
-                        n_agents=n_agents, n_rounds=n_rounds, transcript=transcript_full)},
+                    {
+                        "role": "user",
+                        "content": GC_SUMMARY_PROMPT.format(
+                            n_agents=n_agents, n_rounds=n_rounds, transcript=transcript_full
+                        ),
+                    },
                 ],
             }
-            content, usage = _http_stream_post(
-                f"{BASE_URL}/chat/completions", headers, body)
+            content, usage = _http_stream_post(f"{BASE_URL}/chat/completions", headers, body)
             tok_in += usage.get("prompt_tokens", 0)
             tok_out += usage.get("completion_tokens", 0)
             summary = _extract_json(content)
@@ -324,13 +371,14 @@ def simulate_group_chat(
 
     if llm_ok:
         from .soul_llm import estimate_cost_cny
+
         cost_cny = estimate_cost_cny(tok_in, tok_out)
 
     final = list(current_stances.values())
     initial = list(initial_stances.values())
     consensus = float(np.mean(final))
     polarization = float(np.std(final))
-    converged = (rounds_summary[-1]["std_stance"] < rounds_summary[0]["std_stance"])
+    converged = rounds_summary[-1]["std_stance"] < rounds_summary[0]["std_stance"]
 
     # ── KPI coupling 校准（替换原 magic 0.5）──────────────────
     # 基于 Sunstein 2017 群体极化 + Asch 1956 从众实验:
@@ -342,14 +390,15 @@ def simulate_group_chat(
     #              其中 MAX_INFLUENCE = 0.20 (Sunstein literature midpoint)
     MAX_INFLUENCE = 0.20  # Sunstein 2017 + Asch 1956 + Cialdini 2001 综合
     polarization_dampening = 1.0 - min(polarization, 0.5)
-    second_wave_calibrated = float(np.clip(
-        consensus * MAX_INFLUENCE * polarization_dampening, -0.3, 0.3))
+    second_wave_calibrated = float(
+        np.clip(consensus * MAX_INFLUENCE * polarization_dampening, -0.3, 0.3)
+    )
     # 若 LLM 自报 second_wave_impact 与文献预测一致（同号），平均之；否则用文献版
     llm_reported = summary.get("second_wave_impact")
-    if isinstance(llm_reported, (int, float)) and \
-       (llm_reported * second_wave_calibrated > 0 or abs(llm_reported) < 0.05):
-        second_wave_final = float(np.clip(
-            (llm_reported + second_wave_calibrated) / 2, -0.3, 0.3))
+    if isinstance(llm_reported, (int, float)) and (
+        llm_reported * second_wave_calibrated > 0 or abs(llm_reported) < 0.05
+    ):
+        second_wave_final = float(np.clip((llm_reported + second_wave_calibrated) / 2, -0.3, 0.3))
         coupling_source = "literature_avg_with_llm"
     else:
         second_wave_final = second_wave_calibrated
@@ -357,11 +406,18 @@ def simulate_group_chat(
 
     return GroupChatReport(
         creative_caption=creative.caption,
-        n_agents=n_agents, n_rounds=n_rounds, messages=messages,
-        initial_stances=initial_stances, final_stances=current_stances,
-        consensus=consensus, polarization=polarization, converged=converged,
+        n_agents=n_agents,
+        n_rounds=n_rounds,
+        messages=messages,
+        initial_stances=initial_stances,
+        final_stances=current_stances,
+        consensus=consensus,
+        polarization=polarization,
+        converged=converged,
         dominant_frame=summary.get("dominant_frame", "?"),
         second_wave_impact=second_wave_final,
-        cost_cny=cost_cny, tokens_in=tok_in, tokens_out=tok_out,
+        cost_cny=cost_cny,
+        tokens_in=tok_in,
+        tokens_out=tok_out,
         rounds_summary=rounds_summary,
     )

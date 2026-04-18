@@ -63,8 +63,7 @@ def _build(name: str) -> LLMProvider:
         )
     if name == "anthropic":
         return AnthropicProvider(
-            base_url=_env("ANTHROPIC_BASE_URL", "LLM_BASE_URL",
-                          default=ANTHROPIC_DEFAULT_BASE),
+            base_url=_env("ANTHROPIC_BASE_URL", "LLM_BASE_URL", default=ANTHROPIC_DEFAULT_BASE),
             api_key=_env("ANTHROPIC_API_KEY", "LLM_API_KEY"),
         )
     if name == "gemini":
@@ -83,12 +82,11 @@ def _build(name: str) -> LLMProvider:
 
 
 def resolve_provider_name(raw: str | None = None) -> str:
-    raw = (raw if raw is not None else os.environ.get("LLM_PROVIDER", "openai"))
+    raw = raw if raw is not None else os.environ.get("LLM_PROVIDER", "openai")
     key = (raw or "openai").strip().lower()
     if key not in _PROVIDER_ALIASES:
         raise ValueError(
-            f"unknown LLM_PROVIDER={raw!r}; "
-            f"expected one of {sorted(set(_PROVIDER_ALIASES))}"
+            f"unknown LLM_PROVIDER={raw!r}; " f"expected one of {sorted(set(_PROVIDER_ALIASES))}"
         )
     return _PROVIDER_ALIASES[key]
 

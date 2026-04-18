@@ -45,7 +45,7 @@ v0.2 自带合成 demo 数据集（2.3 MB · 200 KOL / 2k scenarios / 100 event 
 - 🧠 **因果 Transformer 世界模型 (Causal Transformer World Model)** —— 6 层多头 self-attention，显式 *treatment / covariate / outcome* 三类 token 分解、DAG-aware 注意力偏置、per-arm 反事实头、表征平衡损失。融合近年因果 Transformer 研究：**CaT** (Melnychuk et al. ICML 2022)、**CausalDAG-Transformer**、**BCAUSS**、**CInA** (Arik & Pfister NeurIPS 2023)、**TARNet / Dragonnet**。([架构细节](#causal-transformer-world-model))
 - ⚡ **因果神经 Hawkes 过程 (Causal Neural Hawkes Process)** —— Transformer 参数化的时序点过程，14 天扩散预测，*treatment vs control* 事件类型区分、干预感知强度函数。建立在 **Mei & Eisner (NeurIPS 2017)**、**Zuo et al. (ICML 2020)**、**Geng et al. (NeurIPS 2022) 因果 TPP** 之上。([架构细节](#causal-neural-hawkes-process))
 - 🌐 **64 节点结构因果模型 (SCM)** —— Pearl 三步反事实（溯因 → 干预 → 预测），手工设计的营销漏斗图（117 条边），含群体话语（Sunstein 2017）与信息级联的 mediator。
-- 👥 **百万级虚拟人口** —— IPF 迭代比例拟合（Deming & Stephan 1940）baseline 对齐人口学先验；可插拔 `PopulationSynthesizer` 接口，Bayesian Network（v0.2）· CTGAN（v0.5）· **Causal-DAG-guided TabDDPM**（v1.0 研究项目）在路线图。取最显著 10k agent 升级为 LLM 驱动人格。
+- 👥 **虚拟人口（默认 100k，可通过 POP_SIZE 扩到 1M）** —— IPF 迭代比例拟合（Deming & Stephan 1940）baseline 对齐人口学先验；可插拔 `PopulationSynthesizer` 接口，Bayesian Network（v0.2）· CTGAN（v0.5）· **Causal-DAG-guided TabDDPM**（v1.0 研究项目）在路线图。取最显著 10k agent 升级为 LLM 驱动人格。
 - 🧪 **LightGBM Quantile baseline** —— 快速零依赖 fallback，每 KPI 三个分位数回归器（P35/P50/P65）。保留用于生产延迟敏感场景 + 基准对比。
 
 </details>
@@ -117,9 +117,9 @@ PORT=8001 python backend/run.py &
 </td>
 <td width="50%" valign="top">
 
-**100 万智能体中的意见传播** —— 粘入广告文案，观察四色意见波（绿=点击 / 紫=强购意 / 红=跳过 / 蓝=好奇）从 KOL 种子向外扩散，级联感染粉丝。
+**agent 网络中的意见传播** —— 粘入广告文案，观察四色意见波（绿=点击 / 紫=强购意 / 红=跳过 / 蓝=好奇）从 KOL 种子向外扩散，级联感染粉丝。
 
-<img src="assets/screenshots/society-100m.png" alt="百万智能体中的意见传播" width="100%"/>
+<img src="assets/screenshots/society-100m.png" alt="agent 网络中的意见传播" width="100%"/>
 
 </td>
 </tr>
@@ -133,7 +133,7 @@ PORT=8001 python backend/run.py &
 |---|---|---|---|
 | **能回答「为什么这个预测变了？」** | 部分（规则追踪） | ❌ 不透明（最多 SHAP） | ✅ 每个预测都能沿因果图、per-agent 推理链、注意力路径溯源 |
 | **能回答「如果换种做法会怎样？」** | ❌ 从头再跑一遍 | ❌ 模型不知道 | ✅ 原生反事实头——`do(创意=B)` 一次 forward 直接出结果 |
-| **能看单个用户反应** | 仅聚合 | 仅聚合 | ✅ 1M 模拟消费者 + 10k 个 LLM 人格读完**你的**真实文案 |
+| **能看单个用户反应** | 仅聚合 | 仅聚合 | ✅ 按 POP_SIZE 扩展的虚拟消费者池 + 10k 个 LLM 人格读完**你的**真实文案 |
 | **14 天扩散 + 中途干预预测** | 线性衰减 | 通用时序模型 | ✅ 自激点过程，支持「第 3 天停投会怎样」这类问题 |
 | **真实预算曲线** | ❌ 线性：2× 预算 = 2× 效果 | ❌ 同 | ✅ 递减收益 + 频次疲劳（贴合真实营销经济学） |
 | **消除虚假相关** | ❌ | ❌ | ✅ 表征平衡损失，把学到的表征与 treatment 分配解耦 |
@@ -162,7 +162,7 @@ PORT=8001 python backend/run.py &
 <img src="assets/architecture.svg" alt="Oransim 架构图" width="100%"/>
 </div>
 
-一次典型预测链路：**素材 + 预算** → **PlatformAdapter**（经可插拔 **DataProvider** 取数据）→ **因果 Transformer 世界模型**（事实 + per-arm 反事实分位数预测）+ **Agent 层**（1M IPF + 10k LLM 人格）→ **因果引擎**（64 节点 Pearl SCM + 三步 `do()` 反事实）→ **因果神经 Hawkes**（14 天扩散 + 干预 rollout）→ **预测 JSON**（14-19 个 schema）。*LightGBM quantile 和参数化 Hawkes 通过 registry 作为快速 baseline 可用。*
+一次典型预测链路：**素材 + 预算** → **PlatformAdapter**（经可插拔 **DataProvider** 取数据）→ **因果 Transformer 世界模型**（事实 + per-arm 反事实分位数预测）+ **Agent 层**（POP_SIZE-scalable IPF + 10k LLM 人格）→ **因果引擎**（64 节点 Pearl SCM + 三步 `do()` 反事实）→ **因果神经 Hawkes**（14 天扩散 + 干预 rollout）→ **预测 JSON**（14-19 个 schema）。*LightGBM quantile 和参数化 Hawkes 通过 registry 作为快速 baseline 可用。*
 
 两轴可扩展：
 - **平台轴** —— 当前 XHS，TikTok / Instagram / YouTube Shorts / Douyin 在路线图
@@ -373,7 +373,7 @@ ph = get_diffusion_model("parametric_hawkes")
 <details>
 <summary><b>沙盘</b> —— 增量重算支持"如果换做法"</summary>
 
-场景会话保留状态，用户可以迭代：「预算从 10 万改成 15 万，ROI 怎么变？」。只有预算变时不重跑全 agent 模拟；1M agent 池缓存复用；反事实评估用 union 语义在覆盖/未覆盖人群上做 CATE。
+场景会话保留状态，用户可以迭代：「预算从 10 万改成 15 万，ROI 怎么变？」。只有预算变时不重跑全 agent 模拟；agent 池缓存复用；反事实评估用 union 语义在覆盖/未覆盖人群上做 CATE。
 </details>
 
 ---

@@ -18,9 +18,9 @@ Implementations:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Any, Iterable
-
+from typing import Any
 
 DEFAULT_EVENT_TYPES = ("impression", "like", "comment", "share", "save", "conversion")
 
@@ -104,7 +104,7 @@ class DiffusionModel(ABC):
 
     @classmethod
     @abstractmethod
-    def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> "DiffusionModel":
+    def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> DiffusionModel:
         """Load pretrained weights or raise :class:`FileNotFoundError`."""
 
     def describe(self) -> dict[str, Any]:

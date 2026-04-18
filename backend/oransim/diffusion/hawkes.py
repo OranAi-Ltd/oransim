@@ -25,16 +25,16 @@ from __future__ import annotations
 
 import math
 import pickle
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from random import Random
-from typing import Any, Iterable
+from typing import Any
 
 from .base import (
     DiffusionConfig,
     DiffusionForecast,
     DiffusionModel,
-    DEFAULT_EVENT_TYPES,
 )
 
 
@@ -75,9 +75,7 @@ class ParametricHawkes(DiffusionModel):
     def _event_type_idx(self, name: str) -> int:
         return self.config.event_types.index(name)
 
-    def _intensity(
-        self, t: float, history: list[tuple[float, int]], k: int
-    ) -> float:
+    def _intensity(self, t: float, history: list[tuple[float, int]], k: int) -> float:
         """Compute ``lambda_k(t)`` given the history of observed events."""
         s = self.mu[k]
         for ti, ki in history:
@@ -96,9 +94,7 @@ class ParametricHawkes(DiffusionModel):
         K = len(self.config.event_types)
         horizon_min = float(self.config.horizon_days * 24 * 60)
 
-        history: list[tuple[float, int]] = [
-            (t, self._event_type_idx(n)) for t, n in seed_events
-        ]
+        history: list[tuple[float, int]] = [(t, self._event_type_idx(n)) for t, n in seed_events]
         timeline: list[tuple[float, str, float]] = []
 
         t = max((h[0] for h in history), default=0.0)
@@ -108,11 +104,7 @@ class ParametricHawkes(DiffusionModel):
         max_iters = 20_000
         max_events = 2_000
         iters = 0
-        while (
-            t < horizon_min
-            and iters < max_iters
-            and len(timeline) < max_events
-        ):
+        while t < horizon_min and iters < max_iters and len(timeline) < max_events:
             iters += 1
             # upper bound on total intensity for thinning
             lambda_bar = sum(self._intensity(t + 1e-6, history, k) for k in range(K))
@@ -205,8 +197,10 @@ class ParametricHawkes(DiffusionModel):
                 continue
             for k in range(K):
                 # integral of alpha[kj, k] * exp(-beta[k] * (t - tj)) over (tj, T)
-                comp += self.alpha[kj][k] * (1.0 - math.exp(-self.beta[k] * (T - tj))) / max(
-                    1e-9, self.beta[k]
+                comp += (
+                    self.alpha[kj][k]
+                    * (1.0 - math.exp(-self.beta[k] * (T - tj)))
+                    / max(1e-9, self.beta[k])
                 )
         return float(log_sum - comp)
 
@@ -262,7 +256,7 @@ class ParametricHawkes(DiffusionModel):
             )
 
     @classmethod
-    def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> "ParametricHawkes":
+    def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> ParametricHawkes:
         if path is None:
             raise FileNotFoundError(
                 "No pretrained ParametricHawkes weights in v0.1.0-alpha.\n"

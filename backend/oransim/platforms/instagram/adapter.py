@@ -92,13 +92,13 @@ class InstagramAdapter(PlatformAdapter):
             "clicks": curves["clicks"] * duration_retention,
             "conversions": curves["conversions"] * duration_retention,
             "factors": {
-                "cpm_usd":              cfg.cpm_usd,
-                "duration_retention":   round(duration_retention, 3),
+                "cpm_usd": cfg.cpm_usd,
+                "duration_retention": round(duration_retention, 3),
                 "trending_audio_boost": audio_boost,
                 "effective_impr_ratio": curves["effective_impr_ratio"],
-                "ctr_decay":            curves["ctr_decay"],
-                "cvr_decay":            curves["cvr_decay"],
-                "cold_start_days":      cfg.cold_start_days,
+                "ctr_decay": curves["ctr_decay"],
+                "cvr_decay": curves["cvr_decay"],
+                "cold_start_days": cfg.cold_start_days,
             },
         }
 

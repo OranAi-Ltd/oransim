@@ -28,11 +28,11 @@ Pick via registry::
 
 from .base import (
     PopulationSynthesizer,
-    SynthesizerConfig,
     SynthesizedPopulation,
+    SynthesizerConfig,
 )
-from .ipf import IPFSynthesizer, IPFConfig
-from .bayes_net import BayesianNetworkSynthesizer, BayesianNetworkConfig
+from .bayes_net import BayesianNetworkConfig, BayesianNetworkSynthesizer
+from .ipf import IPFConfig, IPFSynthesizer
 from .registry import REGISTRY, get_synthesizer, list_synthesizers
 
 __all__ = [

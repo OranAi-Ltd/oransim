@@ -50,8 +50,8 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install ruff black
-      - run: ruff check backend tests --output-format=github || echo "::warning::ruff found issues"
-      - run: black --check backend tests || echo "::warning::black would reformat files"
+      - run: ruff check backend tests --output-format=github
+      - run: black --check backend tests
 
   desensitization:
     name: vendor-reference gate

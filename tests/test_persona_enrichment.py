@@ -32,12 +32,14 @@ if str(BACKEND) not in sys.path:
 
 def _make_pop(N: int = 50, seed: int = 7):
     from oransim.data.population import generate_population
+
     return generate_population(N=N, seed=seed)
 
 
 def _make_persona(idx: int = 0, seed: int = 7):
     import numpy as np
     from oransim.agents.soul import build_persona
+
     pop = _make_pop(seed=seed)
     rng = np.random.default_rng(seed)
     return build_persona(pop, idx, rng)
@@ -57,11 +59,11 @@ def test_persona_has_archetype_label():
 
 def test_archetype_is_one_of_the_preset_labels():
     from oransim.agents.soul import ARCHETYPE_LABELS
+
     p = _make_persona()
     matched = [lbl for lbl in ARCHETYPE_LABELS if lbl in p.full_card()]
     assert len(matched) == 1, (
-        f"exactly one archetype should match, got {matched}. Card:\n"
-        + p.full_card()
+        f"exactly one archetype should match, got {matched}. Card:\n" + p.full_card()
     )
 
 
@@ -89,8 +91,7 @@ def test_persona_has_anti_anchors():
     card = p.full_card()
     assert "不爱看" in card, (
         "persona_card must include bottom-3 anti-anchors (content types the "
-        "persona would skip) derived from interest-vector bottom dims. Got:\n"
-        + card
+        "persona would skip) derived from interest-vector bottom dims. Got:\n" + card
     )
 
 
@@ -100,9 +101,9 @@ def test_anchors_and_anti_anchors_are_disjoint():
     assert isinstance(p.anchors, list) and len(p.anchors) >= 1
     assert isinstance(p.anti_anchors, list) and len(p.anti_anchors) >= 1
     overlap = set(p.anchors) & set(p.anti_anchors)
-    assert not overlap, (
-        f"anchors {p.anchors} and anti-anchors {p.anti_anchors} overlap on {overlap}"
-    )
+    assert (
+        not overlap
+    ), f"anchors {p.anchors} and anti-anchors {p.anti_anchors} overlap on {overlap}"
 
 
 # ----------------------------------------------------- multi-bullet psych
@@ -141,6 +142,7 @@ def test_existing_fields_preserved():
 def test_soul_agent_pool_still_builds():
     """SoulAgentPool integration — the enriched personas must still serialize."""
     from oransim.agents.soul import SoulAgentPool
+
     pop = _make_pop(N=80, seed=42)
     pool = SoulAgentPool(pop, n=20, seed=42)
     assert len(pool.personas) == 20

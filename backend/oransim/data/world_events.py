@@ -10,17 +10,19 @@ top events with consumer-impact scoring. Cached to disk; refreshable on demand.
 For production: swap LLM curation for real news APIs (NewsAPI / GDELT /
 微博热搜 / Reddit hot / Google Trends).
 """
+
 from __future__ import annotations
-import os, json, time
+
+import json
+import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 CACHE = Path("/tmp/oransim_world.json")
 CACHE_TTL = 6 * 3600  # 6 hours
 
 
-def _read_cache(max_age_sec: int = CACHE_TTL) -> Optional[Dict]:
+def _read_cache(max_age_sec: int = CACHE_TTL) -> dict | None:
     if not CACHE.exists():
         return None
     age = time.time() - CACHE.stat().st_mtime
@@ -32,7 +34,7 @@ def _read_cache(max_age_sec: int = CACHE_TTL) -> Optional[Dict]:
         return None
 
 
-def _write_cache(state: Dict) -> None:
+def _write_cache(state: dict) -> None:
     try:
         CACHE.write_text(json.dumps(state, ensure_ascii=False, indent=2))
     except Exception:
@@ -56,7 +58,7 @@ WORLD_PROMPT = """今天是 {today}（请基于你的常识猜测这一天前后
 {{"events": [{{...}}, ...]}}"""
 
 
-def refresh_world_state(force: bool = False) -> Dict:
+def refresh_world_state(force: bool = False) -> dict:
     """Refresh today's world snapshot. Returns the new state dict."""
     if not force:
         cached = _read_cache()
@@ -77,14 +79,22 @@ def refresh_world_state(force: bool = False) -> Dict:
     # Try LLM curation
     try:
         from ..agents.soul_llm import (
-            llm_available, _http_stream_post, _http_post, _extract_json,
-            MODEL, BASE_URL, API_KEY,
+            API_KEY,
+            BASE_URL,
+            MODEL,
+            _extract_json,
+            _http_stream_post,
+            llm_available,
         )
+
         if llm_available():
             body = {
                 "model": MODEL,
                 "messages": [
-                    {"role": "system", "content": "你是消费洞察分析师。基于常识列举真实近期热门事件。只输出 JSON。"},
+                    {
+                        "role": "system",
+                        "content": "你是消费洞察分析师。基于常识列举真实近期热门事件。只输出 JSON。",
+                    },
                     {"role": "user", "content": WORLD_PROMPT.format(today=today)},
                 ],
                 "temperature": 0.4,
@@ -98,15 +108,20 @@ def refresh_world_state(force: bool = False) -> Dict:
                 state["source"] = f"llm/{MODEL}"
                 state["events"] = events
                 state["avg_consumer_impact"] = round(
-                    sum(e.get("consumer_impact", 0) for e in events) / len(events), 3)
+                    sum(e.get("consumer_impact", 0) for e in events) / len(events), 3
+                )
                 state["total_attention_share"] = round(
-                    sum(e.get("attention_share", 0) for e in events), 3)
+                    sum(e.get("attention_share", 0) for e in events), 3
+                )
                 ai = state["avg_consumer_impact"]
                 state["sentiment"] = (
-                    "viral" if ai > 0.12 else
-                    "positive" if ai > 0.04 else
-                    "crisis" if ai < -0.12 else
-                    "negative" if ai < -0.04 else "neutral"
+                    "viral"
+                    if ai > 0.12
+                    else (
+                        "positive"
+                        if ai > 0.04
+                        else "crisis" if ai < -0.12 else "negative" if ai < -0.04 else "neutral"
+                    )
                 )
     except Exception as e:
         state["error"] = f"{type(e).__name__}: {str(e)[:200]}"
@@ -115,14 +130,14 @@ def refresh_world_state(force: bool = False) -> Dict:
     return state
 
 
-def get_world_state() -> Dict:
+def get_world_state() -> dict:
     cached = _read_cache()
     if cached:
         return cached
     return refresh_world_state()
 
 
-def category_lift(world: Dict, category: str) -> float:
+def category_lift(world: dict, category: str) -> float:
     """How much today's events lift/dampen this consumer category."""
     if not world or not world.get("events"):
         return 1.0

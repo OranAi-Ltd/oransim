@@ -12,14 +12,15 @@ Design:
   - In-flight registry for coalescing
   - Thread-safe (used from ThreadPoolExecutor and asyncio threadpool)
 """
-from __future__ import annotations
-import os
-import hashlib
-import threading
-import time
-from collections import OrderedDict
-from typing import Dict, Callable, Any, Optional
 
+from __future__ import annotations
+
+import hashlib
+import os
+import threading
+from collections import OrderedDict
+from collections.abc import Callable
+from typing import Any
 
 _ENABLED = os.environ.get("DEDUP", "0") in ("1", "true", "True")
 _CACHE_MAX = int(os.environ.get("DEDUP_CACHE_MAX", "5000"))
@@ -28,10 +29,10 @@ _CACHE_MAX = int(os.environ.get("DEDUP_CACHE_MAX", "5000"))
 class _LRU:
     def __init__(self, maxsize: int):
         self.maxsize = maxsize
-        self.d: "OrderedDict[str, Any]" = OrderedDict()
+        self.d: OrderedDict[str, Any] = OrderedDict()
         self.lock = threading.Lock()
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         with self.lock:
             if key in self.d:
                 self.d.move_to_end(key)
@@ -50,7 +51,7 @@ class _LRU:
 
 
 _cache = _LRU(_CACHE_MAX)
-_inflight: Dict[str, "threading.Event"] = {}
+_inflight: dict[str, threading.Event] = {}
 _inflight_lock = threading.Lock()
 _stats = {"hits": 0, "misses": 0, "coalesced": 0, "calls": 0}
 
@@ -59,12 +60,21 @@ def enabled() -> bool:
     return _ENABLED
 
 
-def make_key(persona_card: str, caption: str, platform: str,
-             kol_name: str = "无", visual: str = "", music: str = "",
-             duration: float = 0.0, memory_hint: str = "") -> str:
+def make_key(
+    persona_card: str,
+    caption: str,
+    platform: str,
+    kol_name: str = "无",
+    visual: str = "",
+    music: str = "",
+    duration: float = 0.0,
+    memory_hint: str = "",
+) -> str:
     # memory_hint is inlined in the Stream Memory path and goes into the prompt —
     # forgetting it caused different-memory-state responses to collide in cache.
-    raw = f"{persona_card}|{caption}|{platform}|{kol_name}|{visual}|{music}|{duration}|{memory_hint}"
+    raw = (
+        f"{persona_card}|{caption}|{platform}|{kol_name}|{visual}|{music}|{duration}|{memory_hint}"
+    )
     return hashlib.sha1(raw.encode("utf-8", errors="ignore")).hexdigest()
 
 
@@ -90,7 +100,7 @@ def async_coalesce(key: str):
         return True, ev, None
 
 
-def async_release(key: str, result: Dict):
+def async_release(key: str, result: dict):
     """Leader publishes result + notifies followers."""
     _stats["misses"] += 1
     if isinstance(result, dict) and "_error" not in result:
@@ -101,8 +111,7 @@ def async_release(key: str, result: Dict):
         ev.set()
 
 
-def dedup_call(key: str, factory: Callable[[], Dict],
-               wait_timeout: float = 60.0) -> Dict:
+def dedup_call(key: str, factory: Callable[[], dict], wait_timeout: float = 60.0) -> dict:
     """Call factory(), but coalesce concurrent duplicates and cache results.
 
     Returns a copy of the cached/computed dict so callers can mutate freely.
@@ -144,17 +153,20 @@ def dedup_call(key: str, factory: Callable[[], Dict],
         ev.set()
 
 
-def _freeze(d: Dict) -> Dict:
-    return {k: v for k, v in d.items()
-            if not k.startswith("_batch") and k not in ("persona_id", "persona_oneliner",
-                                                        "persona_card", "source")}
+def _freeze(d: dict) -> dict:
+    return {
+        k: v
+        for k, v in d.items()
+        if not k.startswith("_batch")
+        and k not in ("persona_id", "persona_oneliner", "persona_card", "source")
+    }
 
 
-def _clone(d: Dict) -> Dict:
+def _clone(d: dict) -> dict:
     return dict(d)
 
 
-def dedup_stats() -> Dict:
+def dedup_stats() -> dict:
     total = max(1, _stats["calls"])
     return {
         "enabled": _ENABLED,

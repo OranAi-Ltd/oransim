@@ -3,10 +3,10 @@
 输入：world model 预测（含 P10/P50/P90）+ 场景信息
 输出：2-4 句客户视角的中文结论 + 推荐动作
 """
-from __future__ import annotations
-import json, time
-from typing import Dict, Optional
 
+from __future__ import annotations
+
+import time
 
 VERDICT_SYSTEM = """你是营销效果分析专家。根据给定的预测数据，用 2-4 句中文给客户一个实用结论。
 
@@ -32,10 +32,17 @@ VERDICT_PROMPT = """场景：{scenario}
 用中文 2-4 句给客户结论。"""
 
 
-def generate_verdict(prediction: Dict, scenario_desc: str = "") -> Dict:
+def generate_verdict(prediction: dict, scenario_desc: str = "") -> dict:
     """Return dict with verdict text + latency + cost."""
-    from .soul_llm import (llm_available, _http_stream_post,
-                            MODEL, BASE_URL, API_KEY, estimate_cost_cny)
+    from .soul_llm import (
+        API_KEY,
+        BASE_URL,
+        MODEL,
+        _http_stream_post,
+        estimate_cost_cny,
+        llm_available,
+    )
+
     if not llm_available():
         return _mock_verdict(prediction, scenario_desc)
 
@@ -50,34 +57,38 @@ def generate_verdict(prediction: Dict, scenario_desc: str = "") -> Dict:
         read_p90=prediction.get("_read_rate_p90", 0),
     )
     body = {
-        "model": MODEL, "temperature": 0.4, "max_tokens": 300,
+        "model": MODEL,
+        "temperature": 0.4,
+        "max_tokens": 300,
         "messages": [
             {"role": "system", "content": VERDICT_SYSTEM},
             {"role": "user", "content": prompt},
         ],
     }
-    headers = {"Authorization": f"Bearer {API_KEY}",
-               "Content-Type": "application/json"}
+    headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
     t0 = time.time()
     try:
-        content, usage = _http_stream_post(
-            f"{BASE_URL}/chat/completions", headers, body)
+        content, usage = _http_stream_post(f"{BASE_URL}/chat/completions", headers, body)
         return {
             "verdict": content.strip(),
             "latency_ms": int((time.time() - t0) * 1000),
             "tokens_in": usage.get("prompt_tokens", 0),
             "tokens_out": usage.get("completion_tokens", 0),
-            "cost_cny": round(estimate_cost_cny(
-                usage.get("prompt_tokens", 0),
-                usage.get("completion_tokens", 0)), 4),
+            "cost_cny": round(
+                estimate_cost_cny(usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)),
+                4,
+            ),
             "source": "llm",
         }
     except Exception as e:
-        return {"verdict": f"(LLM 失败, fallback) {_mock_verdict(prediction, scenario_desc)['verdict']}",
-                "source": "fallback", "error": str(e)[:100]}
+        return {
+            "verdict": f"(LLM 失败, fallback) {_mock_verdict(prediction, scenario_desc)['verdict']}",
+            "source": "fallback",
+            "error": str(e)[:100],
+        }
 
 
-def _mock_verdict(prediction: Dict, scenario_desc: str) -> Dict:
+def _mock_verdict(prediction: dict, scenario_desc: str) -> dict:
     """规则模板 fallback."""
     like_rate = prediction.get("_like_rate_p50", 0)
     like_p10 = prediction.get("_like_rate_p10", 0)
@@ -85,17 +96,23 @@ def _mock_verdict(prediction: Dict, scenario_desc: str) -> Dict:
     exp_p50 = prediction.get("exp_p50", 0)
 
     if like_rate > 3:
-        verdict_tone = f"预期 Like 率 {like_rate:.1f}%，属爆款潜力区间（小红书平均 1-2%），"\
-                       f"建议加大预算。最坏情况 {like_p10:.1f}% 也仍高于平均，风险低。"
+        verdict_tone = (
+            f"预期 Like 率 {like_rate:.1f}%，属爆款潜力区间（小红书平均 1-2%），"
+            f"建议加大预算。最坏情况 {like_p10:.1f}% 也仍高于平均，风险低。"
+        )
     elif like_rate > 1:
-        verdict_tone = f"预期 Like 率 {like_rate:.1f}%，达到平均水平。"\
-                       f"80% 概率在 {like_p10:.1f}%-{like_p90:.1f}% 之间，可按计划投放。"
+        verdict_tone = (
+            f"预期 Like 率 {like_rate:.1f}%，达到平均水平。"
+            f"80% 概率在 {like_p10:.1f}%-{like_p90:.1f}% 之间，可按计划投放。"
+        )
     elif like_rate > 0.3:
-        verdict_tone = f"预期 Like 率 {like_rate:.1f}%，低于小红书平均（1-2%），"\
-                       f"建议优化素材后再投。"
+        verdict_tone = (
+            f"预期 Like 率 {like_rate:.1f}%，低于小红书平均（1-2%），" f"建议优化素材后再投。"
+        )
     else:
-        verdict_tone = f"预期 Like 率仅 {like_rate:.1f}%，严重低于平均，"\
-                       f"不建议投放当前素材，建议重新制作。"
+        verdict_tone = (
+            f"预期 Like 率仅 {like_rate:.1f}%，严重低于平均，" f"不建议投放当前素材，建议重新制作。"
+        )
 
     return {
         "verdict": f"{scenario_desc}: 预期曝光 {exp_p50:,.0f} 次。{verdict_tone}",

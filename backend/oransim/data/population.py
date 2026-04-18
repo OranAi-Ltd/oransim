@@ -9,10 +9,12 @@ Produces N virtual users whose marginal distributions roughly match:
 
 Uses lightweight IPF over marginals for realistic-ish joint distribution.
 """
+
 from __future__ import annotations
+
+from dataclasses import dataclass
+
 import numpy as np
-from dataclasses import dataclass, field
-from typing import Dict
 
 # ---- Real-world-ish marginals (2024-2025 data approximations) ----
 
@@ -47,6 +49,7 @@ STATE_DIM = 16
 @dataclass
 class Population:
     """Vectorized population. All arrays shape (N, ...)."""
+
     N: int
     age_idx: np.ndarray
     gender_idx: np.ndarray
@@ -54,13 +57,13 @@ class Population:
     income: np.ndarray
     edu_idx: np.ndarray
     occ_idx: np.ndarray
-    interest: np.ndarray          # (N, 64) unit-norm
-    bigfive: np.ndarray           # (N, 5) in [0,1]
-    platform_activity: np.ndarray # (N, P) use-frequency 0..1
-    state: np.ndarray             # (N, 16) dynamic
+    interest: np.ndarray  # (N, 64) unit-norm
+    bigfive: np.ndarray  # (N, 5) in [0,1]
+    platform_activity: np.ndarray  # (N, P) use-frequency 0..1
+    state: np.ndarray  # (N, 16) dynamic
     seed: int = 42
 
-    def slice(self, idx: np.ndarray) -> "Population":
+    def slice(self, idx: np.ndarray) -> Population:
         return Population(
             N=len(idx),
             age_idx=self.age_idx[idx],
@@ -105,11 +108,11 @@ def generate_population(N: int = 100_000, seed: int = 42) -> Population:
     """IPF-style calibrated mock population."""
     rng = np.random.default_rng(seed)
 
-    age_idx    = _categorical(rng, AGE_PROBS, N)
+    age_idx = _categorical(rng, AGE_PROBS, N)
     gender_idx = _categorical(rng, GENDER_PROBS, N)
-    city_idx   = _categorical(rng, CITY_PROBS, N)
-    edu_idx    = _categorical(rng, EDU_PROBS, N)
-    occ_idx    = _categorical(rng, OCC_PROBS, N)
+    city_idx = _categorical(rng, CITY_PROBS, N)
+    edu_idx = _categorical(rng, EDU_PROBS, N)
+    occ_idx = _categorical(rng, OCC_PROBS, N)
 
     # Income: correlated with city tier + education (not fully independent)
     base_income = rng.uniform(0, 1, N)
@@ -141,22 +144,32 @@ def generate_population(N: int = 100_000, seed: int = 42) -> Population:
     state = rng.normal(0, 0.1, (N, STATE_DIM)).astype(np.float32)
 
     return Population(
-        N=N, age_idx=age_idx, gender_idx=gender_idx, city_idx=city_idx,
-        income=income, edu_idx=edu_idx, occ_idx=occ_idx,
-        interest=interest, bigfive=bigfive,
-        platform_activity=platform_activity, state=state, seed=seed,
+        N=N,
+        age_idx=age_idx,
+        gender_idx=gender_idx,
+        city_idx=city_idx,
+        income=income,
+        edu_idx=edu_idx,
+        occ_idx=occ_idx,
+        interest=interest,
+        bigfive=bigfive,
+        platform_activity=platform_activity,
+        state=state,
+        seed=seed,
     )
 
 
-def marginal_fit_report(pop: Population) -> Dict:
+def marginal_fit_report(pop: Population) -> dict:
     """Return KL-ish divergence between realized and target marginals."""
     report = {}
+
     def _kl(observed, target):
         observed = np.clip(observed, 1e-6, 1)
         target = np.clip(target, 1e-6, 1)
         return float(np.sum(observed * np.log(observed / target)))
-    report["age_kl"]    = _kl(np.bincount(pop.age_idx,    minlength=6)/pop.N, AGE_PROBS)
-    report["gender_kl"] = _kl(np.bincount(pop.gender_idx, minlength=2)/pop.N, GENDER_PROBS)
-    report["city_kl"]   = _kl(np.bincount(pop.city_idx,   minlength=5)/pop.N, CITY_PROBS)
-    report["edu_kl"]    = _kl(np.bincount(pop.edu_idx,    minlength=5)/pop.N, EDU_PROBS)
+
+    report["age_kl"] = _kl(np.bincount(pop.age_idx, minlength=6) / pop.N, AGE_PROBS)
+    report["gender_kl"] = _kl(np.bincount(pop.gender_idx, minlength=2) / pop.N, GENDER_PROBS)
+    report["city_kl"] = _kl(np.bincount(pop.city_idx, minlength=5) / pop.N, CITY_PROBS)
+    report["edu_kl"] = _kl(np.bincount(pop.edu_idx, minlength=5) / pop.N, EDU_PROBS)
     return report

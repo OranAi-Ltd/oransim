@@ -9,47 +9,49 @@ Metrics produced:
   cannibalization        total - unique (wasted duplicate spend)
   incremental_per_plat   per-platform NEW user reach (not seen on earlier plats)
 """
-from __future__ import annotations
-import numpy as np
-from dataclasses import dataclass
-from typing import Dict, List, Tuple
 
-from ..platforms.xhs.world_model_legacy import PlatformWorldModel, AudienceFilter, ImpressionResult
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+import numpy as np
+
 from ..data.creatives import Creative
 from ..data.kols import KOL
+from ..platforms.xhs.world_model_legacy import ImpressionResult, PlatformWorldModel
 
 
 @dataclass
 class CrossPlatformReach:
     total_impressions: float
     unique_reach: int
-    cannibalization: int                  # duplicate exposures
-    exposure_count: np.ndarray            # (N_pop,) times each agent saw the ad
-    per_platform_incremental: Dict[str, int]   # plat → new users on this plat
-    per_platform_duplicate: Dict[str, int]
+    cannibalization: int  # duplicate exposures
+    exposure_count: np.ndarray  # (N_pop,) times each agent saw the ad
+    per_platform_incremental: dict[str, int]  # plat → new users on this plat
+    per_platform_duplicate: dict[str, int]
     max_frequency: int
-    avg_frequency: float                  # mean exposures for reached users
+    avg_frequency: float  # mean exposures for reached users
 
 
 def simulate_cross_platform(
     wm: PlatformWorldModel,
     creative: Creative,
-    platform_alloc: Dict[str, float],
+    platform_alloc: dict[str, float],
     total_budget: float,
     pop_size: int,
     audience_filter=None,
-    kol_per_platform: Dict[str, KOL] = None,
+    kol_per_platform: dict[str, KOL] = None,
     seed: int = 0,
-) -> Tuple[Dict[str, ImpressionResult], CrossPlatformReach]:
+) -> tuple[dict[str, ImpressionResult], CrossPlatformReach]:
     """Run impression simulation sequentially per platform; track cumulative reach.
 
     Returns per-platform impression results (unchanged from single-platform) plus
     cross-platform reach metrics.
     """
-    per_platform: Dict[str, ImpressionResult] = {}
+    per_platform: dict[str, ImpressionResult] = {}
     exposure_count = np.zeros(pop_size, dtype=np.int32)
-    per_platform_incremental: Dict[str, int] = {}
-    per_platform_duplicate: Dict[str, int] = {}
+    per_platform_incremental: dict[str, int] = {}
+    per_platform_duplicate: dict[str, int] = {}
 
     seen_before = np.zeros(pop_size, dtype=bool)
     for plat, frac in platform_alloc.items():
@@ -58,8 +60,11 @@ def simulate_cross_platform(
         budget = total_budget * frac
         kol = (kol_per_platform or {}).get(plat)
         imp = wm.simulate_impression(
-            creative, plat, budget,
-            audience_filter=audience_filter, kol=kol,
+            creative,
+            plat,
+            budget,
+            audience_filter=audience_filter,
+            kol=kol,
             rng_seed=seed * 1000 + hash(plat) % 1000,
         )
         per_platform[plat] = imp
@@ -92,8 +97,9 @@ def simulate_cross_platform(
     )
 
 
-def fatigue_lift(exposure_count: np.ndarray, agent_idx: np.ndarray,
-                 halflife: float = 2.0) -> np.ndarray:
+def fatigue_lift(
+    exposure_count: np.ndarray, agent_idx: np.ndarray, halflife: float = 2.0
+) -> np.ndarray:
     """Multiplier to click_logit: 1st exposure = 1.0, 2nd = 0.7, 3rd = 0.5 ...
     Returns (len(agent_idx),) array of multipliers in (0, 1]."""
     freq = exposure_count[agent_idx].astype(np.float32)

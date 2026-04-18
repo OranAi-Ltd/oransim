@@ -14,9 +14,9 @@ Implementations:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Any, Iterable
-
+from typing import Any
 
 KPI_NAMES = ("impressions", "clicks", "conversions", "revenue")
 DEFAULT_QUANTILES = (0.35, 0.50, 0.65)
@@ -96,7 +96,7 @@ class WorldModel(ABC):
 
     @classmethod
     @abstractmethod
-    def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> "WorldModel":
+    def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> WorldModel:
         """Load a pretrained checkpoint.
 
         If ``path`` is ``None``, implementations may try the default checkpoint

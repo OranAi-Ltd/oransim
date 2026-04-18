@@ -14,18 +14,21 @@ Ogata recurrence:
   S(t+Δt) = S(t) · exp(-β·Δt) + new_impulses
   λ(t)    = μ(t) + branching · A · S(t)
 """
-from __future__ import annotations
-import numpy as np
-from dataclasses import dataclass
-from typing import Dict, List, Optional
 
-from ..data.population import Population
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+import numpy as np
+
 from ..agents.statistical import OutcomeBatch
+from ..data.population import Population
 from ..platforms.xhs.world_model_legacy import ImpressionResult
 
-
-N_AGE = 6; N_GENDER = 2; N_CITY = 5
-N_SEG = N_AGE * N_GENDER * N_CITY   # 60
+N_AGE = 6
+N_GENDER = 2
+N_CITY = 5
+N_SEG = N_AGE * N_GENDER * N_CITY  # 60
 
 
 def _seg_id(age_idx: np.ndarray, gender_idx: np.ndarray, city_idx: np.ndarray) -> np.ndarray:
@@ -62,18 +65,17 @@ def build_influence_matrix(homophily: float = 3.0, cross_weight: float = 0.15) -
 class HawkesResult:
     days: int
     dt: float
-    t_axis: np.ndarray           # (T,) days
-    paid_curve: np.ndarray        # (T,) from budget (exogenous μ)
-    organic_curve: np.ndarray     # (T,) secondary from Hawkes
-    total_curve: np.ndarray       # (T,)
-    seg_curves: np.ndarray        # (N_SEG, T) decomposed
-    branching_ratio: float        # effective reproduction number (like R0)
-    peak_day: float               # day index of peak organic rate
+    t_axis: np.ndarray  # (T,) days
+    paid_curve: np.ndarray  # (T,) from budget (exogenous μ)
+    organic_curve: np.ndarray  # (T,) secondary from Hawkes
+    total_curve: np.ndarray  # (T,)
+    seg_curves: np.ndarray  # (N_SEG, T) decomposed
+    branching_ratio: float  # effective reproduction number (like R0)
+    peak_day: float  # day index of peak organic rate
 
 
 class HawkesSimulator:
-    def __init__(self, population: Population, beta: float = 0.9,
-                 branching: float = 0.35):
+    def __init__(self, population: Population, beta: float = 0.9, branching: float = 0.35):
         """
         beta       : decay rate per day (0.9 → e-fold ≈ 1.1 day)
         branching  : virality coefficient. <1 sub-critical (decays), >1 explodes.
@@ -82,17 +84,15 @@ class HawkesSimulator:
         self.beta = beta
         self.branching = branching
         self.A = build_influence_matrix()
-        self._seg_cache = _seg_id(population.age_idx,
-                                   population.gender_idx,
-                                   population.city_idx)
+        self._seg_cache = _seg_id(population.age_idx, population.gender_idx, population.city_idx)
 
     def simulate(
         self,
         impression: ImpressionResult,
         outcome: OutcomeBatch,
         days: int = 14,
-        dt: float = 0.25,             # 6-hour tick
-        paid_daily_fraction: Optional[np.ndarray] = None,
+        dt: float = 0.25,  # 6-hour tick
+        paid_daily_fraction: np.ndarray | None = None,
     ) -> HawkesResult:
         """Return paid + organic cumulative + rate curves over `days`."""
         T = int(days / dt) + 1
@@ -102,11 +102,17 @@ class HawkesSimulator:
         idx = impression.agent_idx
         if len(idx) == 0:
             zeros = np.zeros(T, dtype=np.float32)
-            return HawkesResult(days=days, dt=dt, t_axis=t_axis,
-                                paid_curve=zeros, organic_curve=zeros,
-                                total_curve=zeros,
-                                seg_curves=np.zeros((N_SEG, T), dtype=np.float32),
-                                branching_ratio=self.branching, peak_day=0.0)
+            return HawkesResult(
+                days=days,
+                dt=dt,
+                t_axis=t_axis,
+                paid_curve=zeros,
+                organic_curve=zeros,
+                total_curve=zeros,
+                seg_curves=np.zeros((N_SEG, T), dtype=np.float32),
+                branching_ratio=self.branching,
+                peak_day=0.0,
+            )
         segs = self._seg_cache[idx]
         # engagement "mass" per agent = click_prob + 0.5*engage_prob (virality = clicks+shares)
         mass = outcome.click_prob + 0.5 * outcome.engage_prob
@@ -123,12 +129,13 @@ class HawkesSimulator:
         np.add.at(seg_mass_total, segs, mass)
 
         for d in range(days):
-            t_lo = int(d / dt); t_hi = min(int((d+1) / dt), T)
+            t_lo = int(d / dt)
+            t_hi = min(int((d + 1) / dt), T)
             per_tick = paid_daily_fraction[d] / max(t_hi - t_lo, 1)
             mu[:, t_lo:t_hi] += seg_mass_total[:, None] * per_tick
 
         # ---- 2. Ogata-recurrent simulation ----
-        S = np.zeros(N_SEG, dtype=np.float32)   # accumulated excitation
+        S = np.zeros(N_SEG, dtype=np.float32)  # accumulated excitation
         organic_per_tick = np.zeros((N_SEG, T), dtype=np.float32)
         decay = np.exp(-self.beta * dt)
         AT = self.A.T.astype(np.float32)  # influence is "j excites i" → use A^T
@@ -141,7 +148,7 @@ class HawkesSimulator:
             new_impulse = mu[:, t] + organic_per_tick[:, t]
             S = S * decay + new_impulse
 
-        paid_curve = mu.sum(axis=0)                    # per tick rate
+        paid_curve = mu.sum(axis=0)  # per tick rate
         organic_curve = organic_per_tick.sum(axis=0)
         total_curve = paid_curve + organic_curve
         seg_curves = mu + organic_per_tick
@@ -153,12 +160,15 @@ class HawkesSimulator:
         # return cumulative daily bins
         # reshape ticks → days
         ticks_per_day = int(1.0 / dt)
+
         def _to_daily(x):
             nd = len(x) // ticks_per_day
-            return x[:nd * ticks_per_day].reshape(nd, ticks_per_day).sum(axis=1)
+            return x[: nd * ticks_per_day].reshape(nd, ticks_per_day).sum(axis=1)
 
         return HawkesResult(
-            days=days, dt=dt, t_axis=t_axis[:int(days*ticks_per_day)][::ticks_per_day][:days],
+            days=days,
+            dt=dt,
+            t_axis=t_axis[: int(days * ticks_per_day)][::ticks_per_day][:days],
             paid_curve=_to_daily(paid_curve),
             organic_curve=_to_daily(organic_curve),
             total_curve=_to_daily(total_curve),
@@ -168,7 +178,7 @@ class HawkesSimulator:
         )
 
 
-def hawkes_result_to_dict(hr: HawkesResult) -> Dict:
+def hawkes_result_to_dict(hr: HawkesResult) -> dict:
     return {
         "days": hr.days,
         "day_axis": list(range(hr.days)),
@@ -177,6 +187,5 @@ def hawkes_result_to_dict(hr: HawkesResult) -> Dict:
         "total_daily": [round(float(x), 2) for x in hr.total_curve],
         "branching_ratio": hr.branching_ratio,
         "peak_day": hr.peak_day,
-        "organic_share": round(
-            float(hr.organic_curve.sum() / max(hr.total_curve.sum(), 1e-6)), 3),
+        "organic_share": round(float(hr.organic_curve.sum() / max(hr.total_curve.sum(), 1e-6)), 3),
     }

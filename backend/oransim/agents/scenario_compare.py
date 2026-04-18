@@ -10,17 +10,23 @@ Why Wilcoxon (not t-test):
 
 Output: schema T3-A4 row.
 """
+
 from __future__ import annotations
+
 import time
 import uuid
-from typing import Dict, List, Optional, Callable
+from collections.abc import Callable
 
 import numpy as np
 
 
-def compare_scenarios(scenario_a_label: str, scenario_b_label: str,
-                      samples_a: List[Dict], samples_b: List[Dict],
-                      kpi_keys: Optional[List[str]] = None) -> Dict:
+def compare_scenarios(
+    scenario_a_label: str,
+    scenario_b_label: str,
+    samples_a: list[dict],
+    samples_b: list[dict],
+    kpi_keys: list[str] | None = None,
+) -> dict:
     """Compare two scenarios via Wilcoxon signed-rank test.
 
     samples_a / samples_b: list of KPI dicts (e.g. [{roi: 1.2, ctr: 0.013}, ...])
@@ -42,13 +48,13 @@ def compare_scenarios(scenario_a_label: str, scenario_b_label: str,
         # Wilcoxon signed-rank test on paired differences
         try:
             from scipy.stats import wilcoxon
+
             diff = b_vals - a_vals
             if np.allclose(diff, 0):
                 stat, p = 0.0, 1.0
                 test_name = "wilcoxon (zero-diff)"
             else:
-                res = wilcoxon(b_vals, a_vals, alternative="two-sided",
-                               zero_method="zsplit")
+                res = wilcoxon(b_vals, a_vals, alternative="two-sided", zero_method="zsplit")
                 stat = float(res.statistic)
                 p = float(res.pvalue)
                 test_name = "wilcoxon_signed_rank"
@@ -65,27 +71,31 @@ def compare_scenarios(scenario_a_label: str, scenario_b_label: str,
         delta = b_mean - a_mean
         delta_pct = (delta / a_mean * 100) if a_mean else None
 
-        rows.append({
-            "kpi": k,
-            "scenario_a_mean": round(a_mean, 4),
-            "scenario_a_std": round(float(a_vals.std()), 4),
-            "scenario_b_mean": round(b_mean, 4),
-            "scenario_b_std": round(float(b_vals.std()), 4),
-            "delta_absolute": round(delta, 4),
-            "delta_pct": round(delta_pct, 2) if delta_pct is not None else None,
-            "wilcoxon_statistic": round(stat, 3) if stat is not None else None,
-            "p_value": round(p, 4) if p is not None else None,
-            "is_significant_05": bool(p is not None and p < 0.05),
-            "is_significant_01": bool(p is not None and p < 0.01),
-            "test_method": test_name,
-            "n_samples": int(len(a_vals)),
-        })
+        rows.append(
+            {
+                "kpi": k,
+                "scenario_a_mean": round(a_mean, 4),
+                "scenario_a_std": round(float(a_vals.std()), 4),
+                "scenario_b_mean": round(b_mean, 4),
+                "scenario_b_std": round(float(b_vals.std()), 4),
+                "delta_absolute": round(delta, 4),
+                "delta_pct": round(delta_pct, 2) if delta_pct is not None else None,
+                "wilcoxon_statistic": round(stat, 3) if stat is not None else None,
+                "p_value": round(p, 4) if p is not None else None,
+                "is_significant_05": bool(p is not None and p < 0.05),
+                "is_significant_01": bool(p is not None and p < 0.01),
+                "test_method": test_name,
+                "n_samples": int(len(a_vals)),
+            }
+        )
 
     # Recommend scenario
-    sig_b_better = sum(1 for r in rows if r.get("is_significant_05")
-                       and (r.get("delta_pct") or 0) > 0)
-    sig_b_worse = sum(1 for r in rows if r.get("is_significant_05")
-                      and (r.get("delta_pct") or 0) < 0)
+    sig_b_better = sum(
+        1 for r in rows if r.get("is_significant_05") and (r.get("delta_pct") or 0) > 0
+    )
+    sig_b_worse = sum(
+        1 for r in rows if r.get("is_significant_05") and (r.get("delta_pct") or 0) < 0
+    )
     if sig_b_better > sig_b_worse:
         recommended = "B"
         reason = f"B 在 {sig_b_better} 项 KPI 显著优于 A (p<0.05)"
@@ -114,23 +124,27 @@ def _manual_wilcoxon(a: np.ndarray, b: np.ndarray):
     diff = b - a
     nz = diff[diff != 0]
     n = len(nz)
-    if n < 5: return 0.0, 1.0
+    if n < 5:
+        return 0.0, 1.0
     ranks = np.argsort(np.argsort(np.abs(nz))) + 1.0
     W_pos = float(ranks[nz > 0].sum())
     W_neg = float(ranks[nz < 0].sum())
     W = min(W_pos, W_neg)
     mu_W = n * (n + 1) / 4
     sigma_W = (n * (n + 1) * (2 * n + 1) / 24) ** 0.5
-    if sigma_W == 0: return W, 1.0
+    if sigma_W == 0:
+        return W, 1.0
     z = (W - mu_W) / sigma_W
     # 2-sided p ≈ 2 × (1 - Φ(|z|))
     from .content_type_coef import _phi
+
     p = 2 * (1 - _phi(abs(z)))
     return W, max(min(p, 1.0), 0.0)
 
 
-def quick_compare_from_predict(predict_fn: Callable, base_req: Dict,
-                                intervention: Dict, n_samples: int = 10) -> Dict:
+def quick_compare_from_predict(
+    predict_fn: Callable, base_req: dict, intervention: dict, n_samples: int = 10
+) -> dict:
     """Helper: re-run /api/predict N times with different seeds for both scenarios.
 
     predict_fn: a callable that takes a request dict + seed → returns full predict response
@@ -154,5 +168,6 @@ def quick_compare_from_predict(predict_fn: Callable, base_req: Dict,
     return compare_scenarios(
         scenario_a_label="baseline",
         scenario_b_label=f"intervention: {label_b}",
-        samples_a=samples_a, samples_b=samples_b,
+        samples_a=samples_a,
+        samples_b=samples_b,
     )

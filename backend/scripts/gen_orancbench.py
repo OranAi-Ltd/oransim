@@ -19,26 +19,39 @@ import math
 import random
 from pathlib import Path
 
-
 NICHES = [
-    "beauty", "fashion", "food", "electronics", "travel",
-    "parenting", "fitness", "home", "beverage", "pet",
+    "beauty",
+    "fashion",
+    "food",
+    "electronics",
+    "travel",
+    "parenting",
+    "fitness",
+    "home",
+    "beverage",
+    "pet",
 ]
 TIERS = ["nano", "micro", "mid", "macro", "mega"]
 CAPTIONS_EN = {
-    "beauty":      ["Aurora morning serum", "Matte lip restocked", "30-day glow diary"],
-    "fashion":     ["Linen summer capsule", "Autumn coat edit", "Vintage denim revival"],
-    "food":        ["5-minute brunch bowl", "Spice-rack pantry hacks", "No-fry air recipes"],
+    "beauty": ["Aurora morning serum", "Matte lip restocked", "30-day glow diary"],
+    "fashion": ["Linen summer capsule", "Autumn coat edit", "Vintage denim revival"],
+    "food": ["5-minute brunch bowl", "Spice-rack pantry hacks", "No-fry air recipes"],
     "electronics": ["Budget mechanical kb", "Noise-cancel for the gym", "Portable SSD teardown"],
-    "travel":      ["Hidden-gem Chengdu tea", "Off-peak Bali route", "Carry-on packing grid"],
-    "parenting":   ["Sleep-regression rescue", "Weekend craft bundle", "Screen-time that works"],
-    "fitness":     ["Pilates reformer at home", "Marathon base-build", "Recovery stretch flow"],
-    "home":        ["Studio declutter day", "Rental-friendly wall tricks", "Lamp ratio 101"],
-    "beverage":    ["Cold-brew without gear", "Tasting notes decoded", "Low-ABV summer pick"],
-    "pet":         ["Puppy crate week 1", "Enrichment on $10", "Senior-dog mobility plan"],
+    "travel": ["Hidden-gem Chengdu tea", "Off-peak Bali route", "Carry-on packing grid"],
+    "parenting": ["Sleep-regression rescue", "Weekend craft bundle", "Screen-time that works"],
+    "fitness": ["Pilates reformer at home", "Marathon base-build", "Recovery stretch flow"],
+    "home": ["Studio declutter day", "Rental-friendly wall tricks", "Lamp ratio 101"],
+    "beverage": ["Cold-brew without gear", "Tasting notes decoded", "Low-ABV summer pick"],
+    "pet": ["Puppy crate week 1", "Enrichment on $10", "Senior-dog mobility plan"],
 }
 TIER_BOOST = {"nano": 0.8, "micro": 1.0, "mid": 1.4, "macro": 2.1, "mega": 3.2}
-TIER_FAN_MEAN = {"nano": 5_000, "micro": 40_000, "mid": 200_000, "macro": 1_500_000, "mega": 8_000_000}
+TIER_FAN_MEAN = {
+    "nano": 5_000,
+    "micro": 40_000,
+    "mid": 200_000,
+    "macro": 1_500_000,
+    "mega": 8_000_000,
+}
 
 
 def _budget_effect(budget: float) -> float:
@@ -65,9 +78,9 @@ def _synth_ground_truth(budget: float, tier: str, er: float, rng: random.Random)
     revenue = conversions * rng.uniform(80.0, 300.0)
     return {
         "impressions": round(impressions, 1),
-        "clicks":      round(clicks, 1),
+        "clicks": round(clicks, 1),
         "conversions": round(conversions, 1),
-        "revenue":     round(revenue, 2),
+        "revenue": round(revenue, 2),
     }
 
 
@@ -86,17 +99,17 @@ def generate(seed: int, n_easy: int = 20, n_medium: int = 20, n_hard: int = 10) 
         caption = rng.choice(CAPTIONS_EN[niche])
         gt = _synth_ground_truth(budget, tier, er, rng)
         scn = {
-            "scenario_id":         f"ORB-{idx:04d}",
-            "niche":               niche,
-            "platform":            "xhs",
-            "budget":              round(budget, 2),
-            "budget_bucket":       budget_bucket,
-            "kol_tier":            tier,
-            "kol_fan_count":       fan_count,
+            "scenario_id": f"ORB-{idx:04d}",
+            "niche": niche,
+            "platform": "xhs",
+            "budget": round(budget, 2),
+            "budget_bucket": budget_bucket,
+            "kol_tier": tier,
+            "kol_fan_count": fan_count,
             "kol_engagement_rate": round(er, 4),
-            "creative_caption":    caption,
-            "difficulty":          difficulty,
-            "ground_truth":        gt,
+            "creative_caption": caption,
+            "difficulty": difficulty,
+            "ground_truth": gt,
         }
         idx += 1
         return scn
@@ -105,20 +118,32 @@ def generate(seed: int, n_easy: int = 20, n_medium: int = 20, n_hard: int = 10) 
     easy_tiers = ["micro", "mid"]
     for i in range(n_easy):
         scenarios.append(
-            _scenario(rng.choice(easy_niches), rng.choice(easy_tiers),
-                      budget_bucket=rng.choice([1, 2]), difficulty="easy")
+            _scenario(
+                rng.choice(easy_niches),
+                rng.choice(easy_tiers),
+                budget_bucket=rng.choice([1, 2]),
+                difficulty="easy",
+            )
         )
     for i in range(n_medium):
         scenarios.append(
-            _scenario(rng.choice(NICHES), rng.choice(TIERS),
-                      budget_bucket=rng.choice([0, 1, 2, 3]), difficulty="medium")
+            _scenario(
+                rng.choice(NICHES),
+                rng.choice(TIERS),
+                budget_bucket=rng.choice([0, 1, 2, 3]),
+                difficulty="medium",
+            )
         )
     hard_niches = ["pet", "parenting", "home", "fitness"]
     hard_tiers = ["nano", "mega"]
     for i in range(n_hard):
         scenarios.append(
-            _scenario(rng.choice(hard_niches), rng.choice(hard_tiers),
-                      budget_bucket=rng.choice([0, 3]), difficulty="hard")
+            _scenario(
+                rng.choice(hard_niches),
+                rng.choice(hard_tiers),
+                budget_bucket=rng.choice([0, 3]),
+                difficulty="hard",
+            )
         )
     return scenarios
 

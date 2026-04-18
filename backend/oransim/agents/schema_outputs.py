@@ -10,12 +10,12 @@ calls required:
   sensitivity_analysis (tornado)
   report_market_insight (MD)
 """
+
 from __future__ import annotations
+
 import math
 import time
 import uuid
-from collections import Counter
-from typing import Dict, List, Optional, Any
 
 
 def _now_iso() -> str:
@@ -24,19 +24,22 @@ def _now_iso() -> str:
 
 # ---------------- T2-A4 ugc_diffusion_simulation ----------------
 
-def fit_diffusion_curve(lifecycle: Dict) -> Dict:
+
+def fit_diffusion_curve(lifecycle: dict) -> dict:
     """Fit exponential decay on Hawkes lifecycle and extract schema fields."""
     if not lifecycle:
         return {}
     # Real lifecycle fields: total_daily / organic_daily / paid_daily / day_axis
-    reach = (lifecycle.get("total_daily")
-             or lifecycle.get("reach")
-             or lifecycle.get("organic_daily") or [])
+    reach = (
+        lifecycle.get("total_daily")
+        or lifecycle.get("reach")
+        or lifecycle.get("organic_daily")
+        or []
+    )
     if not reach:
         return {}
     reach = list(reach)
-    time_axis = list(lifecycle.get("day_axis") or lifecycle.get("time")
-                     or list(range(len(reach))))
+    time_axis = list(lifecycle.get("day_axis") or lifecycle.get("time") or list(range(len(reach))))
     if not reach:
         return {}
     peak_v = max(reach)
@@ -50,7 +53,7 @@ def fit_diffusion_curve(lifecycle: Dict) -> Dict:
             break
     if half_life is None and len(reach) > 1:
         # Fit ln(y) = a - k*t on post-peak tail; t½ = ln2 / k.
-        tail = reach[reach.index(peak_v):]
+        tail = reach[reach.index(peak_v) :]
         if len(tail) >= 2:
             try:
                 ys = [math.log(max(1.0, v)) for v in tail]
@@ -78,7 +81,8 @@ def fit_diffusion_curve(lifecycle: Dict) -> Dict:
 
 # ---------------- T1-A2 mc_funnel_prediction (A1-A5 five-stage) ----------------
 
-def build_mc_funnel(kpis: Dict, world_model: Optional[Dict] = None) -> Dict:
+
+def build_mc_funnel(kpis: dict, world_model: dict | None = None) -> dict:
     """Five-stage funnel with P25/P50/P75 from world_model quantiles when available."""
     imp = float(kpis.get("impressions", 0) or 0)
     clicks = float(kpis.get("clicks", 0) or 0)
@@ -97,17 +101,21 @@ def build_mc_funnel(kpis: Dict, world_model: Optional[Dict] = None) -> Dict:
         spread = (lr.get("p90", 0) - lr.get("p10", 0)) / max(1e-4, lr.get("p50", 1e-4))
     else:
         spread = 0.45
+
     def band(v):
-        return {"p25": round(v * (1 - spread/2), 1),
-                "p50": round(v, 1),
-                "p75": round(v * (1 + spread/2), 1)}
+        return {
+            "p25": round(v * (1 - spread / 2), 1),
+            "p50": round(v, 1),
+            "p75": round(v * (1 + spread / 2), 1),
+        }
+
     return {
         "prediction_id": f"mc_pred_{uuid.uuid4().hex[:8]}",
         "A1_awareness": band(A1),
-        "A2_interest":  band(A2),
+        "A2_interest": band(A2),
         "A3_engagement": band(A3),
         "A4_conversion": band(A4),
-        "A5_loyalty":   band(A5),
+        "A5_loyalty": band(A5),
         "simulation_count": 10,
         "confidence_interval": "50%",
         "spread_pct": round(spread * 100, 1),
@@ -117,7 +125,8 @@ def build_mc_funnel(kpis: Dict, world_model: Optional[Dict] = None) -> Dict:
 
 # ---------------- T1-A1 funnel_beta_fit ----------------
 
-def fit_beta_on_funnel(mc_funnel: Dict) -> List[Dict]:
+
+def fit_beta_on_funnel(mc_funnel: dict) -> list[dict]:
     """Back out Beta(α,β) per funnel transition from P25/P50/P75 spread.
     Uses method-of-moments: α = μ²(1-μ)/σ² - μ, β = α(1-μ)/μ."""
     transitions = [
@@ -135,32 +144,35 @@ def fit_beta_on_funnel(mc_funnel: Dict) -> List[Dict]:
         d_lo = mc_funnel.get(down, {}).get("p25", 0) / max(1, u)
         d_hi = mc_funnel.get(down, {}).get("p75", 0) / max(1, u)
         sigma = max(1e-5, (d_hi - d_lo) / 1.35)  # IQR ≈ 1.35σ for normal
-        v = sigma ** 2
+        v = sigma**2
         max_v = mu * (1 - mu)
         if v >= max_v:
             v = max_v * 0.9
         alpha = max(0.1, mu * ((mu * (1 - mu) / v) - 1))
         beta = max(0.1, alpha * (1 - mu) / mu)
-        out.append({
-            "fit_id": f"beta_{name}_{uuid.uuid4().hex[:6]}",
-            "funnel_transition": name,
-            "alpha_param": round(alpha, 3),
-            "beta_param": round(beta, 3),
-            "mean_rate": round(mu, 4),
-            "variance": round(v, 6),
-            "ks_statistic": None,  # needs real sample
-            "ks_pvalue": None,
-            "run_timestamp": _now_iso(),
-        })
+        out.append(
+            {
+                "fit_id": f"beta_{name}_{uuid.uuid4().hex[:6]}",
+                "funnel_transition": name,
+                "alpha_param": round(alpha, 3),
+                "beta_param": round(beta, 3),
+                "mean_rate": round(mu, 4),
+                "variance": round(v, 6),
+                "ks_statistic": None,  # needs real sample
+                "ks_pvalue": None,
+                "run_timestamp": _now_iso(),
+            }
+        )
     return out
 
 
 # ---------------- T3-A1 agent_persona (structured) ----------------
 
-_AGE_BANDS = ["15-24","25-34","35-44","45-54","55-64","65+"]
-_TIER_CODES = ["T1","T1.5","T2","T3","T4"]
+_AGE_BANDS = ["15-24", "25-34", "35-44", "45-54", "55-64", "65+"]
+_TIER_CODES = ["T1", "T1.5", "T2", "T3", "T4"]
 
-def structure_agent_personas(soul_quotes: List[Dict], max_n: int = 50) -> List[Dict]:
+
+def structure_agent_personas(soul_quotes: list[dict], max_n: int = 50) -> list[dict]:
     """Reshape soul_quotes into schema-aligned T3-A1 agent_persona rows."""
     if not soul_quotes:
         return []
@@ -176,53 +188,67 @@ def structure_agent_personas(soul_quotes: List[Dict], max_n: int = 50) -> List[D
         age_range = None
         if age:
             for band in _AGE_BANDS:
-                lo, hi = band.replace("+","-99").split("-")
+                lo, hi = band.replace("+", "-99").split("-")
                 if int(lo) <= age <= int(hi):
-                    age_range = band; break
+                    age_range = band
+                    break
         city = parts[1] if len(parts) > 1 else None
         occ = parts[2] if len(parts) > 2 else None
         intent = float(s.get("purchase_intent_7d") or 0)
         # map to T1 funnel stage
-        if intent >= 0.6: stage = "A4_conversion"
-        elif intent >= 0.35: stage = "A3_engagement"
-        elif intent >= 0.15: stage = "A2_interest"
-        else: stage = "A1_awareness"
-        out.append({
-            "persona_id": f"persona_{s.get('persona_id')}",
-            "persona_name": f"{city or '?'}·{occ or '?'}·{age_range or '?'}",
-            "age_range": age_range,
-            "gender": gender,
-            "city_tier": None,  # backend has it but not in oneliner; left null
-            "city_name": city,
-            "occupation": occ,
-            "interest_tags": [],  # not in oneliner; would need p.interests
-            "consumption_traits": {
-                "purchase_intent_7d": intent,
-                "feel": s.get("feel"),
-                "will_click": bool(s.get("will_click")),
-            },
-            "crowd_segment": stage,
-            "verdict": {
-                "reason": s.get("reason"),
-                "comment": s.get("comment"),
-            },
-            "source": s.get("source", "mock"),
-        })
+        if intent >= 0.6:
+            stage = "A4_conversion"
+        elif intent >= 0.35:
+            stage = "A3_engagement"
+        elif intent >= 0.15:
+            stage = "A2_interest"
+        else:
+            stage = "A1_awareness"
+        out.append(
+            {
+                "persona_id": f"persona_{s.get('persona_id')}",
+                "persona_name": f"{city or '?'}·{occ or '?'}·{age_range or '?'}",
+                "age_range": age_range,
+                "gender": gender,
+                "city_tier": None,  # backend has it but not in oneliner; left null
+                "city_name": city,
+                "occupation": occ,
+                "interest_tags": [],  # not in oneliner; would need p.interests
+                "consumption_traits": {
+                    "purchase_intent_7d": intent,
+                    "feel": s.get("feel"),
+                    "will_click": bool(s.get("will_click")),
+                },
+                "crowd_segment": stage,
+                "verdict": {
+                    "reason": s.get("reason"),
+                    "comment": s.get("comment"),
+                },
+                "source": s.get("source", "mock"),
+            }
+        )
     return out
 
 
 # ---------------- T3-A2 platform_simulation_ts ----------------
 
-def build_platform_ts(lifecycle: Dict, per_platform: Dict,
-                      predicted_sentiment: Optional[Dict] = None) -> List[Dict]:
+
+def build_platform_ts(
+    lifecycle: dict, per_platform: dict, predicted_sentiment: dict | None = None
+) -> list[dict]:
     """Derive daily per-platform post/comment/share/emotion timeseries."""
-    if not lifecycle: return []
-    reach = (lifecycle.get("total_daily") or lifecycle.get("reach")
-             or lifecycle.get("organic_daily") or [])
-    if not reach: return []
+    if not lifecycle:
+        return []
+    reach = (
+        lifecycle.get("total_daily")
+        or lifecycle.get("reach")
+        or lifecycle.get("organic_daily")
+        or []
+    )
+    if not reach:
+        return []
     reach = list(reach)
-    time_axis = list(lifecycle.get("day_axis") or lifecycle.get("time")
-                     or list(range(len(reach))))
+    time_axis = list(lifecycle.get("day_axis") or lifecycle.get("time") or list(range(len(reach))))
     platforms = list(per_platform.keys()) if per_platform else ["default"]
     # Daily platform weight from per_platform KPI ratio (stable across days in current model)
     totals = {p: float(per_platform.get(p, {}).get("impressions", 1) or 1) for p in platforms}
@@ -235,30 +261,33 @@ def build_platform_ts(lifecycle: Dict, per_platform: Dict,
     for di, day_v in enumerate(reach):
         day = int(time_axis[di])
         # emotion attenuation over time (small drift toward neutral)
-        decay = 0.92 ** di
+        decay = 0.92**di
         pos = round(pos0 * decay, 3)
         neg = round(neg0 * (1 - 0.5 * decay), 3)
         for p in platforms:
             posts = int(day_v * p_weight[p] * 0.001)  # 1 post per 1000 reach
             comments = int(posts * 6.5)
             shares = int(posts * 1.8)
-            out.append({
-                "simulation_id": f"sim_{uuid.uuid4().hex[:6]}",
-                "day": day,
-                "platform": p,
-                "post_count": posts,
-                "comment_count": comments,
-                "share_count": shares,
-                "emotion_positive": pos,
-                "emotion_negative": neg,
-                "propagation_pattern": "hawkes_ogata",
-            })
+            out.append(
+                {
+                    "simulation_id": f"sim_{uuid.uuid4().hex[:6]}",
+                    "day": day,
+                    "platform": p,
+                    "post_count": posts,
+                    "comment_count": comments,
+                    "share_count": shares,
+                    "emotion_positive": pos,
+                    "emotion_negative": neg,
+                    "propagation_pattern": "hawkes_ogata",
+                }
+            )
     return out
 
 
 # ---------------- T3-A3 emergent_metrics ----------------
 
-def emergent_metrics(kpis: Dict, world_model: Optional[Dict] = None) -> List[Dict]:
+
+def emergent_metrics(kpis: dict, world_model: dict | None = None) -> list[dict]:
     """Wrap kpis + world_model into schema-aligned metric rows."""
     out = []
     mapping = [
@@ -276,35 +305,38 @@ def emergent_metrics(kpis: Dict, world_model: Optional[Dict] = None) -> List[Dic
             q = wm_q[wm_key]
             baseline = (q.get("p10", v) + q.get("p90", v)) / 2
         dev = abs(v - baseline) / max(1, baseline) if baseline else 0
-        out.append({
-            "metric_id": f"em_{uuid.uuid4().hex[:6]}",
-            "metric_name": name,
-            "metric_value": round(v, 2),
-            "chain_formula_value": round(baseline, 2),
-            "deviation_rate": round(dev, 4),
-            "extraction_method": "aggregation",
-            "confidence": 0.85,
-            "run_timestamp": _now_iso(),
-        })
+        out.append(
+            {
+                "metric_id": f"em_{uuid.uuid4().hex[:6]}",
+                "metric_name": name,
+                "metric_value": round(v, 2),
+                "chain_formula_value": round(baseline, 2),
+                "deviation_rate": round(dev, 4),
+                "extraction_method": "aggregation",
+                "confidence": 0.85,
+                "run_timestamp": _now_iso(),
+            }
+        )
     return out
 
 
 # ---------------- T3-A5 sensitivity_analysis (cheap tornado) ----------------
 
-def sensitivity_tornado(kpis: Dict, extras: Optional[Dict] = None) -> Dict:
+
+def sensitivity_tornado(kpis: dict, extras: dict | None = None) -> dict:
     """±20% perturbation for top parameters using analytic elasticities.
     No re-predict call; uses plausible domain elasticities."""
     base_roi = float(kpis.get("roi", 0) or 0)
     base_gmv = float(kpis.get("revenue", 0) or 0)
     # Domain elasticities (ROI partial derivatives wrt parameter). Tunable.
     elast = {
-        "budget":            -0.30,   # more budget → diminishing returns
-        "kol_tier":          +0.25,   # head KOL lift
-        "platform_mix":      +0.15,
-        "visual_quality":    +0.35,
-        "aigc_score":        -0.45,   # high AIGC penalty
-        "audit_risk":        -0.60,
-        "world_sentiment":   +0.20,
+        "budget": -0.30,  # more budget → diminishing returns
+        "kol_tier": +0.25,  # head KOL lift
+        "platform_mix": +0.15,
+        "visual_quality": +0.35,
+        "aigc_score": -0.45,  # high AIGC penalty
+        "audit_risk": -0.60,
+        "world_sentiment": +0.20,
         "creative_duration": +0.10,
     }
     pert = 0.20
@@ -313,15 +345,17 @@ def sensitivity_tornado(kpis: Dict, extras: Optional[Dict] = None) -> Dict:
         up = base_gmv * (1 + e * pert)
         dn = base_gmv * (1 - e * pert)
         amp = abs(up - dn)
-        rows.append({
-            "parameter_name": name,
-            "perturbation_pct": pert,
-            "base_gmv": round(base_gmv, 1),
-            "perturbed_gmv_up": round(up, 1),
-            "perturbed_gmv_down": round(dn, 1),
-            "gmv_change_amplitude": round(amp, 1),
-            "elasticity": e,
-        })
+        rows.append(
+            {
+                "parameter_name": name,
+                "perturbation_pct": pert,
+                "base_gmv": round(base_gmv, 1),
+                "perturbed_gmv_up": round(up, 1),
+                "perturbed_gmv_down": round(dn, 1),
+                "gmv_change_amplitude": round(amp, 1),
+                "elasticity": e,
+            }
+        )
     rows.sort(key=lambda r: -r["gmv_change_amplitude"])
     for i, r in enumerate(rows):
         r["sensitivity_rank"] = i + 1
@@ -337,10 +371,15 @@ def sensitivity_tornado(kpis: Dict, extras: Optional[Dict] = None) -> Dict:
 
 # ---------------- report_market_insight (MD) ----------------
 
-def render_market_insight_md(scenario_summary: Dict, kpis: Dict,
-                             predicted_sentiment: Optional[Dict],
-                             diffusion: Dict, mc_funnel: Dict,
-                             tornado: Dict) -> Dict:
+
+def render_market_insight_md(
+    scenario_summary: dict,
+    kpis: dict,
+    predicted_sentiment: dict | None,
+    diffusion: dict,
+    mc_funnel: dict,
+    tornado: dict,
+) -> dict:
     """Assemble a Markdown market-insight report from existing outputs."""
     caption = scenario_summary.get("caption", "?")
     budget = scenario_summary.get("total_budget", 0)
@@ -353,7 +392,8 @@ def render_market_insight_md(scenario_summary: Dict, kpis: Dict,
 
     def band_line(stage, label):
         b = mc_funnel.get(stage, {})
-        if not b: return ""
+        if not b:
+            return ""
         return f"- **{label}** ({stage}): P25={b.get('p25'):,.0f} · P50={b.get('p50'):,.0f} · P75={b.get('p75'):,.0f}"
 
     md = f"""# 市场洞察报告 · {caption[:30]}
@@ -400,16 +440,23 @@ def render_market_insight_md(scenario_summary: Dict, kpis: Dict,
 
 # ---------------- Master assembler ----------------
 
-def build_schema_outputs(kpis: Dict, lifecycle: Dict, soul_quotes: List[Dict],
-                         per_platform: Dict, predicted_sentiment: Optional[Dict],
-                         extras: Optional[Dict], scenario_summary: Dict,
-                         competitors: Optional[List[str]] = None,
-                         own_brand: Optional[str] = None,
-                         category: Optional[str] = None,
-                         target_niches: Optional[List[str]] = None,
-                         enable_competitor_llm: bool = False,
-                         enable_kol_ilp: bool = True,
-                         enable_search_elasticity: bool = True) -> Dict:
+
+def build_schema_outputs(
+    kpis: dict,
+    lifecycle: dict,
+    soul_quotes: list[dict],
+    per_platform: dict,
+    predicted_sentiment: dict | None,
+    extras: dict | None,
+    scenario_summary: dict,
+    competitors: list[str] | None = None,
+    own_brand: str | None = None,
+    category: str | None = None,
+    target_niches: list[str] | None = None,
+    enable_competitor_llm: bool = False,
+    enable_kol_ilp: bool = True,
+    enable_search_elasticity: bool = True,
+) -> dict:
     """One-shot: build all schema-aligned outputs from a prediction payload."""
     world_model = (extras or {}).get("world_model") if extras else None
     diffusion = fit_diffusion_curve(lifecycle)
@@ -419,14 +466,16 @@ def build_schema_outputs(kpis: Dict, lifecycle: Dict, soul_quotes: List[Dict],
     plat_ts = build_platform_ts(lifecycle, per_platform, predicted_sentiment)
     em = emergent_metrics(kpis, world_model)
     sens = sensitivity_tornado(kpis, extras)
-    report = render_market_insight_md(scenario_summary, kpis, predicted_sentiment,
-                                      diffusion, mc_funnel, sens)
+    report = render_market_insight_md(
+        scenario_summary, kpis, predicted_sentiment, diffusion, mc_funnel, sens
+    )
 
     # T1-A3 competitor ROI (LLM, opt-in — user must pass competitors list)
     competitor_roi = None
     if enable_competitor_llm and competitors:
         try:
             from .competitor_roi import estimate_competitor_roi
+
             platforms = list((scenario_summary.get("platform_alloc") or {}).keys()) or ["xhs"]
             competitor_roi = estimate_competitor_roi(
                 own_brand=own_brand or "本品牌",
@@ -444,6 +493,7 @@ def build_schema_outputs(kpis: Dict, lifecycle: Dict, soul_quotes: List[Dict],
     if enable_kol_ilp:
         try:
             from .kol_optimizer import optimize_kol_mix, reinvest_ranking
+
             budget = float(scenario_summary.get("total_budget") or 50000)
             kol_mix = optimize_kol_mix(
                 total_budget=budget,
@@ -459,8 +509,10 @@ def build_schema_outputs(kpis: Dict, lifecycle: Dict, soul_quotes: List[Dict],
     if enable_search_elasticity:
         try:
             from .search_elasticity import compute_elasticity
-            search_elast = compute_elasticity(lifecycle=lifecycle,
-                                              brand_id=own_brand or "brand_mvp")
+
+            search_elast = compute_elasticity(
+                lifecycle=lifecycle, brand_id=own_brand or "brand_mvp"
+            )
         except Exception as e:
             search_elast = {"_error": str(e)}
 
@@ -468,6 +520,7 @@ def build_schema_outputs(kpis: Dict, lifecycle: Dict, soul_quotes: List[Dict],
     kol_match = None
     try:
         from .kol_content_match import match_kol_content
+
         kol_match = match_kol_content(
             own_brand=own_brand or "本品牌",
             category=category or "通用",
@@ -483,9 +536,18 @@ def build_schema_outputs(kpis: Dict, lifecycle: Dict, soul_quotes: List[Dict],
     tag_lift = None
     try:
         from .tag_lift import compute_tag_lift
+
         # Map English niche keys to Chinese (tag_lift uses Chinese labels)
-        niche_map = {"beauty":"美妆","mom":"母婴","tech":"数码","food":"美食",
-                     "fashion":"穿搭","fitness":"健身","finance":"理财","travel":"旅行"}
+        niche_map = {
+            "beauty": "美妆",
+            "mom": "母婴",
+            "tech": "数码",
+            "food": "美食",
+            "fashion": "穿搭",
+            "fitness": "健身",
+            "finance": "理财",
+            "travel": "旅行",
+        }
         target_zh = None
         if target_niches:
             for n in target_niches:
@@ -499,8 +561,17 @@ def build_schema_outputs(kpis: Dict, lifecycle: Dict, soul_quotes: List[Dict],
     content_type_coef = None
     try:
         from .content_type_coef import compute_content_type_coefficients
-        niche_map = {"beauty":"美妆","mom":"母婴","tech":"数码","food":"美食",
-                     "fashion":"穿搭","fitness":"健身","finance":"理财","travel":"旅行"}
+
+        niche_map = {
+            "beauty": "美妆",
+            "mom": "母婴",
+            "tech": "数码",
+            "food": "美食",
+            "fashion": "穿搭",
+            "fitness": "健身",
+            "finance": "理财",
+            "travel": "旅行",
+        }
         target_zh = None
         if target_niches:
             for n in target_niches:
@@ -514,11 +585,15 @@ def build_schema_outputs(kpis: Dict, lifecycle: Dict, soul_quotes: List[Dict],
     scenario_comp = None
     try:
         from .scenario_compare import compare_scenarios
+
         # Use sensitivity tornado samples as a proxy paired comparison
         # (baseline KPI vs +20% budget perturbation prediction)
         if sens and sens.get("parameters"):
-            base_kpi = {"roi": kpis.get("roi", 0), "ctr": kpis.get("ctr", 0),
-                        "cvr": kpis.get("cvr", 0)}
+            base_kpi = {
+                "roi": kpis.get("roi", 0),
+                "ctr": kpis.get("ctr", 0),
+                "cvr": kpis.get("cvr", 0),
+            }
             # Synthesize 8 paired samples from sensitivity (one per param ±20%)
             samples_a, samples_b = [], []
             for p in sens["parameters"][:8]:
@@ -526,8 +601,8 @@ def build_schema_outputs(kpis: Dict, lifecycle: Dict, soul_quotes: List[Dict],
                 samples_a.append({"roi": base_kpi["roi"]})
                 samples_b.append({"roi": up})
             scenario_comp = compare_scenarios(
-                "baseline", "intervention_avg",
-                samples_a, samples_b, kpi_keys=["roi"])
+                "baseline", "intervention_avg", samples_a, samples_b, kpi_keys=["roi"]
+            )
     except Exception as e:
         scenario_comp = {"_error": str(e)}
 

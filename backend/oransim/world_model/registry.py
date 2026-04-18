@@ -7,7 +7,8 @@ PyTorch is not installed.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from .base import WorldModel
 
@@ -52,9 +53,7 @@ def get_world_model(name: str, **kwargs: Any) -> WorldModel:
     try:
         factory = REGISTRY[name]
     except KeyError:
-        raise KeyError(
-            f"Unknown world model '{name}'. Available: {sorted(REGISTRY)}"
-        ) from None
+        raise KeyError(f"Unknown world model '{name}'. Available: {sorted(REGISTRY)}") from None
     cls = factory()
     return cls(**kwargs)
 

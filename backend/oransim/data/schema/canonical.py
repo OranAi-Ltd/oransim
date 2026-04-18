@@ -14,10 +14,7 @@ the major number (v1 → v2) and ship a migration. Minor additions
 
 from __future__ import annotations
 
-from typing import Optional
-
 from pydantic import BaseModel, ConfigDict, Field
-
 
 SCHEMA_VERSION = "1.1"
 
@@ -47,7 +44,7 @@ class CanonicalFanProfile(BaseModel):
     region_labels: list[str] = Field(default_factory=list)
 
     # Income tertile: [low, mid, high]; optional, often unavailable
-    income_dist: Optional[list[float]] = None
+    income_dist: list[float] | None = None
 
     # Niche / interest affinity (scores, not a distribution — each niche
     # independently in [0, 1])
@@ -64,19 +61,19 @@ class CanonicalKOL(BaseModel):
 
     kol_id: str
     nickname: str
-    platform: str           # "xhs" | "tiktok" | "instagram" | ...
-    niche: str              # beauty | fashion | food | ...
-    tier: str               # nano | micro | mid | macro | mega
+    platform: str  # "xhs" | "tiktok" | "instagram" | ...
+    niche: str  # beauty | fashion | food | ...
+    tier: str  # nano | micro | mid | macro | mega
     fan_count: int
-    avg_engagement_rate: float   # share of fans interacting on a typical post
-    region: Optional[str] = None
+    avg_engagement_rate: float  # share of fans interacting on a typical post
+    region: str | None = None
 
     # Optional enrichments — providers may skip these
-    joined_year: Optional[int] = None
-    verified: Optional[bool] = None
-    average_views_per_post: Optional[float] = None
-    avg_posting_interval_days: Optional[float] = None
-    fan_profile: Optional[CanonicalFanProfile] = None
+    joined_year: int | None = None
+    verified: bool | None = None
+    average_views_per_post: float | None = None
+    avg_posting_interval_days: float | None = None
+    fan_profile: CanonicalFanProfile | None = None
     custom_metadata: dict[str, str] = Field(default_factory=dict)
 
     schema_version: str = SCHEMA_VERSION
@@ -92,7 +89,7 @@ class CanonicalNoteMetrics(BaseModel):
     comments: int = 0
     shares: int = 0
     saves: int = 0
-    engagement_rate: Optional[float] = None
+    engagement_rate: float | None = None
 
 
 class CanonicalNote(BaseModel):
@@ -107,19 +104,19 @@ class CanonicalNote(BaseModel):
 
     # Text content (may be empty for image/video-only posts)
     text: str = ""
-    text_language: str = "zh"       # ISO-639
+    text_language: str = "zh"  # ISO-639
 
     # Creative metadata
     media_types: list[str] = Field(default_factory=list)  # ["image", "video", "text"]
-    duration_sec: Optional[float] = None                   # for video/audio
+    duration_sec: float | None = None  # for video/audio
     tags: list[str] = Field(default_factory=list)
 
     # Engagement
     metrics: CanonicalNoteMetrics = Field(default_factory=CanonicalNoteMetrics)
 
     # Temporal
-    publish_day: Optional[int] = None           # days since an arbitrary epoch
-    publish_hour_of_day: Optional[int] = None   # 0-23
+    publish_day: int | None = None  # days since an arbitrary epoch
+    publish_hour_of_day: int | None = None  # 0-23
 
     custom_metadata: dict[str, str] = Field(default_factory=dict)
     schema_version: str = SCHEMA_VERSION
@@ -146,8 +143,8 @@ class CanonicalScenario(BaseModel):
     # Covariates — not under control
     niche: str
     target_audience: dict[str, list] = Field(default_factory=dict)
-    launch_day: Optional[int] = None
-    launch_hour_of_day: Optional[int] = None
+    launch_day: int | None = None
+    launch_hour_of_day: int | None = None
 
     schema_version: str = SCHEMA_VERSION
 

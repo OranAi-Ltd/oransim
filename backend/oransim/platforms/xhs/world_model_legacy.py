@@ -12,34 +12,37 @@ recommendation — score = affinity(content, interest)
                        * algo_diversity_noise
 Then budget controls total impression count; top-scoring agents get impressions.
 """
+
 from __future__ import annotations
-import numpy as np
-from typing import Dict, Optional, List
+
 from dataclasses import dataclass
 
-from ...data.population import Population, PLATFORM_NAMES
+import numpy as np
+
 from ...data.creatives import Creative
-from ...data.platforms import PLATFORMS, budget_to_impressions
 from ...data.kols import KOL
+from ...data.platforms import PLATFORMS, budget_to_impressions
+from ...data.population import PLATFORM_NAMES, Population
 
 
 @dataclass
 class AudienceFilter:
     """Soft targeting: boost weights but don't hard-exclude."""
-    age_buckets: Optional[List[int]] = None    # list of age_idx values to boost
-    gender: Optional[int] = None               # 0=F, 1=M, None=both
-    city_tiers: Optional[List[int]] = None     # list of city_idx to boost
-    interest_keywords: Optional[List[str]] = None  # boost via keyword→emb cosine
-    boost_strength: float = 2.0                # multiplier for matched agents
+
+    age_buckets: list[int] | None = None  # list of age_idx values to boost
+    gender: int | None = None  # 0=F, 1=M, None=both
+    city_tiers: list[int] | None = None  # list of city_idx to boost
+    interest_keywords: list[str] | None = None  # boost via keyword→emb cosine
+    boost_strength: float = 2.0  # multiplier for matched agents
 
 
 @dataclass
 class ImpressionResult:
-    agent_idx: np.ndarray       # agents who got impression
-    weight: np.ndarray          # per-agent score 0..1
+    agent_idx: np.ndarray  # agents who got impression
+    weight: np.ndarray  # per-agent score 0..1
     total_impressions: float
     platform: str
-    score_breakdown: Dict[str, np.ndarray]  # for explainability
+    score_breakdown: dict[str, np.ndarray]  # for explainability
 
 
 class PlatformWorldModel:
@@ -49,7 +52,7 @@ class PlatformWorldModel:
         self.pop = population
         self.platform_idx = {p: i for i, p in enumerate(PLATFORM_NAMES)}
 
-    def _audience_score(self, flt: Optional[AudienceFilter]) -> np.ndarray:
+    def _audience_score(self, flt: AudienceFilter | None) -> np.ndarray:
         n = self.pop.N
         if flt is None:
             return np.ones(n, dtype=np.float32)
@@ -59,7 +62,7 @@ class PlatformWorldModel:
             m = np.isin(self.pop.age_idx, flt.age_buckets)
             matched |= m
         if flt.gender is not None:
-            matched |= (self.pop.gender_idx == flt.gender)
+            matched |= self.pop.gender_idx == flt.gender
         if flt.city_tiers is not None:
             matched |= np.isin(self.pop.city_idx, flt.city_tiers)
         if matched.any():
@@ -71,8 +74,8 @@ class PlatformWorldModel:
         creative: Creative,
         platform: str,
         budget_cny: float,
-        audience_filter: Optional[AudienceFilter] = None,
-        kol: Optional[KOL] = None,
+        audience_filter: AudienceFilter | None = None,
+        kol: KOL | None = None,
         rng_seed: int = 0,
     ) -> ImpressionResult:
         rng = np.random.default_rng(rng_seed)
@@ -97,26 +100,29 @@ class PlatformWorldModel:
             # Apply fan profile prior (beauty KOL fans ≠ general population)
             try:
                 from ...data.fan_profile import fan_weight_vector
+
                 fan_w = fan_weight_vector(self.pop, kol.niche)
-                kol_score = kol_score * fan_w   # multiplicative reweight
+                kol_score = kol_score * fan_w  # multiplicative reweight
             except Exception:
                 pass
         else:
             kol_score = np.ones_like(content_score)
 
         # 5. Algorithm diversity noise (exploration)
-        noise = rng.uniform(1 - cfg.algo_diversity * 0.4,
-                            1 + cfg.algo_diversity * 0.4,
-                            size=self.pop.N).astype(np.float32)
+        noise = rng.uniform(
+            1 - cfg.algo_diversity * 0.4, 1 + cfg.algo_diversity * 0.4, size=self.pop.N
+        ).astype(np.float32)
 
         # 6. Platform audience skew (e.g. xhs female+tier1)
         skew = np.ones(self.pop.N, dtype=np.float32)
         if "female_boost" in cfg.audience_skew:
-            skew *= np.where(self.pop.gender_idx == 0,
-                             cfg.audience_skew["female_boost"], 1.0).astype(np.float32)
+            skew *= np.where(
+                self.pop.gender_idx == 0, cfg.audience_skew["female_boost"], 1.0
+            ).astype(np.float32)
         if "tier1_boost" in cfg.audience_skew:
-            skew *= np.where(self.pop.city_idx <= 1,
-                             cfg.audience_skew["tier1_boost"], 1.0).astype(np.float32)
+            skew *= np.where(self.pop.city_idx <= 1, cfg.audience_skew["tier1_boost"], 1.0).astype(
+                np.float32
+            )
 
         final = content_score * plat_score * aud_score * kol_score * noise * skew
 
@@ -127,8 +133,14 @@ class PlatformWorldModel:
             return ImpressionResult(
                 np.array([], dtype=np.int64),
                 np.array([], dtype=np.float32),
-                0.0, platform,
-                {"content": content_score, "platform": plat_score, "audience": aud_score, "kol": kol_score},
+                0.0,
+                platform,
+                {
+                    "content": content_score,
+                    "platform": plat_score,
+                    "audience": aud_score,
+                    "kol": kol_score,
+                },
             )
 
         # top-k selection (no full sort)

@@ -13,7 +13,6 @@ from pathlib import Path
 
 import pytest
 
-
 BACKEND = Path(__file__).parent.parent / "backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
@@ -86,8 +85,12 @@ def test_openai_compat_body_shape():
 
     p = OpenAICompatProvider(base_url="https://gw/v1", api_key="sk")
     body = p.build_body(
-        "SYS", "USER",
-        model="gpt-5.4", temperature=0.3, max_tokens=100, stream=False,
+        "SYS",
+        "USER",
+        model="gpt-5.4",
+        temperature=0.3,
+        max_tokens=100,
+        stream=False,
     )
     assert body["model"] == "gpt-5.4"
     assert body["messages"][0] == {"role": "system", "content": "SYS"}
@@ -97,8 +100,12 @@ def test_openai_compat_body_shape():
     assert "stream" not in body  # only present when True
 
     body_s = p.build_body(
-        "SYS", "USER",
-        model="gpt-5.4", temperature=0.3, max_tokens=100, stream=True,
+        "SYS",
+        "USER",
+        model="gpt-5.4",
+        temperature=0.3,
+        max_tokens=100,
+        stream=True,
     )
     assert body_s["stream"] is True
 
@@ -111,8 +118,11 @@ def test_anthropic_body_shape_and_headers():
 
     p = AnthropicProvider(base_url="https://api.anthropic.com", api_key="sk-ant-xxx")
     body = p.build_body(
-        "SYS", "USER",
-        model="claude-sonnet-4-6", temperature=0.4, max_tokens=128,
+        "SYS",
+        "USER",
+        model="claude-sonnet-4-6",
+        temperature=0.4,
+        max_tokens=128,
     )
     # System is NOT in messages — it's top-level
     assert body["system"] == "SYS"
@@ -140,9 +150,7 @@ def test_gemini_body_shape_and_url():
     # systemInstruction at top level (not a role message)
     assert body["systemInstruction"] == {"parts": [{"text": "SYS"}]}
     # contents uses parts[].text, role user
-    assert body["contents"] == [
-        {"role": "user", "parts": [{"text": "USER"}]}
-    ]
+    assert body["contents"] == [{"role": "user", "parts": [{"text": "USER"}]}]
     # temp + max live under generationConfig
     assert body["generationConfig"]["temperature"] == 0.5
     assert body["generationConfig"]["maxOutputTokens"] == 200
@@ -167,8 +175,11 @@ def test_qwen_dashscope_body_shape():
 
     p = QwenDashScopeProvider(api_key="sk-qwen")
     body = p.build_body(
-        "SYS", "USER",
-        model="qwen-plus", temperature=0.6, max_tokens=150,
+        "SYS",
+        "USER",
+        model="qwen-plus",
+        temperature=0.6,
+        max_tokens=150,
     )
     # native format: input.messages + parameters.*
     assert body["model"] == "qwen-plus"

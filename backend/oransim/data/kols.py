@@ -1,8 +1,10 @@
 """Mock KOL (influencer) library."""
+
 from __future__ import annotations
-import numpy as np
+
 from dataclasses import dataclass
-from typing import List, Dict
+
+import numpy as np
 
 from .creatives import _hash_emb
 
@@ -11,12 +13,12 @@ from .creatives import _hash_emb
 class KOL:
     id: str
     name: str
-    platform: str           # "douyin" / "xhs" / ...
+    platform: str  # "douyin" / "xhs" / ...
     fan_count: int
     interaction_rate: float
     price_cny: int
-    niche: str              # "beauty" / "mom" / "tech" / "food" / ...
-    emb: np.ndarray         # (64,) — audience interest fingerprint
+    niche: str  # "beauty" / "mom" / "tech" / "food" / ...
+    emb: np.ndarray  # (64,) — audience interest fingerprint
 
 
 NICHES = ["beauty", "mom", "tech", "food", "fashion", "fitness", "finance", "travel"]
@@ -32,7 +34,7 @@ NICHE_BIAS_CAPTIONS = {
 }
 
 
-def generate_kol_library(n_per_platform: int = 50, seed: int = 7) -> List[KOL]:
+def generate_kol_library(n_per_platform: int = 50, seed: int = 7) -> list[KOL]:
     rng = np.random.default_rng(seed)
     kols = []
     for platform in ["douyin", "xhs"]:
@@ -44,23 +46,27 @@ def generate_kol_library(n_per_platform: int = 50, seed: int = 7) -> List[KOL]:
             # price ≈ fans * inter * market_rate
             price = int(fans * inter * rng.uniform(2, 8))
             emb = _hash_emb(NICHE_BIAS_CAPTIONS[niche], seed_offset=i)
-            kols.append(KOL(
-                id=f"{platform}_{niche}_{i:03d}",
-                name=f"{niche}达人#{i:03d}",
-                platform=platform,
-                fan_count=fans,
-                interaction_rate=inter,
-                price_cny=price,
-                niche=niche,
-                emb=emb,
-            ))
+            kols.append(
+                KOL(
+                    id=f"{platform}_{niche}_{i:03d}",
+                    name=f"{niche}达人#{i:03d}",
+                    platform=platform,
+                    fan_count=fans,
+                    interaction_rate=inter,
+                    price_cny=price,
+                    niche=niche,
+                    emb=emb,
+                )
+            )
     return kols
 
 
-def pick_kol_by_spec(kols: List[KOL], platform: str, niche: str = None, budget: int = None) -> KOL:
+def pick_kol_by_spec(kols: list[KOL], platform: str, niche: str = None, budget: int = None) -> KOL:
     cand = [k for k in kols if k.platform == platform]
-    if niche: cand = [k for k in cand if k.niche == niche] or cand
-    if budget: cand = [k for k in cand if k.price_cny <= budget] or cand
+    if niche:
+        cand = [k for k in cand if k.niche == niche] or cand
+    if budget:
+        cand = [k for k in cand if k.price_cny <= budget] or cand
     if not cand:
         return kols[0]
     return max(cand, key=lambda k: k.interaction_rate * np.log(k.fan_count))

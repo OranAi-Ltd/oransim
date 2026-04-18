@@ -5,16 +5,17 @@ Given an impression, they output click/skip decision + a natural-language reason
 + a mock comment. In production, replace `SoulAgent.infer()` with a vLLM call
 to Qwen3-4B-Instruct.
 """
+
 from __future__ import annotations
-import numpy as np
+
 import random
 from dataclasses import dataclass, field
-from typing import Dict, List
 
-from ..data.population import Population, AGE_BUCKETS, GENDER, CITY_TIER, OCCUPATION
+import numpy as np
+
 from ..data.creatives import Creative
 from ..data.kols import KOL
-
+from ..data.population import AGE_BUCKETS, CITY_TIER, OCCUPATION, Population
 
 # City name pool per tier for richer personas
 CITY_NAMES = {
@@ -27,22 +28,40 @@ CITY_NAMES = {
 
 
 POSITIVE_REASONS = [
-    "BGM 很抓耳", "封面颜色挺清爽", "达人之前买过 她推的不踩雷",
-    "正好最近在看这个", "有真人试色 / 实拍", "文案挺真诚 不像硬广",
-    "价格看着能接受", "剧情有点意思 想看完",
+    "BGM 很抓耳",
+    "封面颜色挺清爽",
+    "达人之前买过 她推的不踩雷",
+    "正好最近在看这个",
+    "有真人试色 / 实拍",
+    "文案挺真诚 不像硬广",
+    "价格看着能接受",
+    "剧情有点意思 想看完",
 ]
 NEGATIVE_REASONS = [
-    "看封面就像硬广 跳过", "BGM 吵死了", "这个达人以前翻过车 不太信",
-    "价格一看就贵 不是我这个价位", "又是美颜滤镜 真货肯定没这效果",
-    "老年感重 不是我的风格", "Z世代味太重 看不懂", "剧情拉胯",
-    "AIGC 一眼假", "上周刷到过同款 腻了",
+    "看封面就像硬广 跳过",
+    "BGM 吵死了",
+    "这个达人以前翻过车 不太信",
+    "价格一看就贵 不是我这个价位",
+    "又是美颜滤镜 真货肯定没这效果",
+    "老年感重 不是我的风格",
+    "Z世代味太重 看不懂",
+    "剧情拉胯",
+    "AIGC 一眼假",
+    "上周刷到过同款 腻了",
 ]
 COMMENT_TEMPLATES_POS = [
-    "求链接姐妹", "这个色我真的爱", "已下单", "种草了",
-    "看起来不错等降价", "跟我家娃挺配",
+    "求链接姐妹",
+    "这个色我真的爱",
+    "已下单",
+    "种草了",
+    "看起来不错等降价",
+    "跟我家娃挺配",
 ]
 COMMENT_TEMPLATES_NEG = [
-    "广子+1", "又是恰饭", "看封面就跳过", "价格劝退",
+    "广子+1",
+    "又是恰饭",
+    "看封面就跳过",
+    "价格劝退",
 ]
 
 
@@ -51,28 +70,40 @@ COMMENT_TEMPLATES_NEG = [
 # bigfive 向量派生。SYSTEM 提示保持不变（cache 折扣 + JSON schema 稳定）。
 # LLM 拿到的 user message 因此更 grounded，级联出更贴真人的反应。
 
-TAG_POOL: List[str] = [
-    "美妆", "母婴", "数码", "美食", "穿搭", "健身", "理财",
-    "旅行", "宠物", "汽车", "游戏", "读书", "咖啡", "家居",
+TAG_POOL: list[str] = [
+    "美妆",
+    "母婴",
+    "数码",
+    "美食",
+    "穿搭",
+    "健身",
+    "理财",
+    "旅行",
+    "宠物",
+    "汽车",
+    "游戏",
+    "读书",
+    "咖啡",
+    "家居",
 ]
 
 # 8 个 archetype 原型。每个是 tag → 权重字典；对 persona 的 per-tag 激活做
 # 加权打分，最高分对应的 label 写进 persona card。"通用中间派" 作为打分
 # 差距不显著时的 fallback（最低阈值分）。
-ARCHETYPE_ANCHORS: Dict[str, Dict[str, float]] = {
-    "Z 世代美妆早鸟":       {"美妆": 1.0, "穿搭": 0.8, "咖啡": 0.3, "旅行": 0.2},
-    "职场妈妈价格敏感型":   {"母婴": 1.0, "美食": 0.6, "家居": 0.5, "理财": 0.3},
-    "理性科技中产":         {"数码": 1.0, "理财": 0.7, "汽车": 0.5, "读书": 0.3},
-    "健身精致生活派":       {"健身": 1.0, "美食": 0.5, "美妆": 0.3, "旅行": 0.4},
-    "文艺旅行向往者":       {"旅行": 1.0, "读书": 0.7, "咖啡": 0.5, "美食": 0.3},
-    "游戏宅数字土著":       {"游戏": 1.0, "数码": 0.7, "汽车": 0.2},
-    "宠物家居温柔派":       {"宠物": 1.0, "家居": 0.8, "美食": 0.3},
-    "通用中间派":           {},  # fallback
+ARCHETYPE_ANCHORS: dict[str, dict[str, float]] = {
+    "Z 世代美妆早鸟": {"美妆": 1.0, "穿搭": 0.8, "咖啡": 0.3, "旅行": 0.2},
+    "职场妈妈价格敏感型": {"母婴": 1.0, "美食": 0.6, "家居": 0.5, "理财": 0.3},
+    "理性科技中产": {"数码": 1.0, "理财": 0.7, "汽车": 0.5, "读书": 0.3},
+    "健身精致生活派": {"健身": 1.0, "美食": 0.5, "美妆": 0.3, "旅行": 0.4},
+    "文艺旅行向往者": {"旅行": 1.0, "读书": 0.7, "咖啡": 0.5, "美食": 0.3},
+    "游戏宅数字土著": {"游戏": 1.0, "数码": 0.7, "汽车": 0.2},
+    "宠物家居温柔派": {"宠物": 1.0, "家居": 0.8, "美食": 0.3},
+    "通用中间派": {},  # fallback
 }
-ARCHETYPE_LABELS: List[str] = list(ARCHETYPE_ANCHORS.keys())
+ARCHETYPE_LABELS: list[str] = list(ARCHETYPE_ANCHORS.keys())
 
 
-def _tag_activations(interest_vec: np.ndarray, signed: bool = False) -> Dict[str, float]:
+def _tag_activations(interest_vec: np.ndarray, signed: bool = False) -> dict[str, float]:
     """Collapse 64-d interest vector onto TAG_POOL via mod-grouping.
 
     signed=True keeps direction (用于 anchor/anti-anchor 区分偏好 / 反感)；
@@ -84,7 +115,7 @@ def _tag_activations(interest_vec: np.ndarray, signed: bool = False) -> Dict[str
     return activations
 
 
-def _pick_archetype(abs_activations: Dict[str, float]) -> str:
+def _pick_archetype(abs_activations: dict[str, float]) -> str:
     total_act = sum(abs_activations.values())
     # Zero / near-zero vector → 显式 fallback（避免任何 score=0 都排第一名的
     # edge case）。真实 population 不会走这支，但生产数据清洗时有 zero vec 的
@@ -97,7 +128,7 @@ def _pick_archetype(abs_activations: Dict[str, float]) -> str:
     # 压过 tag 少的（游戏宅 3 个 tag），分布上出现 31% vs 0.2% 的不平衡。
     best_label = "通用中间派"
     best_score = -1.0
-    scores: Dict[str, float] = {}
+    scores: dict[str, float] = {}
     for label, weights in ARCHETYPE_ANCHORS.items():
         if not weights:
             continue
@@ -119,16 +150,17 @@ def _pick_archetype(abs_activations: Dict[str, float]) -> str:
     return best_label
 
 
-def _pick_anchors(signed_activations: Dict[str, float], n: int = 3) -> List[str]:
+def _pick_anchors(signed_activations: dict[str, float], n: int = 3) -> list[str]:
     """最想看的 n 个 tag（signed activation 最高）。"""
     return [t for t, _ in sorted(signed_activations.items(), key=lambda kv: -kv[1])[:n]]
 
 
-def _pick_anti_anchors(signed_activations: Dict[str, float], n: int = 3,
-                        exclude: set = None) -> List[str]:
+def _pick_anti_anchors(
+    signed_activations: dict[str, float], n: int = 3, exclude: set = None
+) -> list[str]:
     """最不想看的 n 个 tag（signed activation 最低且不在 exclude 集合里）。"""
     exclude = exclude or set()
-    result: List[str] = []
+    result: list[str] = []
     for t, _ in sorted(signed_activations.items(), key=lambda kv: kv[1]):
         if t in exclude:
             continue
@@ -138,21 +170,31 @@ def _pick_anti_anchors(signed_activations: Dict[str, float], n: int = 3,
     return result
 
 
-def _psych_bullets(bigfive: np.ndarray) -> List[str]:
+def _psych_bullets(bigfive: np.ndarray) -> list[str]:
     """Bigfive 5D → 最多 4 个显著 facets。阈值对称（0.65 / 0.35）避免 Persona
     只显示「情绪稳定」这种单 facet 空洞输出。"""
     O, C, E, A, N = (float(bigfive[i]) for i in range(5))
-    bits: List[str] = []
-    if O > 0.65: bits.append("对新鲜事物特别敏感")
-    elif O < 0.35: bits.append("倾向经过验证的选择")
-    if C > 0.65: bits.append("注重细节 · 反复比价")
-    elif C < 0.35: bits.append("冲动消费多")
-    if E > 0.65: bits.append("爱分享 · 晒图评论频繁")
-    elif E < 0.35: bits.append("沉默围观 · 很少留言")
-    if A > 0.70: bits.append("容易被真诚文案打动")
-    elif A < 0.30: bits.append("对广告本能反感")
-    if N > 0.65: bits.append("容易被焦虑痛点驱动")
-    elif N < 0.35: bits.append("情绪稳定 · 不追热点")
+    bits: list[str] = []
+    if O > 0.65:
+        bits.append("对新鲜事物特别敏感")
+    elif O < 0.35:
+        bits.append("倾向经过验证的选择")
+    if C > 0.65:
+        bits.append("注重细节 · 反复比价")
+    elif C < 0.35:
+        bits.append("冲动消费多")
+    if E > 0.65:
+        bits.append("爱分享 · 晒图评论频繁")
+    elif E < 0.35:
+        bits.append("沉默围观 · 很少留言")
+    if A > 0.70:
+        bits.append("容易被真诚文案打动")
+    elif A < 0.30:
+        bits.append("对广告本能反感")
+    if N > 0.65:
+        bits.append("容易被焦虑痛点驱动")
+    elif N < 0.35:
+        bits.append("情绪稳定 · 不追热点")
     if not bits:
         bits.append("典型佛系 · 信息密度敏感")
     return bits[:4]
@@ -160,23 +202,25 @@ def _psych_bullets(bigfive: np.ndarray) -> List[str]:
 
 @dataclass
 class Persona:
-    id: int                 # population index
+    id: int  # population index
     age: int
     gender: str
     city: str
     city_tier: str
     occupation: str
     income_tier: int
-    interests: List[str]
+    interests: list[str]
     psych: str
     # Phase V · 向量派生的四项 enrichment
     archetype: str = "通用中间派"
-    anchors: List[str] = field(default_factory=list)
-    anti_anchors: List[str] = field(default_factory=list)
-    psych_bullets: List[str] = field(default_factory=list)
+    anchors: list[str] = field(default_factory=list)
+    anti_anchors: list[str] = field(default_factory=list)
+    psych_bullets: list[str] = field(default_factory=list)
 
     def one_liner(self) -> str:
-        return f"{self.age}岁{self.gender}·{self.city}·{self.occupation}·月入分位{self.income_tier}/10"
+        return (
+            f"{self.age}岁{self.gender}·{self.city}·{self.occupation}·月入分位{self.income_tier}/10"
+        )
 
     def full_card(self) -> str:
         lines = [
@@ -196,10 +240,14 @@ def build_persona(pop: Population, idx: int, rng: np.random.Generator) -> Person
     age_bucket = AGE_BUCKETS[pop.age_idx[idx]]
     # map bucket → fake concrete age
     lo, hi = {
-        "15-24":(17,24),"25-34":(25,34),"35-44":(35,44),
-        "45-54":(45,54),"55-64":(55,64),"65+":(65,72)
+        "15-24": (17, 24),
+        "25-34": (25, 34),
+        "35-44": (35, 44),
+        "45-54": (45, 54),
+        "55-64": (55, 64),
+        "65+": (65, 72),
     }[age_bucket]
-    age = int(rng.integers(lo, hi+1))
+    age = int(rng.integers(lo, hi + 1))
     gender = "女" if pop.gender_idx[idx] == 0 else "男"
     city_tier = CITY_TIER[pop.city_idx[idx]]
     city_list = CITY_NAMES.get(pop.city_idx[idx], ["某县城"])
@@ -221,12 +269,18 @@ def build_persona(pop: Population, idx: int, rng: np.random.Generator) -> Person
     # psych from big five（保留原 one-line 语义用于 backward compat）
     bf = pop.bigfive[idx]
     psych_bits = []
-    if bf[0] > 0.7: psych_bits.append("喜欢尝新")
-    if bf[0] < 0.3: psych_bits.append("偏保守")
-    if bf[2] > 0.7: psych_bits.append("外向爱分享")
-    if bf[4] > 0.7: psych_bits.append("容易焦虑")
-    if bf[4] < 0.3: psych_bits.append("情绪稳定")
-    if not psych_bits: psych_bits = ["佛系"]
+    if bf[0] > 0.7:
+        psych_bits.append("喜欢尝新")
+    if bf[0] < 0.3:
+        psych_bits.append("偏保守")
+    if bf[2] > 0.7:
+        psych_bits.append("外向爱分享")
+    if bf[4] > 0.7:
+        psych_bits.append("容易焦虑")
+    if bf[4] < 0.3:
+        psych_bits.append("情绪稳定")
+    if not psych_bits:
+        psych_bits = ["佛系"]
 
     archetype = _pick_archetype(abs_act)
     anchors = _pick_anchors(signed_act, n=3)
@@ -234,11 +288,18 @@ def build_persona(pop: Population, idx: int, rng: np.random.Generator) -> Person
     psych_bullets = _psych_bullets(bf)
 
     return Persona(
-        id=int(idx), age=age, gender=gender, city=city,
-        city_tier=city_tier, occupation=occ,
+        id=int(idx),
+        age=age,
+        gender=gender,
+        city=city,
+        city_tier=city_tier,
+        occupation=occ,
         income_tier=int(pop.income[idx]),
-        interests=interests, psych="，".join(psych_bits),
-        archetype=archetype, anchors=anchors, anti_anchors=anti_anchors,
+        interests=interests,
+        psych="，".join(psych_bits),
+        archetype=archetype,
+        anchors=anchors,
+        anti_anchors=anti_anchors,
         psych_bullets=psych_bullets,
     )
 
@@ -251,7 +312,7 @@ class SoulAgentPool:
         rng = np.random.default_rng(seed)
         # Sample stratified by gender × city tier to get diverse personas
         self.idx = rng.choice(population.N, size=n, replace=False)
-        self.personas: Dict[int, Persona] = {
+        self.personas: dict[int, Persona] = {
             int(i): build_persona(population, int(i), rng) for i in self.idx
         }
 
@@ -263,11 +324,26 @@ class SoulAgentPool:
         kol: KOL | None,
         platform: str,
         rng: random.Random,
-    ) -> Dict:
+    ) -> dict:
         p = self.personas[persona_id]
         # Decide click: sample from click_prob, but soul agent can veto/accept
         base = click_prob
-        if kol and any(n in p.interests for n in [kol.niche, {"beauty":"美妆","mom":"母婴","tech":"数码","food":"美食","fashion":"穿搭","fitness":"健身","finance":"理财","travel":"旅行"}.get(kol.niche,"")]):
+        if kol and any(
+            n in p.interests
+            for n in [
+                kol.niche,
+                {
+                    "beauty": "美妆",
+                    "mom": "母婴",
+                    "tech": "数码",
+                    "food": "美食",
+                    "fashion": "穿搭",
+                    "fitness": "健身",
+                    "finance": "理财",
+                    "travel": "旅行",
+                }.get(kol.niche, ""),
+            ]
+        ):
             base = min(1.0, base * 1.4)
         will_click = rng.random() < base
 
@@ -296,13 +372,13 @@ class SoulAgentPool:
     def infer_batch(
         self,
         creative: Creative,
-        outcome_click_probs: Dict[int, float],
+        outcome_click_probs: dict[int, float],
         kol: KOL | None,
         platform: str,
         n_sample: int = 10,
         seed: int = 7,
         use_llm: bool = False,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Pick n_sample souls and get their reasoning.
 
         If use_llm=True and env LLM_MODE=api with LLM_API_KEY set, calls a real LLM
@@ -316,12 +392,15 @@ class SoulAgentPool:
         chosen = rng.sample(candidates, min(n_sample, len(candidates)))
 
         if use_llm:
-            from .soul_llm import llm_available, soul_infer_llm, estimate_cost_cny
             from concurrent.futures import ThreadPoolExecutor, as_completed
-            from . import llm_dedup, async_pool, stream_memory
+
+            from . import async_pool, llm_dedup, stream_memory
+            from .soul_llm import estimate_cost_cny, llm_available, soul_infer_llm
+
             if llm_available():
                 kol_kwargs = dict(
-                    caption=creative.caption, platform=platform,
+                    caption=creative.caption,
+                    platform=platform,
                     kol_name=kol.name if kol else "无",
                     kol_niche=kol.niche if kol else "通用",
                     kol_fans=kol.fan_count if kol else 0,
@@ -334,9 +413,9 @@ class SoulAgentPool:
                 def _post(pid, r):
                     p = self.personas[pid]
                     if "_error" in r:
-                        r = self.infer_one(pid, creative,
-                                           outcome_click_probs.get(pid, 0.05),
-                                           kol, platform, rng)
+                        r = self.infer_one(
+                            pid, creative, outcome_click_probs.get(pid, 0.05), kol, platform, rng
+                        )
                         r["source"] = "mock-fallback"
                     else:
                         r["source"] = "llm"
@@ -345,7 +424,8 @@ class SoulAgentPool:
                         r["persona_card"] = p.full_card()
                     if stream_memory.enabled():
                         memstore.record_event(
-                            pid, kind="ad_exposure",
+                            pid,
+                            kind="ad_exposure",
                             content=f"看到{platform}广告:{creative.caption[:24]}",
                             metadata={
                                 "platform": platform,
@@ -354,7 +434,9 @@ class SoulAgentPool:
                                 "intent": r.get("purchase_intent_7d"),
                             },
                             profile={
-                                "age": p.age, "gender": p.gender, "city": p.city,
+                                "age": p.age,
+                                "gender": p.gender,
+                                "city": p.city,
                                 "occupation": p.occupation,
                                 "interests": p.interests,
                             },
@@ -390,7 +472,9 @@ class SoulAgentPool:
                         results[0]["_batch_cost_cny"] = round(cost_cny, 4)
                         results[0]["_batch_tokens"] = {"in": total_in, "out": total_out}
                         results[0]["_batch_engine"] = "async_pool"
-                        results[0]["_dedup"] = llm_dedup.dedup_stats() if llm_dedup.enabled() else None
+                        results[0]["_dedup"] = (
+                            llm_dedup.dedup_stats() if llm_dedup.enabled() else None
+                        )
                     return results
 
                 # ── Path B: thread pool + optional dedup ─────────────
@@ -398,9 +482,13 @@ class SoulAgentPool:
                     p = self.personas[pid]
                     if llm_dedup.enabled():
                         key = llm_dedup.make_key(
-                            p.full_card(), creative.caption, platform,
-                            kol_kwargs["kol_name"], creative.visual_style,
-                            creative.music_mood, creative.duration_sec,
+                            p.full_card(),
+                            creative.caption,
+                            platform,
+                            kol_kwargs["kol_name"],
+                            creative.visual_style,
+                            creative.music_mood,
+                            creative.duration_sec,
                         )
                         r = llm_dedup.dedup_call(
                             key,
@@ -410,7 +498,9 @@ class SoulAgentPool:
                         r = soul_infer_llm(persona=p, **kol_kwargs)
                     return _post(pid, r)
 
-                workers = min(int(__import__("os").environ.get("LLM_CONCURRENCY", "15")), len(chosen))
+                workers = min(
+                    int(__import__("os").environ.get("LLM_CONCURRENCY", "15")), len(chosen)
+                )
                 results_map = {}
                 total_in = total_out = 0
                 with ThreadPoolExecutor(max_workers=workers) as ex:

@@ -41,15 +41,14 @@ from typing import Any
 
 import numpy as np
 
-from .base import PopulationSynthesizer, SynthesizerConfig, SynthesizedPopulation
-
+from .base import PopulationSynthesizer, SynthesizedPopulation, SynthesizerConfig
 
 # --- Variable cardinalities (same as oransim.data.population defaults) ---
-N_AGE_BANDS = 6     # 18-24, 25-34, 35-44, 45-54, 55-64, 65+
-N_GENDER    = 2     # F, M
-N_CITY_TIER = 5     # tier-1 .. tier-5
-N_EDU       = 5     # none / junior / high / undergrad / grad
-N_OCC       = 8     # student, prof, tech, ...
+N_AGE_BANDS = 6  # 18-24, 25-34, 35-44, 45-54, 55-64, 65+
+N_GENDER = 2  # F, M
+N_CITY_TIER = 5  # tier-1 .. tier-5
+N_EDU = 5  # none / junior / high / undergrad / grad
+N_OCC = 8  # student, prof, tech, ...
 N_INCOME_TERTILES = 3  # low, mid, high — discretised for BN
 
 
@@ -59,9 +58,7 @@ N_INCOME_TERTILES = 3  # low, mid, high — discretised for BN
 # distributions fairly. Values are rough calibrations against published
 # Chinese demographic aggregates; adjust via config to re-target.
 PRIOR_GENDER = np.array([0.508, 0.492], dtype=np.float32)  # F, M
-PRIOR_AGE = np.array(
-    [0.19, 0.23, 0.21, 0.19, 0.12, 0.06], dtype=np.float32
-)
+PRIOR_AGE = np.array([0.19, 0.23, 0.21, 0.19, 0.12, 0.06], dtype=np.float32)
 PRIOR_CITY_TIER = np.array([0.12, 0.18, 0.22, 0.26, 0.22], dtype=np.float32)
 
 # Conditionals — P(income_tertile | edu_idx): higher education → right-shifted.
@@ -177,23 +174,23 @@ class BayesianNetworkSynthesizer(PopulationSynthesizer):
         cfg = self.config
         rng = random.Random(seed if seed is not None else cfg.seed)
 
-        age       = np.empty(N, dtype=np.int64)
-        gender    = np.empty(N, dtype=np.int64)
-        city      = np.empty(N, dtype=np.int64)
-        edu       = np.empty(N, dtype=np.int64)
-        occ       = np.empty(N, dtype=np.int64)
-        income_t  = np.empty(N, dtype=np.int64)
-        income    = np.empty(N, dtype=np.float32)
+        age = np.empty(N, dtype=np.int64)
+        gender = np.empty(N, dtype=np.int64)
+        city = np.empty(N, dtype=np.int64)
+        edu = np.empty(N, dtype=np.int64)
+        occ = np.empty(N, dtype=np.int64)
+        income_t = np.empty(N, dtype=np.int64)
+        income = np.empty(N, dtype=np.float32)
 
         # Income bands (RMB/month) for each tertile — midpoint sampled uniformly
         income_ranges = [(0.0, 5_000.0), (5_000.0, 15_000.0), (15_000.0, 60_000.0)]
 
         for i in range(N):
             gender[i] = _sample_categorical(rng, cfg.prior_gender)
-            city[i]   = _sample_categorical(rng, cfg.prior_city_tier)
-            age[i]    = _sample_categorical(rng, cfg.cond_age_given_city[city[i]])
-            edu[i]    = _sample_categorical(rng, cfg.cond_edu_given_age[age[i]])
-            occ[i]    = _sample_categorical(rng, cfg.cond_occ_given_edu[edu[i]])
+            city[i] = _sample_categorical(rng, cfg.prior_city_tier)
+            age[i] = _sample_categorical(rng, cfg.cond_age_given_city[city[i]])
+            edu[i] = _sample_categorical(rng, cfg.cond_edu_given_age[age[i]])
+            occ[i] = _sample_categorical(rng, cfg.cond_occ_given_edu[edu[i]])
             income_t[i] = _sample_categorical(rng, cfg.cond_income_given_edu[edu[i]])
             lo, hi = income_ranges[int(income_t[i])]
             income[i] = lo + rng.random() * (hi - lo)
@@ -201,18 +198,18 @@ class BayesianNetworkSynthesizer(PopulationSynthesizer):
         return SynthesizedPopulation(
             N=N,
             attributes={
-                "age_idx":    age,
+                "age_idx": age,
                 "gender_idx": gender,
-                "city_idx":   city,
-                "edu_idx":    edu,
-                "occ_idx":    occ,
-                "income":     income,
+                "city_idx": city,
+                "edu_idx": edu,
+                "occ_idx": occ,
+                "income": income,
                 "income_tertile_idx": income_t,
             },
             latent={
-                "backend":           "bayesian_network",
-                "variable_order":    ["gender", "city_tier", "age", "edu", "occ", "income"],
-                "structure":         "hand-specified",
-                "schema_version":    "1.0",
+                "backend": "bayesian_network",
+                "variable_order": ["gender", "city_tier", "age", "edu", "occ", "income"],
+                "structure": "hand-specified",
+                "schema_version": "1.0",
             },
         )

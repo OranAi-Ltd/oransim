@@ -23,13 +23,17 @@ from pathlib import Path
 def _baseline_predict_factory():
     """Load the shipped LightGBM demo pkl and return a predict callable."""
     import pickle
-    import numpy as np
+
     import lightgbm as lgb
+    import numpy as np
 
     pkl_path = Path("data/models/world_model_demo.pkl")
     if not pkl_path.exists():
-        print(f"[error] baseline pkl not found at {pkl_path}. "
-              "Train: python -m backend.scripts.train_lightgbm_demo", file=sys.stderr)
+        print(
+            f"[error] baseline pkl not found at {pkl_path}. "
+            "Train: python -m backend.scripts.train_lightgbm_demo",
+            file=sys.stderr,
+        )
         sys.exit(3)
     with open(pkl_path, "rb") as f:
         blob = pickle.load(f)
@@ -72,6 +76,7 @@ def _load_custom(spec: str):
     if not func:
         raise ValueError(f"predictor spec must be 'module:function', got: {spec!r}")
     import importlib
+
     mod = importlib.import_module(module)
     return getattr(mod, func)
 
@@ -79,8 +84,11 @@ def _load_custom(spec: str):
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run OrancBench v0.1.")
     parser.add_argument("--data", default="data/benchmarks/orancbench_v0_1.jsonl")
-    parser.add_argument("--predictor", default=None,
-                        help="Python path 'module:function'. Default: LightGBM demo baseline.")
+    parser.add_argument(
+        "--predictor",
+        default=None,
+        help="Python path 'module:function'. Default: LightGBM demo baseline.",
+    )
     parser.add_argument("--out", default=None, help="Write detailed JSON results to this path.")
     args = parser.parse_args(argv)
 
@@ -101,8 +109,8 @@ def main(argv: list[str] | None = None) -> int:
     for group, r in results.items():
         print()
         print(f"  [{group}]  n = {r.n}")
-        print(f"    KPI            |     R²    |   MAPE%")
-        print(f"    ---------------|-----------|--------")
+        print("    KPI            |     R²    |   MAPE%")
+        print("    ---------------|-----------|--------")
         for kpi in ("impressions", "clicks", "conversions", "revenue"):
             print(f"    {kpi:15s}| {r.r2[kpi]:+8.3f}  | {r.mape[kpi]:6.1f}")
 
@@ -111,9 +119,13 @@ def main(argv: list[str] | None = None) -> int:
         out_path.parent.mkdir(parents=True, exist_ok=True)
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(
-                {group: {"n": r.n, "r2": r.r2, "mape": r.mape, "per_scenario": r.per_scenario}
-                 for group, r in results.items()},
-                f, indent=2, ensure_ascii=False,
+                {
+                    group: {"n": r.n, "r2": r.r2, "mape": r.mape, "per_scenario": r.per_scenario}
+                    for group, r in results.items()
+                },
+                f,
+                indent=2,
+                ensure_ascii=False,
             )
         print(f"\n  detailed results → {out_path}")
     return 0

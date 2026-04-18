@@ -10,8 +10,8 @@ See :mod:`oransim.benchmarks.orancbench` for the scenario loader and
 """
 
 from .orancbench import (
-    OrancBenchScenario,
     OrancBenchResult,
+    OrancBenchScenario,
     load_scenarios,
     score_predictions,
 )

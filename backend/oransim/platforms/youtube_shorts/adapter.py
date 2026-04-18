@@ -88,7 +88,11 @@ class YouTubeShortsAdapter(PlatformAdapter):
         curves = apply_budget_curves(
             baseline_impressions=ref_impressions * cfg.search_longtail_factor,
             baseline_clicks=ref_impressions * cfg.base_ctr * cfg.search_longtail_factor,
-            baseline_conversions=ref_impressions * cfg.base_ctr * cfg.base_cvr * cfg.search_longtail_factor * cta_boost,
+            baseline_conversions=ref_impressions
+            * cfg.base_ctr
+            * cfg.base_cvr
+            * cfg.search_longtail_factor
+            * cta_boost,
             budget_ratio=budget / reference_budget,
             config=cfg.budget_curve,
         )
@@ -98,14 +102,14 @@ class YouTubeShortsAdapter(PlatformAdapter):
             "clicks": curves["clicks"] * duration_retention,
             "conversions": curves["conversions"] * duration_retention,
             "factors": {
-                "cpm_usd":                cfg.cpm_usd,
-                "duration_retention":     round(duration_retention, 3),
-                "subscribe_cta_boost":    cta_boost,
+                "cpm_usd": cfg.cpm_usd,
+                "duration_retention": round(duration_retention, 3),
+                "subscribe_cta_boost": cta_boost,
                 "search_longtail_factor": cfg.search_longtail_factor,
-                "effective_impr_ratio":   curves["effective_impr_ratio"],
-                "ctr_decay":              curves["ctr_decay"],
-                "cvr_decay":              curves["cvr_decay"],
-                "cold_start_days":        cfg.cold_start_days,
+                "effective_impr_ratio": curves["effective_impr_ratio"],
+                "ctr_decay": curves["ctr_decay"],
+                "cvr_decay": curves["cvr_decay"],
+                "cold_start_days": cfg.cold_start_days,
             },
         }
 

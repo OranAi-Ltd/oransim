@@ -25,7 +25,6 @@ import os
 import time
 import urllib.error
 import urllib.request
-from typing import Dict
 
 from .llm_providers import get_provider, resolve_provider_name
 from .soul import Persona
@@ -50,28 +49,35 @@ TIMEOUT = float(os.environ.get("LLM_TIMEOUT", "15"))
 # place so callers aren't forced to migrate in one go. They are explicitly
 # OpenAI-compat and will be retired when those modules move to the registry.
 
-def _http_post(url: str, headers: Dict, body: Dict, timeout: float = TIMEOUT) -> Dict:
+
+def _http_post(url: str, headers: dict, body: dict, timeout: float = TIMEOUT) -> dict:
     req = urllib.request.Request(
-        url, data=json.dumps(body).encode("utf-8"),
-        headers=headers, method="POST",
+        url,
+        data=json.dumps(body).encode("utf-8"),
+        headers=headers,
+        method="POST",
     )
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read().decode("utf-8"))
 
 
-def _http_stream_post(url: str, headers: Dict, body: Dict, timeout: float = TIMEOUT):
+def _http_stream_post(url: str, headers: dict, body: dict, timeout: float = TIMEOUT):
     """Stream SSE chunks from an OpenAI-compatible ``/chat/completions?stream=true``.
 
     Returns ``(collected_content, usage_dict)``.
     """
-    body = dict(body); body["stream"] = True
-    headers = dict(headers); headers["Accept"] = "text/event-stream"
+    body = dict(body)
+    body["stream"] = True
+    headers = dict(headers)
+    headers["Accept"] = "text/event-stream"
     req = urllib.request.Request(
-        url, data=json.dumps(body).encode("utf-8"),
-        headers=headers, method="POST",
+        url,
+        data=json.dumps(body).encode("utf-8"),
+        headers=headers,
+        method="POST",
     )
     collected: list[str] = []
-    usage: Dict = {}
+    usage: dict = {}
     with urllib.request.urlopen(req, timeout=timeout) as r:
         for raw in r:
             line = raw.decode("utf-8", errors="ignore").strip()
@@ -148,7 +154,7 @@ def llm_available() -> bool:
     return os.environ.get("LLM_MODE", MODE) == "api" and _provider_key_present()
 
 
-def llm_info() -> Dict:
+def llm_info() -> dict:
     return {
         "mode": os.environ.get("LLM_MODE", MODE),
         "provider": resolve_provider_name(),
@@ -168,14 +174,19 @@ def soul_infer_llm(
     visual: str = "bright",
     music: str = "upbeat",
     duration: float = 15.0,
-) -> Dict:
+) -> dict:
     """Call real LLM for one soul-agent decision."""
     prompt = PROMPT_TEMPLATE.format(
         persona_card=persona.full_card(),
         interests=", ".join(persona.interests),
-        platform=platform, kol_name=kol_name, kol_niche=kol_niche,
+        platform=platform,
+        kol_name=kol_name,
+        kol_niche=kol_niche,
         kol_fans=f"{kol_fans/10000:.1f}万" if kol_fans else "无",
-        caption=caption, visual=visual, music=music, duration=duration,
+        caption=caption,
+        visual=visual,
+        music=music,
+        duration=duration,
     )
     use_stream = os.environ.get("LLM_STREAM", "1") not in ("0", "false", "False")
     provider = get_provider()
@@ -204,39 +215,45 @@ def soul_infer_llm(
         return {"_error": f"{type(e).__name__}: {str(e)[:200]}"}
 
 
-def _extract_json(s: str) -> Dict:
+def _extract_json(s: str) -> dict:
     """Pull the first JSON object out of an LLM response, tolerating code fences / prose."""
     s = s.strip()
     # strip ``` fences
     if s.startswith("```"):
         s = s.strip("`")
-        if s.startswith("json"): s = s[4:]
+        if s.startswith("json"):
+            s = s[4:]
     # find first { and last }
     i, j = s.find("{"), s.rfind("}")
     if i != -1 and j != -1 and j > i:
         try:
-            return json.loads(s[i:j+1])
+            return json.loads(s[i : j + 1])
         except Exception:
             pass
     # fallback: best-effort synthesis
-    return {"will_click": False, "reason": "(parse error) " + s[:40],
-            "comment": "", "feel": "无感", "purchase_intent_7d": 0.1}
+    return {
+        "will_click": False,
+        "reason": "(parse error) " + s[:40],
+        "comment": "",
+        "feel": "无感",
+        "purchase_intent_7d": 0.1,
+    }
 
 
 # Cost estimation table (CNY per 1M tokens, rough as of 2025-2026)
 COST_TABLE_CNY = {
     # model substring → (input_per_1m, output_per_1m)
-    "deepseek-chat":    (1.0,  2.0),       # ¥/M tokens (cache miss)
-    "deepseek-v3":      (1.0,  2.0),
-    "qwen-turbo":       (0.3,  0.6),
-    "qwen-plus":        (2.0,  6.0),
-    "qwen3":            (0.6,  1.2),
-    "gpt-4o-mini":      (1.1,  4.4),       # ~USD0.15/0.60 → CNY
-    "gpt-4o":           (18.0, 72.0),
-    "gpt-5":            (0.7,  5.0),       # OpenAI-compat 实测价 (¥0.7/M in · ¥5/M out)
-    "claude":           (22.0, 110.0),
-    "gemini-2.5-flash": (2.2,  8.8),       # approx USD0.30/1.20 → CNY
-    "gemini-2.5-pro":   (9.0,  36.0),
+    "deepseek-chat": (1.0, 2.0),  # ¥/M tokens (cache miss)
+    "deepseek-v3": (1.0, 2.0),
+    "qwen-turbo": (0.3, 0.6),
+    "qwen-plus": (2.0, 6.0),
+    "qwen3": (0.6, 1.2),
+    "gpt-4o-mini": (1.1, 4.4),  # ~USD0.15/0.60 → CNY
+    "gpt-4o": (18.0, 72.0),
+    "gpt-5": (0.7, 5.0),  # OpenAI-compat 实测价 (¥0.7/M in · ¥5/M out)
+    "claude": (22.0, 110.0),
+    "gemini-2.5-flash": (2.2, 8.8),  # approx USD0.30/1.20 → CNY
+    "gemini-2.5-pro": (9.0, 36.0),
 }
 
 
@@ -244,5 +261,5 @@ def estimate_cost_cny(tokens_in: int, tokens_out: int, model: str = MODEL) -> fl
     model_l = model.lower()
     for k, (pin, pout) in COST_TABLE_CNY.items():
         if k in model_l:
-            return (tokens_in/1_000_000) * pin + (tokens_out/1_000_000) * pout
+            return (tokens_in / 1_000_000) * pin + (tokens_out / 1_000_000) * pout
     return 0.0

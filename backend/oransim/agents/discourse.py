@@ -13,18 +13,17 @@ Beats MiroFish because:
   - MiroFish agents debate, but you can't mathematically intervene on
     collective sentiment. We can (via SCM + do-operator).
 """
+
 from __future__ import annotations
-import json
-import time
-import numpy as np
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
+
+import numpy as np
 
 from ..data.creatives import Creative
 from ..data.kols import KOL
-from .soul import SoulAgentPool, Persona
-
+from .soul import Persona, SoulAgentPool
 
 COMMENT_SYSTEM = """你是社媒用户，刚刚在广告下发评论。根据 persona 和素材内容，写一条真实、口语化、带情绪的评论。只输出 JSON。"""
 
@@ -71,14 +70,14 @@ class CommentVerdict:
 
 @dataclass
 class DiscourseReport:
-    comments: List[CommentVerdict]
+    comments: list[CommentVerdict]
     dominant_sentiment: float
     sentiment_variance: float
-    top_objections: List[str]
-    top_praises: List[str]
+    top_objections: list[str]
+    top_praises: list[str]
     viral_tone: str
-    second_wave_impact: float         # -0.3 .. +0.3, added to click logit
-    source: str                       # "llm" or "mock"
+    second_wave_impact: float  # -0.3 .. +0.3, added to click logit
+    source: str  # "llm" or "mock"
     cost_cny: float
     tokens_in: int
     tokens_out: int
@@ -107,39 +106,57 @@ MOCK_COMMENTS = {
 def _mock_comment_for_persona(p: Persona, creative: Creative, rng) -> CommentVerdict:
     # positive if persona.interests overlaps with creative caption words
     positive_bias = 0.4 if any(i in creative.caption for i in p.interests) else 0.0
-    bucket = "positive" if rng.random() < 0.4 + positive_bias else \
-             "negative" if rng.random() < 0.35 else "neutral"
-    c, s, t, k = MOCK_COMMENTS[bucket][rng.randint(0, len(MOCK_COMMENTS[bucket])-1)]
+    bucket = (
+        "positive"
+        if rng.random() < 0.4 + positive_bias
+        else "negative" if rng.random() < 0.35 else "neutral"
+    )
+    c, s, t, k = MOCK_COMMENTS[bucket][rng.randint(0, len(MOCK_COMMENTS[bucket]) - 1)]
     return CommentVerdict(
-        persona_id=p.id, persona_oneliner=p.one_liner(),
-        comment=c, sentiment=s + rng.uniform(-0.1, 0.1), tone=t, key_signal=k,
+        persona_id=p.id,
+        persona_oneliner=p.one_liner(),
+        comment=c,
+        sentiment=s + rng.uniform(-0.1, 0.1),
+        tone=t,
+        key_signal=k,
         source="mock",
     )
 
 
-def _mock_summary(comments: List[CommentVerdict]) -> DiscourseReport:
+def _mock_summary(comments: list[CommentVerdict]) -> DiscourseReport:
     sent = np.array([c.sentiment for c in comments], dtype=np.float32) if comments else np.zeros(1)
     dom = float(sent.mean()) if comments else 0.0
     var = float(sent.std()) if len(comments) > 1 else 0.0
     pos = [c.comment for c in comments if c.sentiment > 0.3][:3]
     neg = [c.comment for c in comments if c.sentiment < -0.3][:3]
-    viral = ("大家都在求链接" if dom > 0.4 else
-             "评论区吐槽为主" if dom < -0.2 else
-             "路人划过 没啥情绪")
+    viral = (
+        "大家都在求链接" if dom > 0.4 else "评论区吐槽为主" if dom < -0.2 else "路人划过 没啥情绪"
+    )
     return DiscourseReport(
         comments=comments,
-        dominant_sentiment=dom, sentiment_variance=var,
-        top_objections=neg[:3] or ["无突出负面"], top_praises=pos[:3] or ["无突出正面"],
-        viral_tone=viral, second_wave_impact=float(np.clip(dom * 0.25, -0.3, 0.3)),
-        source="mock", cost_cny=0.0, tokens_in=0, tokens_out=0,
+        dominant_sentiment=dom,
+        sentiment_variance=var,
+        top_objections=neg[:3] or ["无突出负面"],
+        top_praises=pos[:3] or ["无突出正面"],
+        viral_tone=viral,
+        second_wave_impact=float(np.clip(dom * 0.25, -0.3, 0.3)),
+        source="mock",
+        cost_cny=0.0,
+        tokens_in=0,
+        tokens_out=0,
     )
 
 
 def simulate_discourse_mock(
-    creative: Creative, kol: Optional[KOL], platform: str,
-    souls: SoulAgentPool, n_commenters: int = 15, seed: int = 7,
+    creative: Creative,
+    kol: KOL | None,
+    platform: str,
+    souls: SoulAgentPool,
+    n_commenters: int = 15,
+    seed: int = 7,
 ) -> DiscourseReport:
     import random
+
     rng = random.Random(seed)
     chosen = rng.sample(list(souls.personas.keys()), min(n_commenters, len(souls.personas)))
     comments = [_mock_comment_for_persona(souls.personas[pid], creative, rng) for pid in chosen]
@@ -147,13 +164,27 @@ def simulate_discourse_mock(
 
 
 def simulate_discourse_llm(
-    creative: Creative, kol: Optional[KOL], platform: str,
-    souls: SoulAgentPool, n_commenters: int = 15, seed: int = 7,
+    creative: Creative,
+    kol: KOL | None,
+    platform: str,
+    souls: SoulAgentPool,
+    n_commenters: int = 15,
+    seed: int = 7,
 ) -> DiscourseReport:
     """LLM version: parallel comments → aggregated summary."""
-    from .soul_llm import (llm_available, _http_stream_post, _extract_json,
-                            MODEL, BASE_URL, API_KEY, estimate_cost_cny)
-    import random, os
+    import os
+    import random
+
+    from .soul_llm import (
+        API_KEY,
+        BASE_URL,
+        MODEL,
+        _extract_json,
+        _http_stream_post,
+        estimate_cost_cny,
+        llm_available,
+    )
+
     if not llm_available():
         return simulate_discourse_mock(creative, kol, platform, souls, n_commenters, seed)
 
@@ -169,53 +200,69 @@ def simulate_discourse_llm(
     def call_one(pid):
         p = souls.personas[pid]
         body = {
-            "model": MODEL, "temperature": 0.8, "max_tokens": 150,
+            "model": MODEL,
+            "temperature": 0.8,
+            "max_tokens": 150,
             "messages": [
                 {"role": "system", "content": COMMENT_SYSTEM},
-                {"role": "user", "content": COMMENT_PROMPT.format(
-                    persona=p.full_card(), caption=creative.caption,
-                    kol=kol_name, platform=platform,
-                )},
+                {
+                    "role": "user",
+                    "content": COMMENT_PROMPT.format(
+                        persona=p.full_card(),
+                        caption=creative.caption,
+                        kol=kol_name,
+                        platform=platform,
+                    ),
+                },
             ],
         }
         try:
-            content, usage = _http_stream_post(
-                f"{BASE_URL}/chat/completions", headers, body)
+            content, usage = _http_stream_post(f"{BASE_URL}/chat/completions", headers, body)
             r = _extract_json(content)
-            return pid, CommentVerdict(
-                persona_id=pid, persona_oneliner=p.one_liner(),
-                comment=r.get("comment", ""),
-                sentiment=float(r.get("sentiment", 0)),
-                tone=r.get("tone", "?"),
-                key_signal=r.get("key_signal", ""),
-                source="llm",
-            ), usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)
+            return (
+                pid,
+                CommentVerdict(
+                    persona_id=pid,
+                    persona_oneliner=p.one_liner(),
+                    comment=r.get("comment", ""),
+                    sentiment=float(r.get("sentiment", 0)),
+                    tone=r.get("tone", "?"),
+                    key_signal=r.get("key_signal", ""),
+                    source="llm",
+                ),
+                usage.get("prompt_tokens", 0),
+                usage.get("completion_tokens", 0),
+            )
         except Exception:
             return pid, _mock_comment_for_persona(p, creative, rng), 0, 0
 
-    comments: List[CommentVerdict] = []
+    comments: list[CommentVerdict] = []
     with ThreadPoolExecutor(max_workers=min(workers, len(chosen))) as ex:
         futs = [ex.submit(call_one, pid) for pid in chosen]
         for f in as_completed(futs):
             pid, cv, t_in, t_out = f.result()
             comments.append(cv)
-            tok_in += t_in; tok_out += t_out
+            tok_in += t_in
+            tok_out += t_out
 
     # Summarize via 1 more LLM call
     summary = None
     if len(comments) >= 3:
         comments_text = "\n".join([f"- [{c.tone}] {c.comment}" for c in comments])
         body = {
-            "model": MODEL, "temperature": 0.3, "max_tokens": 400,
+            "model": MODEL,
+            "temperature": 0.3,
+            "max_tokens": 400,
             "messages": [
                 {"role": "system", "content": SUMMARY_SYSTEM},
-                {"role": "user", "content": SUMMARY_PROMPT.format(
-                    n=len(comments), comments=comments_text)},
+                {
+                    "role": "user",
+                    "content": SUMMARY_PROMPT.format(n=len(comments), comments=comments_text),
+                },
             ],
         }
         try:
-            content, usage = _http_stream_post(
-                f"{BASE_URL}/chat/completions", headers, body)
+            content, usage = _http_stream_post(f"{BASE_URL}/chat/completions", headers, body)
             summary = _extract_json(content)
             tok_in += usage.get("prompt_tokens", 0)
             tok_out += usage.get("completion_tokens", 0)
@@ -230,16 +277,20 @@ def simulate_discourse_llm(
             top_objections=summary.get("top_objections", [])[:3] or ["(无)"],
             top_praises=summary.get("top_praises", [])[:3] or ["(无)"],
             viral_tone=summary.get("viral_tone", "?"),
-            second_wave_impact=float(np.clip(
-                summary.get("expected_second_wave_impact", 0), -0.3, 0.3)),
-            source="llm", cost_cny=estimate_cost_cny(tok_in, tok_out),
-            tokens_in=tok_in, tokens_out=tok_out,
+            second_wave_impact=float(
+                np.clip(summary.get("expected_second_wave_impact", 0), -0.3, 0.3)
+            ),
+            source="llm",
+            cost_cny=estimate_cost_cny(tok_in, tok_out),
+            tokens_in=tok_in,
+            tokens_out=tok_out,
         )
     # fallback summarization
     rep = _mock_summary(comments)
     rep.source = "llm+mock_summary"
     rep.cost_cny = estimate_cost_cny(tok_in, tok_out)
-    rep.tokens_in = tok_in; rep.tokens_out = tok_out
+    rep.tokens_in = tok_in
+    rep.tokens_out = tok_out
     return rep
 
 
@@ -258,7 +309,7 @@ def apply_discourse_to_second_wave(
     return click_logit + discourse.second_wave_impact * second_wave_fraction
 
 
-def discourse_to_dict(d: DiscourseReport) -> Dict:
+def discourse_to_dict(d: DiscourseReport) -> dict:
     return {
         "source": d.source,
         "n_comments": len(d.comments),
@@ -271,9 +322,14 @@ def discourse_to_dict(d: DiscourseReport) -> Dict:
         "cost_cny": round(d.cost_cny, 4),
         "tokens": {"in": d.tokens_in, "out": d.tokens_out},
         "comments": [
-            {"persona": c.persona_oneliner, "text": c.comment,
-             "sentiment": round(c.sentiment, 2), "tone": c.tone,
-             "signal": c.key_signal, "source": c.source}
+            {
+                "persona": c.persona_oneliner,
+                "text": c.comment,
+                "sentiment": round(c.sentiment, 2),
+                "tone": c.tone,
+                "signal": c.key_signal,
+                "source": c.source,
+            }
             for c in d.comments
         ],
     }

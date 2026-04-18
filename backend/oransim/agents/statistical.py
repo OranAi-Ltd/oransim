@@ -5,14 +5,16 @@ Given an ImpressionResult from the world model, compute:
 
 All numpy — 100k agents < 50ms per call.
 """
-from __future__ import annotations
-import numpy as np
-from dataclasses import dataclass, field
-from typing import Dict, Optional
 
-from ..data.population import Population
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+import numpy as np
+
 from ..data.creatives import Creative
 from ..data.kols import KOL
+from ..data.population import Population
 from ..platforms.xhs.world_model_legacy import ImpressionResult
 
 
@@ -23,14 +25,14 @@ def _sigmoid(x):
 @dataclass
 class OutcomeBatch:
     agent_idx: np.ndarray
-    click: np.ndarray          # (K,) binary
-    engage: np.ndarray         # (K,) binary
-    convert: np.ndarray        # (K,) binary
-    click_prob: np.ndarray     # (K,) float
+    click: np.ndarray  # (K,) binary
+    engage: np.ndarray  # (K,) binary
+    convert: np.ndarray  # (K,) binary
+    click_prob: np.ndarray  # (K,) float
     engage_prob: np.ndarray
     convert_prob: np.ndarray
     # Latent noise used (abduction-ready)
-    u_noise: np.ndarray        # (K,) standard normal noise driving decisions
+    u_noise: np.ndarray  # (K,) standard normal noise driving decisions
 
 
 class StatisticalAgents:
@@ -51,8 +53,8 @@ class StatisticalAgents:
         self,
         impression: ImpressionResult,
         creative: Creative,
-        kol: Optional[KOL] = None,
-        fixed_noise: Optional[np.ndarray] = None,
+        kol: KOL | None = None,
+        fixed_noise: np.ndarray | None = None,
         rng_seed: int = 1,
         macro_ctr_lift: float = 1.0,
         macro_cvr_lift: float = 1.0,
@@ -61,29 +63,26 @@ class StatisticalAgents:
         K = len(idx)
         if K == 0:
             z = np.zeros(0, dtype=np.float32)
-            return OutcomeBatch(idx, z.astype(bool), z.astype(bool), z.astype(bool),
-                                z, z, z, z)
+            return OutcomeBatch(idx, z.astype(bool), z.astype(bool), z.astype(bool), z, z, z, z)
 
         rng = np.random.default_rng(rng_seed)
 
         content = impression.score_breakdown["content"]
-        plat    = impression.score_breakdown["platform_activity"]
-        aud     = impression.score_breakdown["audience_filter"]
-        kol_b   = impression.score_breakdown["kol_boost"]
+        plat = impression.score_breakdown["platform_activity"]
+        aud = impression.score_breakdown["audience_filter"]
+        kol_b = impression.score_breakdown["kol_boost"]
 
-        bigfive = self.pop.bigfive[idx]       # (K, 5)
-        openness = bigfive[:, 0]              # 0..1
+        bigfive = self.pop.bigfive[idx]  # (K, 5)
+        openness = bigfive[:, 0]  # 0..1
         neurotic = bigfive[:, 4]
 
         # fatigue proxy: how similar content is to user's current state drift
-        state = self.pop.state[idx]           # (K, 16)
+        state = self.pop.state[idx]  # (K, 16)
         fatigue = np.clip(np.abs(state[:, 0]), 0, 1)
 
         celeb = np.full(K, 1.0 if creative.has_celeb else 0.0, dtype=np.float32)
 
-        click_feat = np.stack([
-            content, plat, aud, kol_b, fatigue, openness, celeb
-        ], axis=1)
+        click_feat = np.stack([content, plat, aud, kol_b, fatigue, openness, celeb], axis=1)
         click_logit = click_feat @ self.W_CLICK - 1.2
 
         # Compliance / AIGC penalty: audit_risk throttles distribution; aigc shows turn off some users
@@ -107,9 +106,7 @@ class StatisticalAgents:
         click_prob = _sigmoid(click_logit)
 
         # engage = like/save/comment conditional on click
-        engage_feat = np.stack([
-            content, plat, aud, kol_b, neurotic, openness
-        ], axis=1)
+        engage_feat = np.stack([content, plat, aud, kol_b, neurotic, openness], axis=1)
         engage_logit = engage_feat @ self.W_ENGAGE - 1.5
         engage_prob = click_prob * _sigmoid(engage_logit + 0.5 * u)
 
@@ -119,32 +116,47 @@ class StatisticalAgents:
         price_sens = 1.0 - income
         kol_trust = kol_b  # treat as proxy
         audience_match = aud
-        convert_feat = np.stack([
-            click_prob, purchase_intent, kol_trust, audience_match, price_sens * 0.3
-        ], axis=1)
+        convert_feat = np.stack(
+            [click_prob, purchase_intent, kol_trust, audience_match, price_sens * 0.3], axis=1
+        )
         convert_logit = convert_feat @ self.W_CONVERT - 4.2 + np.log(max(macro_cvr_lift, 1e-3))
         convert_prob = click_prob * _sigmoid(convert_logit + 0.3 * u)
 
         # sample outcomes
         r = rng.uniform(0, 1, (3, K)).astype(np.float32)
-        click = (r[0] < click_prob)
+        click = r[0] < click_prob
         engage = click & (r[1] < _sigmoid(engage_logit))
         convert = click & (r[2] < _sigmoid(convert_logit))
 
         return OutcomeBatch(
             agent_idx=idx,
-            click=click, engage=engage, convert=convert,
-            click_prob=click_prob, engage_prob=engage_prob, convert_prob=convert_prob,
+            click=click,
+            engage=engage,
+            convert=convert,
+            click_prob=click_prob,
+            engage_prob=engage_prob,
+            convert_prob=convert_prob,
             u_noise=u,
         )
 
     @staticmethod
-    def aggregate_kpis(outcome: OutcomeBatch, impression: ImpressionResult,
-                       budget: float, conv_value_cny: float = 45.0) -> Dict[str, float]:
+    def aggregate_kpis(
+        outcome: OutcomeBatch,
+        impression: ImpressionResult,
+        budget: float,
+        conv_value_cny: float = 45.0,
+    ) -> dict[str, float]:
         """Roll per-agent outcomes into campaign KPIs."""
         if len(outcome.agent_idx) == 0:
-            return {"impressions": 0, "clicks": 0, "conversions": 0,
-                    "ctr": 0.0, "cvr": 0.0, "roi": 0.0, "cost": budget}
+            return {
+                "impressions": 0,
+                "clicks": 0,
+                "conversions": 0,
+                "ctr": 0.0,
+                "cvr": 0.0,
+                "roi": 0.0,
+                "cost": budget,
+            }
         imps = impression.total_impressions
         # "realized" clicks: sum of click_prob weighted by impression weight
         clicks = float(np.sum(outcome.click_prob * impression.weight))
@@ -157,6 +169,9 @@ class StatisticalAgents:
             "impressions": float(imps),
             "clicks": clicks,
             "conversions": conversions,
-            "ctr": ctr, "cvr": cvr, "roi": roi,
-            "revenue": revenue, "cost": budget,
+            "ctr": ctr,
+            "cvr": cvr,
+            "roi": roi,
+            "revenue": revenue,
+            "cost": budget,
         }

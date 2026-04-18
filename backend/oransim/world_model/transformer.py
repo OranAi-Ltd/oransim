@@ -69,18 +69,17 @@ starting v0.2 at https://github.com/OranAi-Ltd/oransim/releases. Until then,
 from __future__ import annotations
 
 import math
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from .base import (
-    DEFAULT_QUANTILES,
     KPI_NAMES,
     WorldModel,
     WorldModelConfig,
     WorldModelPrediction,
 )
-
 
 # --------------------------------------------------------------------- config
 
@@ -202,7 +201,7 @@ class CausalTransformerWorldModel(WorldModel):
                 self.eps = eps
                 self.weight = nn.Parameter(torch.ones(dim))
 
-            def forward(self, x: "torch.Tensor") -> "torch.Tensor":
+            def forward(self, x: torch.Tensor) -> torch.Tensor:
                 rms = x.pow(2).mean(-1, keepdim=True).add(self.eps).rsqrt()
                 return x * rms * self.weight
 
@@ -213,7 +212,7 @@ class CausalTransformerWorldModel(WorldModel):
                 self.w2 = nn.Linear(d_model, d_ff, bias=False)
                 self.w3 = nn.Linear(d_ff, d_model, bias=False)
 
-            def forward(self, x: "torch.Tensor") -> "torch.Tensor":
+            def forward(self, x: torch.Tensor) -> torch.Tensor:
                 return self.w3(F.silu(self.w1(x)) * self.w2(x))
 
         # ---- DAG-aware attention (CausalDAG-Transformer) ----
@@ -241,10 +240,10 @@ class CausalTransformerWorldModel(WorldModel):
 
             def forward(
                 self,
-                x: "torch.Tensor",
-                dag_bias: "torch.Tensor | None" = None,
-                key_padding_mask: "torch.Tensor | None" = None,
-            ) -> "torch.Tensor":
+                x: torch.Tensor,
+                dag_bias: torch.Tensor | None = None,
+                key_padding_mask: torch.Tensor | None = None,
+            ) -> torch.Tensor:
                 B, N, D = x.shape
                 qkv = self.qkv(x).reshape(B, N, 3, self.n_heads, self.head_dim)
                 q, k, v = qkv[:, :, 0], qkv[:, :, 1], qkv[:, :, 2]
@@ -281,12 +280,14 @@ class CausalTransformerWorldModel(WorldModel):
 
             def forward(
                 self,
-                x: "torch.Tensor",
-                dag_bias: "torch.Tensor | None" = None,
-                key_padding_mask: "torch.Tensor | None" = None,
-            ) -> "torch.Tensor":
+                x: torch.Tensor,
+                dag_bias: torch.Tensor | None = None,
+                key_padding_mask: torch.Tensor | None = None,
+            ) -> torch.Tensor:
                 h = self.norm1(x)
-                x = x + self.drop(self.attn(h, dag_bias=dag_bias, key_padding_mask=key_padding_mask))
+                x = x + self.drop(
+                    self.attn(h, dag_bias=dag_bias, key_padding_mask=key_padding_mask)
+                )
                 x = x + self.drop(self.ffn(self.norm2(x)))
                 return x
 
@@ -302,7 +303,7 @@ class CausalTransformerWorldModel(WorldModel):
                     nn.Linear(d_model, n_quantiles),
                 )
 
-            def forward(self, h: "torch.Tensor") -> "torch.Tensor":
+            def forward(self, h: torch.Tensor) -> torch.Tensor:
                 return self.mlp(h)
 
         class CounterfactualHead(nn.Module):
@@ -315,7 +316,7 @@ class CausalTransformerWorldModel(WorldModel):
                     [QuantileHead(d_model, n_quantiles) for _ in range(n_arms)]
                 )
 
-            def forward(self, h: "torch.Tensor", arm_idx: "torch.Tensor") -> "torch.Tensor":
+            def forward(self, h: torch.Tensor, arm_idx: torch.Tensor) -> torch.Tensor:
                 # arm_idx: [B]
                 B = h.shape[0]
                 out_list = []
@@ -335,11 +336,11 @@ class CausalTransformerWorldModel(WorldModel):
             def __init__(self) -> None:
                 super().__init__()
                 self.proj_creative = nn.Linear(cfg.creative_embed_dim, cfg.d_model)  # TREATMENT
-                self.proj_platform = nn.Embedding(cfg.platform_vocab, cfg.d_model)   # COVARIATE
-                self.proj_kol = nn.Linear(cfg.kol_feature_dim, cfg.d_model)          # TREATMENT
-                self.proj_demo = nn.Linear(cfg.demographic_feature_dim, cfg.d_model) # COVARIATE
-                self.proj_budget = nn.Linear(1, cfg.d_model)                         # TREATMENT
-                self.proj_time = nn.Linear(cfg.time_feature_dim, cfg.d_model)        # COVARIATE
+                self.proj_platform = nn.Embedding(cfg.platform_vocab, cfg.d_model)  # COVARIATE
+                self.proj_kol = nn.Linear(cfg.kol_feature_dim, cfg.d_model)  # TREATMENT
+                self.proj_demo = nn.Linear(cfg.demographic_feature_dim, cfg.d_model)  # COVARIATE
+                self.proj_budget = nn.Linear(1, cfg.d_model)  # TREATMENT
+                self.proj_time = nn.Linear(cfg.time_feature_dim, cfg.d_model)  # COVARIATE
                 # Outcome projection for CInA context tokens.
                 self.proj_outcome = nn.Linear(len(cfg.kpi_heads), cfg.d_model)
 
@@ -390,7 +391,7 @@ class CausalTransformerWorldModel(WorldModel):
             # Position encoding ------------------------------------------------
 
             @staticmethod
-            def _sin_pos_encoding(max_len: int, d_model: int) -> "torch.Tensor":
+            def _sin_pos_encoding(max_len: int, d_model: int) -> torch.Tensor:
                 pos = torch.arange(max_len).unsqueeze(1).float()
                 div = torch.exp(
                     torch.arange(0, d_model, 2).float() * -(math.log(10000.0) / d_model)
@@ -402,7 +403,7 @@ class CausalTransformerWorldModel(WorldModel):
 
             # Tokenisation -----------------------------------------------------
 
-            def tokenize(self, features: dict) -> tuple["torch.Tensor", "torch.Tensor"]:
+            def tokenize(self, features: dict) -> tuple[torch.Tensor, torch.Tensor]:
                 """Build (tokens, type_ids) for a mini-batch.
 
                 Returns (seq [B, L, d], type_ids [B, L]).
@@ -411,7 +412,7 @@ class CausalTransformerWorldModel(WorldModel):
                 tokens: list = []
                 type_ids: list = []
 
-                def push(tok: "torch.Tensor", tid: int) -> None:
+                def push(tok: torch.Tensor, tid: int) -> None:
                     tokens.append(tok.unsqueeze(1))
                     type_ids.append(tid)
 
@@ -439,7 +440,7 @@ class CausalTransformerWorldModel(WorldModel):
                 seq = seq + self._pos_enc[:, : seq.shape[1]]
                 return seq, type_tensor
 
-            def set_dag_mask(self, dag_bias: "torch.Tensor | None") -> None:
+            def set_dag_mask(self, dag_bias: torch.Tensor | None) -> None:
                 """Set an additive DAG attention bias.
 
                 ``dag_bias`` shape: ``[L, L]``, with ``-inf`` where attention
@@ -453,7 +454,7 @@ class CausalTransformerWorldModel(WorldModel):
 
             # CInA in-context --------------------------------------------------
 
-            def _tokenize_context(self, context: list[dict]) -> "torch.Tensor":
+            def _tokenize_context(self, context: list[dict]) -> torch.Tensor:
                 """Pool each context entry into a single TYPE_CONTEXT token.
 
                 Each entry is a dict with the same feature keys used by the
@@ -477,21 +478,23 @@ class CausalTransformerWorldModel(WorldModel):
                         self.proj_demo(entry["demo_feat"]),
                         self.proj_time(entry["time_feat"]),
                     ]
-                    feat_pool = torch.stack(parts, dim=0).mean(dim=0)     # [B, d]
-                    outcome_tok = self.proj_outcome(entry["outcome"])     # [B, d]
-                    ctx_tok = feat_pool + outcome_tok                     # [B, d]
+                    feat_pool = torch.stack(parts, dim=0).mean(dim=0)  # [B, d]
+                    outcome_tok = self.proj_outcome(entry["outcome"])  # [B, d]
+                    ctx_tok = feat_pool + outcome_tok  # [B, d]
                     per_entry.append(ctx_tok)
-                ctx_tokens = torch.stack(per_entry, dim=1)                # [B, C, d]
+                ctx_tokens = torch.stack(per_entry, dim=1)  # [B, C, d]
 
                 # Add TYPE_CONTEXT embedding
                 B, C, _ = ctx_tokens.shape
-                ctx_types = torch.full((B, C), self.TYPE_CONTEXT, device=ctx_tokens.device, dtype=torch.long)
+                ctx_types = torch.full(
+                    (B, C), self.TYPE_CONTEXT, device=ctx_tokens.device, dtype=torch.long
+                )
                 ctx_tokens = ctx_tokens + self.type_embed(ctx_types)
                 return ctx_tokens
 
             # Forward ----------------------------------------------------------
 
-            def encode(self, features: dict, context: list[dict] | None = None) -> "torch.Tensor":
+            def encode(self, features: dict, context: list[dict] | None = None) -> torch.Tensor:
                 seq, _ = self.tokenize(features)
                 if context:
                     ctx = self._tokenize_context(context)
@@ -525,7 +528,7 @@ class CausalTransformerWorldModel(WorldModel):
             def forward_counterfactual(
                 self,
                 features: dict,
-                arm_idx: "torch.Tensor",
+                arm_idx: torch.Tensor,
                 context: list[dict] | None = None,
             ) -> dict:
                 """Counterfactual prediction ``Y | do(T = arm_idx)``."""
@@ -534,11 +537,11 @@ class CausalTransformerWorldModel(WorldModel):
                         "counterfactual head disabled — set use_counterfactual_head=True"
                     )
                 h = self.encode(features, context=context)
-                return {
-                    name: head(h, arm_idx) for name, head in zip(cfg.kpi_heads, self.cf_heads)
-                }
+                return {name: head(h, arm_idx) for name, head in zip(cfg.kpi_heads, self.cf_heads)}
 
-            def treatment_logits(self, features: dict, context: list[dict] | None = None) -> "torch.Tensor":
+            def treatment_logits(
+                self, features: dict, context: list[dict] | None = None
+            ) -> torch.Tensor:
                 """Probe treatment from representation — used by IPTW adversary."""
                 return self.treatment_probe(self.encode(features, context=context))
 
@@ -712,9 +715,7 @@ class CausalTransformerWorldModel(WorldModel):
             weight_decay=cfg.weight_decay,
         )
         quantile_tensor = torch.tensor(cfg.quantiles, device=self._device)
-        median_idx = (
-            cfg.quantiles.index(0.50) if 0.50 in cfg.quantiles else len(cfg.quantiles) // 2
-        )
+        median_idx = cfg.quantiles.index(0.50) if 0.50 in cfg.quantiles else len(cfg.quantiles) // 2
 
         history: dict[str, list[float]] = {
             "train_loss": [],
@@ -736,9 +737,7 @@ class CausalTransformerWorldModel(WorldModel):
                     if k not in ("targets", "cf_targets", "treatment_arm")
                 }
 
-                loss, parts = self._step_loss(
-                    features, batch, quantile_tensor, median_idx
-                )
+                loss, parts = self._step_loss(features, batch, quantile_tensor, median_idx)
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(self._net.parameters(), max_norm=1.0)
                 opt.step()
@@ -757,9 +756,7 @@ class CausalTransformerWorldModel(WorldModel):
             history["train_balance"].append(sums["bal"])
 
             if val_dataset is not None:
-                history["val_loss"].append(
-                    self._evaluate(val_dataset, quantile_tensor, median_idx)
-                )
+                history["val_loss"].append(self._evaluate(val_dataset, quantile_tensor, median_idx))
 
         return history
 
@@ -812,9 +809,7 @@ class CausalTransformerWorldModel(WorldModel):
             "bal": float(bal_loss.item()),
         }
 
-    def _quantile_loss(
-        self, preds: dict, targets: dict, quantiles: Any, median_idx: int
-    ) -> Any:
+    def _quantile_loss(self, preds: dict, targets: dict, quantiles: Any, median_idx: int) -> Any:
         torch = self._torch
         cfg = self.config
         total = torch.zeros((), device=self._device)
@@ -840,11 +835,13 @@ class CausalTransformerWorldModel(WorldModel):
         import torch
 
         B = X.shape[0]
+
         # Pairwise squared distance
-        def _rbf(A: "torch.Tensor") -> "torch.Tensor":
+        def _rbf(A: torch.Tensor) -> torch.Tensor:
             sq = (A * A).sum(-1, keepdim=True)
             d2 = sq + sq.t() - 2.0 * (A @ A.t())
             return torch.exp(-d2 / (2.0 * sigma * sigma))
+
         Kx = _rbf(X)
         Ky = _rbf(Y)
         H = torch.eye(B, device=X.device) - (1.0 / B)
@@ -900,7 +897,7 @@ class CausalTransformerWorldModel(WorldModel):
         )
 
     @classmethod
-    def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> "CausalTransformerWorldModel":
+    def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> CausalTransformerWorldModel:
         """Load pretrained weights.
 
         If ``path`` is ``None``, tries the bundled release checkpoint.

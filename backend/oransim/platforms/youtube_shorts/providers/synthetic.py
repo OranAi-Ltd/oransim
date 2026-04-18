@@ -14,16 +14,31 @@ from ....data.schema import (
     CanonicalNoteMetrics,
 )
 
-
 NICHES = [
-    "beauty", "fashion", "food", "electronics", "travel",
-    "parenting", "fitness", "home", "beverage", "pet",
-    "gaming", "education", "tech_review",  # YouTube-heavy niches
+    "beauty",
+    "fashion",
+    "food",
+    "electronics",
+    "travel",
+    "parenting",
+    "fitness",
+    "home",
+    "beverage",
+    "pet",
+    "gaming",
+    "education",
+    "tech_review",  # YouTube-heavy niches
 ]
 TIERS = ["nano", "micro", "mid", "macro", "mega"]
 # YouTube rewards long-tail subscribers — tier thresholds run slightly
 # higher than TikTok / Instagram on the upper end.
-TIER_FAN_MEAN = {"nano": 10_000, "micro": 80_000, "mid": 500_000, "macro": 4_000_000, "mega": 25_000_000}
+TIER_FAN_MEAN = {
+    "nano": 10_000,
+    "micro": 80_000,
+    "mid": 500_000,
+    "macro": 4_000_000,
+    "mega": 25_000_000,
+}
 
 FAKE_ADJ = ["Apex", "Prism", "Vertex", "Cobalt", "Axial", "Quartz", "Vanta", "Stellar"]
 FAKE_NOUN = ["Lab", "Works", "Channel", "Review", "Breakdown", "Show", "Feed", "Tune"]

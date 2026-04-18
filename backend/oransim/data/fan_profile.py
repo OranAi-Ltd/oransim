@@ -15,11 +15,12 @@ Mode 2: hard filter — only sample from agents matching the niche profile.
 
 MVP uses Mode 1 (softer, preserves Voronoi partition structure).
 """
-from __future__ import annotations
-import numpy as np
-from dataclasses import dataclass
-from typing import Dict, Optional
 
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+import numpy as np
 
 # ---- Niche-specific fan demographic priors (from public industry reports) ----
 # Values = multiplicative weight on each (gender, age, city_tier) bucket
@@ -29,21 +30,24 @@ from typing import Dict, Optional
 # age_idx: 0=15-24, 1=25-34, 2=35-44, 3=45-54, 4=55-64, 5=65+
 # city: 0=T1, 1=T2, 2=T3, 3=T4, 4=T5+
 
+
 @dataclass
 class FanPrior:
     """Multiplicative weights relative to general population."""
-    gender_wt: np.ndarray        # (2,) F, M
-    age_wt: np.ndarray           # (6,) age buckets
-    city_wt: np.ndarray          # (5,) city tiers
-    income_wt: np.ndarray        # (10,) income deciles
+
+    gender_wt: np.ndarray  # (2,) F, M
+    age_wt: np.ndarray  # (6,) age buckets
+    city_wt: np.ndarray  # (5,) city tiers
+    income_wt: np.ndarray  # (10,) income deciles
     notes: str = ""
-    source: str = "hand-tuned"   # "hand-tuned" | "provider-calibrated"
+    source: str = "hand-tuned"  # "hand-tuned" | "provider-calibrated"
 
 
 # Load provider-calibrated priors if available (real XHS KOL fan demographics)
 def _load_calibrated():
     import json
     from pathlib import Path
+
     p = Path("data/synthetic/niche_priors_calibrated.json")
     if not p.exists():
         return {}
@@ -63,10 +67,10 @@ def _load_calibrated():
         a = stats.get("age_pct_6buckets") or ref_age
         c = stats.get("city_tier_pct_5tiers") or ref_city
         priors[niche] = FanPrior(
-            gender_wt=np.array([g[0]/ref_gender_f, g[1]/(1-ref_gender_f)], np.float32),
-            age_wt=np.array([max(0.05, a[i]/ref_age[i]) for i in range(6)], np.float32),
-            city_wt=np.array([max(0.05, c[i]/ref_city[i]) for i in range(5)], np.float32),
-            income_wt=np.ones(10, np.float32),   # synthetic provider has no income signal,用 1
+            gender_wt=np.array([g[0] / ref_gender_f, g[1] / (1 - ref_gender_f)], np.float32),
+            age_wt=np.array([max(0.05, a[i] / ref_age[i]) for i in range(6)], np.float32),
+            city_wt=np.array([max(0.05, c[i] / ref_city[i]) for i in range(5)], np.float32),
+            income_wt=np.ones(10, np.float32),  # synthetic provider has no income signal,用 1
             notes=f"synthetic 50 KOL 校准 · {stats.get('total_fans_aggregated', 0):,} 粉丝聚合",
             source="provider-calibrated",
         )
@@ -74,7 +78,7 @@ def _load_calibrated():
 
 
 # Start from hand-tuned English-named priors as fallback
-NICHE_PRIORS: Dict[str, FanPrior] = {
+NICHE_PRIORS: dict[str, FanPrior] = {
     # 美妆：女性 + 一二线 + 25-34 为主
     "beauty": FanPrior(
         gender_wt=np.array([2.5, 0.2], np.float32),
@@ -146,11 +150,16 @@ NICHE_PRIORS: Dict[str, FanPrior] = {
 _CALIBRATED = _load_calibrated()
 # Merge: calibrated Chinese niches + legacy English synonyms
 _ZH_TO_EN = {
-    "美妆": "beauty", "护肤": "beauty",   # 都归 beauty
-    "母婴": "mom", "数码": "tech",
-    "美食": "food", "穿搭": "fashion",
-    "健身": "fitness", "理财": "finance",
-    "旅行": "travel", "家居": "home",
+    "美妆": "beauty",
+    "护肤": "beauty",  # 都归 beauty
+    "母婴": "mom",
+    "数码": "tech",
+    "美食": "food",
+    "穿搭": "fashion",
+    "健身": "fitness",
+    "理财": "finance",
+    "旅行": "travel",
+    "家居": "home",
 }
 for zh, prior in _CALIBRATED.items():
     # Store under Chinese name AND English alias for backward compat
@@ -172,16 +181,18 @@ def fan_weight_vector(population, niche: str) -> np.ndarray:
     if niche not in NICHE_PRIORS:
         return np.ones(population.N, dtype=np.float32)
     prior = NICHE_PRIORS[niche]
-    w = (prior.gender_wt[population.gender_idx]
-         * prior.age_wt[population.age_idx]
-         * prior.city_wt[population.city_idx]
-         * prior.income_wt[population.income])
+    w = (
+        prior.gender_wt[population.gender_idx]
+        * prior.age_wt[population.age_idx]
+        * prior.city_wt[population.city_idx]
+        * prior.income_wt[population.income]
+    )
     # Normalize to mean-1 so it's a relative reweight (doesn't bias absolute scale)
     w = w / (w.mean() + 1e-8)
     return w.astype(np.float32)
 
 
-def fan_profile_summary(population, niche: str) -> Dict:
+def fan_profile_summary(population, niche: str) -> dict:
     """Explain the fan profile reweighting effect on the population."""
     if niche not in NICHE_PRIORS:
         return {"niche": niche, "applied": False}
@@ -206,14 +217,14 @@ def fan_profile_summary(population, niche: str) -> Dict:
             "35-44": round(float(age_dist[2]) * 100, 1),
             "45-54": round(float(age_dist[3]) * 100, 1),
             "55-64": round(float(age_dist[4]) * 100, 1),
-            "65+":   round(float(age_dist[5]) * 100, 1),
+            "65+": round(float(age_dist[5]) * 100, 1),
         },
         "effective_city_dist": {
-            "T1":    round(float(city_dist[0]) * 100, 1),
-            "T2":    round(float(city_dist[1]) * 100, 1),
-            "T3":    round(float(city_dist[2]) * 100, 1),
-            "T4":    round(float(city_dist[3]) * 100, 1),
-            "T5+":   round(float(city_dist[4]) * 100, 1),
+            "T1": round(float(city_dist[0]) * 100, 1),
+            "T2": round(float(city_dist[1]) * 100, 1),
+            "T3": round(float(city_dist[2]) * 100, 1),
+            "T4": round(float(city_dist[3]) * 100, 1),
+            "T5+": round(float(city_dist[4]) * 100, 1),
         },
         "concentration_ratio": round(float(w.std() / (w.mean() + 1e-8)), 3),
     }

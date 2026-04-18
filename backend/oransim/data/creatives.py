@@ -1,9 +1,11 @@
 """Mock creative / KOL / campaign objects."""
+
 from __future__ import annotations
-import numpy as np
-from dataclasses import dataclass, field
-from typing import List, Optional
+
 import hashlib
+from dataclasses import dataclass
+
+import numpy as np
 
 from .population import INTEREST_DIM
 
@@ -11,18 +13,19 @@ from .population import INTEREST_DIM
 @dataclass
 class Creative:
     """A single ad creative (video / image post)."""
+
     id: str
     caption: str
     duration_sec: float
-    visual_style: str        # "bright" / "dark" / "minimal" / "flashy"
-    music_mood: str          # "upbeat" / "calm" / "asmr" / "dramatic"
+    visual_style: str  # "bright" / "dark" / "minimal" / "flashy"
+    music_mood: str  # "upbeat" / "calm" / "asmr" / "dramatic"
     has_celeb: bool
-    aigc_score: float        # 0..1, higher = more obvious AI-generated
+    aigc_score: float  # 0..1, higher = more obvious AI-generated
     content_emb: np.ndarray  # (64,) aligned to population.interest space
-    creator_id: Optional[str] = None
+    creator_id: str | None = None
     predicted_quality: float = 0.5
-    audit_risk: float = 0.0          # 0..1, higher = compliance risk → throttle
-    category_hint: str = "general"   # for season factor: beverage/apparel_warm/travel/...
+    audit_risk: float = 0.0  # 0..1, higher = compliance risk → throttle
+    category_hint: str = "general"  # for season factor: beverage/apparel_warm/travel/...
 
 
 def _hash_emb(text: str, dim: int = INTEREST_DIM, seed_offset: int = 0) -> np.ndarray:
@@ -51,7 +54,7 @@ def make_creative(
     visual_style: str = "bright",
     music_mood: str = "upbeat",
     has_celeb: bool = False,
-    aigc_score: Optional[float] = None,
+    aigc_score: float | None = None,
     target_audience_hint: str = "",
 ) -> Creative:
     # Build content_emb: caption embedding + structured bias for known axes.
@@ -89,7 +92,8 @@ def make_creative(
     cat = "general"
     for c, kws in _CATEGORY_KW.items():
         if any(k in caption for k in kws):
-            cat = c; break
+            cat = c
+            break
 
     return Creative(
         id=creative_id,

@@ -15,11 +15,9 @@ import json
 import os
 import random
 import sys
-import tempfile
 from pathlib import Path
 
 import pytest
-
 
 BACKEND = Path(__file__).parent.parent / "backend"
 if str(BACKEND) not in sys.path:
@@ -31,11 +29,13 @@ if str(BACKEND) not in sys.path:
 
 def test_package_version():
     import oransim
+
     assert oransim.__version__ == "0.1.0a0"
 
 
 def test_package_docstring_present():
     import oransim
+
     assert oransim.__doc__ is not None
     assert "causal" in oransim.__doc__.lower()
 
@@ -44,7 +44,8 @@ def test_package_docstring_present():
 
 
 def test_world_model_registry():
-    from oransim.world_model import list_world_models, REGISTRY
+    from oransim.world_model import REGISTRY, list_world_models
+
     names = list_world_models()
     assert "causal_transformer" in names
     assert "lightgbm_quantile" in names
@@ -54,7 +55,8 @@ def test_world_model_registry():
 
 
 def test_diffusion_registry():
-    from oransim.diffusion import list_diffusion_models, REGISTRY
+    from oransim.diffusion import REGISTRY, list_diffusion_models
+
     names = list_diffusion_models()
     assert "causal_neural_hawkes" in names
     assert "parametric_hawkes" in names
@@ -68,6 +70,7 @@ def test_diffusion_registry():
 def _torch_available() -> bool:
     try:
         import torch  # noqa: F401
+
         return True
     except ImportError:
         return False
@@ -76,6 +79,7 @@ def _torch_available() -> bool:
 @pytest.mark.skipif(_torch_available(), reason="torch is installed; deferral test is a no-op")
 def test_causal_transformer_defers_torch_import():
     from oransim.world_model import get_world_model
+
     with pytest.raises(ImportError, match=r"(PyTorch|torch)"):
         get_world_model("causal_transformer")
 
@@ -83,6 +87,7 @@ def test_causal_transformer_defers_torch_import():
 @pytest.mark.skipif(_torch_available(), reason="torch is installed; deferral test is a no-op")
 def test_causal_neural_hawkes_defers_torch_import():
     from oransim.diffusion import get_diffusion_model
+
     with pytest.raises(ImportError, match=r"(PyTorch|torch)"):
         get_diffusion_model("causal_neural_hawkes")
 
@@ -92,6 +97,7 @@ def test_causal_neural_hawkes_defers_torch_import():
 
 def test_parametric_hawkes_instantiation():
     from oransim.diffusion import get_diffusion_model
+
     ph = get_diffusion_model("parametric_hawkes")
     desc = ph.describe()
     assert desc["name"] == "ParametricHawkes"
@@ -100,7 +106,8 @@ def test_parametric_hawkes_instantiation():
 
 
 def test_parametric_hawkes_forecast_and_counterfactual():
-    from oransim.diffusion import get_diffusion_model, ParametricHawkesConfig
+    from oransim.diffusion import ParametricHawkesConfig, get_diffusion_model
+
     # Use a 1-day horizon + stronger decay to keep the thinning loop fast.
     cfg = ParametricHawkesConfig(horizon_days=1, alpha_prior=0.1, beta_prior=0.5)
     ph = get_diffusion_model("parametric_hawkes", config=cfg)
@@ -118,6 +125,7 @@ def test_demo_lightgbm_pkl_loads_and_predicts():
     Powers the 'clone → set LLM key → run' plug-and-play experience.
     """
     import pickle
+
     root = Path(__file__).parent.parent
     pkl_path = root / "data" / "models" / "world_model_demo.pkl"
     assert pkl_path.exists(), "demo pkl not shipped at data/models/world_model_demo.pkl"
@@ -132,6 +140,7 @@ def test_demo_lightgbm_pkl_loads_and_predicts():
     # Load a booster + predict on a plausible feature vector
     import lightgbm as lgb
     import numpy as np
+
     b = lgb.Booster(model_str=blob["boosters"]["impressions"]["0.5"])
     # [platform_id, niche_idx, budget, budget_bucket, kol_tier_idx, kol_fan_count, kol_engagement_rate]
     x = np.asarray([[0.0, 0.0, 50000.0, 1.0, 2.0, 100000.0, 0.035]], dtype=np.float32)
@@ -156,6 +165,7 @@ def test_demo_synthetic_data_shipped():
 
 def test_parametric_hawkes_log_likelihood():
     from oransim.diffusion import get_diffusion_model
+
     ph = get_diffusion_model("parametric_hawkes")
     ll = ph.log_likelihood([(0.0, "impression"), (30.0, "like"), (70.0, "comment")])
     assert isinstance(ll, float)
@@ -167,6 +177,7 @@ def test_parametric_hawkes_log_likelihood():
 
 def test_synthetic_data_deterministic():
     from scripts.gen_synthetic_data import generate_kols
+
     a = generate_kols(random.Random(42), 10)
     b = generate_kols(random.Random(42), 10)
     assert [k.kol_id for k in a] == [k.kol_id for k in b]
@@ -177,7 +188,9 @@ def test_synthetic_streams_terminate_fast():
     """Regression: the prior O(N^2) sliding-window bug caused streams for
     macro/mega-tier KOLs to hang. Ensure termination in < 10 s for 20 streams."""
     import time
-    from scripts.gen_synthetic_data import generate_kols, generate_event_streams
+
+    from scripts.gen_synthetic_data import generate_event_streams, generate_kols
+
     rng = random.Random(7)
     kols = generate_kols(rng, 50)
     start = time.time()
@@ -193,14 +206,21 @@ def test_synthetic_streams_terminate_fast():
 def test_synthetic_generator_cli(tmp_path):
     """Smoke-test the CLI end-to-end at tiny scale."""
     from scripts.gen_synthetic_data import main
+
     rc = main(
         [
-            "--out", str(tmp_path),
-            "--n-kols", "20",
-            "--n-notes", "10",
-            "--n-scenarios", "10",
-            "--n-streams", "5",
-            "--seed", "42",
+            "--out",
+            str(tmp_path),
+            "--n-kols",
+            "20",
+            "--n-notes",
+            "10",
+            "--n-scenarios",
+            "10",
+            "--n-streams",
+            "5",
+            "--seed",
+            "42",
             "--force",
         ]
     )
@@ -238,6 +258,7 @@ def test_fastapi_app_metadata():
     os.environ["SOUL_POOL_N"] = "5"
     os.environ["LLM_MODE"] = "mock"
     from oransim import api
+
     assert api.app.title == "Oransim"
     assert api.app.version == "0.1.0a0"
     # No huitun routes leaked
@@ -256,6 +277,7 @@ def test_fastapi_app_metadata():
 
 def test_causal_scm_graph_shape():
     from oransim.causal.scm import dag_dict
+
     g = dag_dict()
     assert "nodes" in g
     assert "edges" in g
@@ -269,6 +291,7 @@ def test_cate_union_semantics():
     counterfactuals. Requires >=20 agents per compute_cate's own guard."""
     from oransim.causal.cate import compute_cate
     from oransim.data.population import generate_population
+
     pop = generate_population(N=50, seed=7)
     # Base: 25 agents with prob 0.2
     base = {i: 0.2 for i in range(25)}
@@ -280,8 +303,10 @@ def test_cate_union_semantics():
 
 
 def test_agent_soul_persona_mock_no_network():
-    from oransim.agents.soul_llm import llm_info, llm_available
     import os
+
+    from oransim.agents.soul_llm import llm_available, llm_info
+
     os.environ["LLM_MODE"] = "mock"
     info = llm_info()
     assert info["mode"] == "mock"
@@ -290,9 +315,11 @@ def test_agent_soul_persona_mock_no_network():
 
 def test_population_generates_determistic():
     from oransim.data.population import generate_population
+
     pop_a = generate_population(N=500, seed=123)
     pop_b = generate_population(N=500, seed=123)
     import numpy as np
+
     assert pop_a.N == 500
     assert pop_b.N == 500
     assert np.array_equal(pop_a.age_idx, pop_b.age_idx)
@@ -301,6 +328,7 @@ def test_population_generates_determistic():
 
 def test_creative_generator():
     from oransim.data.creatives import make_creative
+
     c = make_creative(creative_id="test_001", caption="Aurora morning serum", duration_sec=15.0)
     assert c.caption == "Aurora morning serum"
     # content embedding is attached (exact attribute name may evolve)
@@ -314,7 +342,8 @@ def test_creative_generator():
 
 
 def test_population_synthesizer_registry():
-    from oransim.data.synthesizers import list_synthesizers, get_synthesizer
+    from oransim.data.synthesizers import get_synthesizer, list_synthesizers
+
     names = list_synthesizers()
     assert "ipf" in names
     assert "bayes_net" in names
@@ -333,6 +362,7 @@ def test_population_synthesizer_registry():
     assert bpop.latent["backend"] == "bayesian_network"
     # Future synthesizers still defer
     import pytest
+
     with pytest.raises(NotImplementedError, match="roadmap"):
         get_synthesizer("tabddpm")
 
@@ -342,6 +372,7 @@ def test_bayes_net_synthesizer_respects_conditionals():
     a joint-dependency property IPF cannot represent."""
     import numpy as np
     from oransim.data.synthesizers import get_synthesizer
+
     bn = get_synthesizer("bayes_net")
     pop = bn.generate(N=5000, seed=42)
     edu = np.asarray(pop.attributes["edu_idx"])
@@ -350,8 +381,12 @@ def test_bayes_net_synthesizer_respects_conditionals():
     means = [float(inc[edu == e].mean()) if (edu == e).any() else 0.0 for e in range(5)]
     # Undergrad (3) and grad (4) must have strictly higher mean income tertile
     # than junior (1) — core dependency the BN encodes that IPF loses.
-    assert means[4] > means[1], f"grad mean income {means[4]:.3f} should exceed junior {means[1]:.3f}"
-    assert means[3] > means[1], f"undergrad mean income {means[3]:.3f} should exceed junior {means[1]:.3f}"
+    assert (
+        means[4] > means[1]
+    ), f"grad mean income {means[4]:.3f} should exceed junior {means[1]:.3f}"
+    assert (
+        means[3] > means[1]
+    ), f"undergrad mean income {means[3]:.3f} should exceed junior {means[1]:.3f}"
 
 
 def test_orancbench_scenarios_shipped():
@@ -359,6 +394,7 @@ def test_orancbench_scenarios_shipped():
     p = root / "data" / "benchmarks" / "orancbench_v0_1.jsonl"
     assert p.exists(), "OrancBench v0.1 scenarios not shipped"
     import json as _json
+
     with open(p, encoding="utf-8") as f:
         scenarios = [_json.loads(L) for L in f if L.strip()]
     assert len(scenarios) == 50
@@ -373,8 +409,10 @@ def test_orancbench_scenarios_shipped():
 
 
 def test_orancbench_loader_and_scorer():
-    from oransim.benchmarks import load_scenarios, score_predictions
     import sys as _sys
+
+    from oransim.benchmarks import load_scenarios, score_predictions
+
     root = Path(__file__).parent.parent
     # Chdir so the default path resolves correctly (CI-friendly)
     _sys.path.insert(0, str(root / "backend"))
@@ -410,6 +448,7 @@ def test_docker_artifacts_shipped():
 def test_example_notebooks_valid_json():
     """All 4 example notebooks must parse as valid ipynb JSON."""
     import json as _json
+
     root = Path(__file__).parent.parent
     expected = {
         "01_quickstart.ipynb",
@@ -433,11 +472,13 @@ def test_example_notebooks_valid_json():
 def test_v2_endpoints_wired_to_registries():
     """Gap 1: /api/v2/* endpoints must route through model registries."""
     import os
+
     os.environ["POP_SIZE"] = "10000"
     os.environ["SOUL_POOL_N"] = "5"
     os.environ["LLM_MODE"] = "mock"
     from fastapi.testclient import TestClient
     from oransim import api
+
     c = TestClient(api.app)
 
     # Registry introspection
@@ -451,11 +492,16 @@ def test_v2_endpoints_wired_to_registries():
     # LightGBM baseline — shipped pkl path
     r = c.post(
         "/api/v2/world_model/predict?model=lightgbm_quantile",
-        json={"features": {
-            "niche": "beauty", "kol_tier": "mid", "budget": 80_000,
-            "budget_bucket": 2, "kol_fan_count": 240_000,
-            "kol_engagement_rate": 0.042,
-        }},
+        json={
+            "features": {
+                "niche": "beauty",
+                "kol_tier": "mid",
+                "budget": 80_000,
+                "budget_bucket": 2,
+                "kol_fan_count": 240_000,
+                "kol_engagement_rate": 0.042,
+            }
+        },
     )
     assert r.status_code == 200
     j = r.json()
@@ -484,7 +530,7 @@ def test_v2_endpoints_wired_to_registries():
 def test_cina_in_context_path():
     """Gap 2: CausalTransformer must accept a context= argument."""
     import torch
-    from oransim.world_model import CausalTransformerWorldModel, CausalTransformerWMConfig
+    from oransim.world_model import CausalTransformerWMConfig, CausalTransformerWorldModel
 
     cfg = CausalTransformerWMConfig(n_layers=2, d_model=64, n_heads=4, dag_attention_bias=False)
     wm = CausalTransformerWorldModel(cfg)
@@ -493,11 +539,11 @@ def test_cina_in_context_path():
         g = torch.Generator().manual_seed(seed)
         return {
             "creative_embed": torch.randn(cfg.creative_embed_dim, generator=g),
-            "kol_feat":       torch.randn(cfg.kol_feature_dim, generator=g),
-            "demo_feat":      torch.randn(cfg.demographic_feature_dim, generator=g),
-            "platform_id":    torch.tensor(0, dtype=torch.long),
-            "budget":         torch.tensor([0.5]),
-            "time_feat":      torch.tensor([0.0, 1.0, 0.0, 1.0]),
+            "kol_feat": torch.randn(cfg.kol_feature_dim, generator=g),
+            "demo_feat": torch.randn(cfg.demographic_feature_dim, generator=g),
+            "platform_id": torch.tensor(0, dtype=torch.long),
+            "budget": torch.tensor([0.5]),
+            "time_feat": torch.tensor([0.0, 1.0, 0.0, 1.0]),
         }
 
     query = _make_features(42)
@@ -519,12 +565,14 @@ def test_cina_in_context_path():
 def test_mc_compensator_branch():
     """Gap 3: CausalNeuralHawkes compensator modes must actually branch."""
     import torch
-    from oransim.diffusion import CausalNeuralHawkesProcess, CausalNeuralHawkesConfig
+    from oransim.diffusion import CausalNeuralHawkesConfig, CausalNeuralHawkesProcess
 
     events = [(float(i * 15.0), "impression" if i % 2 == 0 else "like") for i in range(12)]
 
     def _ll(mode):
-        cfg = CausalNeuralHawkesConfig(n_layers=2, d_model=32, n_heads=4, compensator=mode, n_mc_samples=8)
+        cfg = CausalNeuralHawkesConfig(
+            n_layers=2, d_model=32, n_heads=4, compensator=mode, n_mc_samples=8
+        )
         nh = CausalNeuralHawkesProcess(cfg)
         torch.manual_seed(0)
         for p in nh._net.parameters():
@@ -533,7 +581,7 @@ def test_mc_compensator_branch():
 
     ll_rect = _ll("rectangle")
     ll_trap = _ll("trapezoidal")
-    ll_mc   = _ll("mc")
+    ll_mc = _ll("mc")
     for v in (ll_rect, ll_trap, ll_mc):
         assert isinstance(v, float)
         assert v == v  # not NaN
@@ -546,8 +594,8 @@ def test_mc_compensator_branch():
 
 def test_tiktok_adapter_mvp():
     """TikTok adapter + synthetic provider must fulfill the canonical contract."""
-    from oransim.platforms.tiktok import TikTokAdapter, TikTokSyntheticProvider
     from oransim.data.schema import CanonicalKOL, CanonicalNote
+    from oransim.platforms.tiktok import TikTokAdapter, TikTokSyntheticProvider
 
     provider = TikTokSyntheticProvider(seed=42)
     adapter = TikTokAdapter(data_provider=provider)
@@ -568,6 +616,7 @@ def test_tiktok_adapter_mvp():
 
     # Impressions grow non-linearly with budget (Hill saturation)
     from types import SimpleNamespace
+
     creative = SimpleNamespace(caption="ad copy", duration_sec=20.0)
     pred_1x = adapter.simulate_impression(creative, budget=50_000)
     pred_2x = adapter.simulate_impression(creative, budget=100_000)
@@ -578,8 +627,8 @@ def test_tiktok_adapter_mvp():
 
 def test_instagram_adapter_mvp():
     """Instagram Reels adapter + synthetic provider must fulfill the canonical contract."""
-    from oransim.platforms.instagram import InstagramAdapter, InstagramSyntheticProvider
     from oransim.data.schema import CanonicalKOL
+    from oransim.platforms.instagram import InstagramAdapter, InstagramSyntheticProvider
 
     provider = InstagramSyntheticProvider(seed=42)
     adapter = InstagramAdapter(data_provider=provider)
@@ -591,6 +640,7 @@ def test_instagram_adapter_mvp():
     assert kol.fan_profile is not None
 
     from types import SimpleNamespace
+
     normal = SimpleNamespace(caption="promo", duration_sec=18.0, music_mood="upbeat")
     trending = SimpleNamespace(caption="promo", duration_sec=18.0, music_mood="trending")
     p_normal = adapter.simulate_impression(normal, budget=50_000)
@@ -603,11 +653,11 @@ def test_instagram_adapter_mvp():
 
 def test_youtube_shorts_adapter_mvp():
     """YouTube Shorts adapter + synthetic provider must fulfill the canonical contract."""
+    from oransim.data.schema import CanonicalKOL
     from oransim.platforms.youtube_shorts import (
         YouTubeShortsAdapter,
         YouTubeShortsSyntheticProvider,
     )
-    from oransim.data.schema import CanonicalKOL
 
     provider = YouTubeShortsSyntheticProvider(seed=42)
     adapter = YouTubeShortsAdapter(data_provider=provider)
@@ -618,6 +668,7 @@ def test_youtube_shorts_adapter_mvp():
     assert kol.platform == "youtube_shorts"
 
     from types import SimpleNamespace
+
     no_cta = SimpleNamespace(caption="clip", duration_sec=30.0, has_subscribe_cta=False)
     with_cta = SimpleNamespace(caption="clip", duration_sec=30.0, has_subscribe_cta=True)
     p_no = adapter.simulate_impression(no_cta, budget=50_000)
@@ -632,8 +683,8 @@ def test_youtube_shorts_adapter_mvp():
 
 def test_douyin_adapter_mvp():
     """Douyin mirrors TikTok but with Greater-China priors + livestream boost."""
-    from oransim.platforms.douyin import DouyinAdapter, DouyinSyntheticProvider
     from oransim.data.schema import CanonicalKOL
+    from oransim.platforms.douyin import DouyinAdapter, DouyinSyntheticProvider
 
     provider = DouyinSyntheticProvider(seed=42)
     adapter = DouyinAdapter(data_provider=provider)
@@ -646,8 +697,11 @@ def test_douyin_adapter_mvp():
 
     # Livestream boost
     from types import SimpleNamespace
+
     video = SimpleNamespace(caption="normal ad", duration_sec=18.0, visual_style="bright")
-    livestream = SimpleNamespace(caption="live commerce", duration_sec=18.0, visual_style="livestream")
+    livestream = SimpleNamespace(
+        caption="live commerce", duration_sec=18.0, visual_style="livestream"
+    )
     pred_video = adapter.simulate_impression(video, budget=50_000)
     pred_live = adapter.simulate_impression(livestream, budget=50_000)
     # Livestream has same impressions but higher conversions
@@ -657,12 +711,21 @@ def test_douyin_adapter_mvp():
 
 def test_canonical_schemas():
     from oransim.data.schema import (
-        CanonicalKOL, CanonicalNote, CanonicalFanProfile, CanonicalScenario, SCHEMA_VERSION
+        SCHEMA_VERSION,
+        CanonicalFanProfile,
+        CanonicalKOL,
+        CanonicalScenario,
     )
+
     assert SCHEMA_VERSION == "1.1"
     kol = CanonicalKOL(
-        kol_id="K1", nickname="AuroraStudio", platform="xhs",
-        niche="beauty", tier="mid", fan_count=200_000, avg_engagement_rate=0.035,
+        kol_id="K1",
+        nickname="AuroraStudio",
+        platform="xhs",
+        niche="beauty",
+        tier="mid",
+        fan_count=200_000,
+        avg_engagement_rate=0.035,
     )
     assert kol.schema_version == "1.1"
     # FanProfile nested into KOL
@@ -671,24 +734,35 @@ def test_canonical_schemas():
         gender_dist=[0.9, 0.1],
     )
     kol2 = CanonicalKOL(
-        kol_id="K2", nickname="CrimsonLab", platform="xhs",
-        niche="fashion", tier="micro", fan_count=40_000,
-        avg_engagement_rate=0.028, fan_profile=fp,
+        kol_id="K2",
+        nickname="CrimsonLab",
+        platform="xhs",
+        niche="fashion",
+        tier="micro",
+        fan_count=40_000,
+        avg_engagement_rate=0.028,
+        fan_profile=fp,
     )
     assert kol2.fan_profile is not None
     assert len(kol2.fan_profile.age_dist) == 7
     # Scenario
     scn = CanonicalScenario(
-        scenario_id="S1", platform="xhs", creative_text="test",
-        budget=50_000.0, niche="beauty",
+        scenario_id="S1",
+        platform="xhs",
+        creative_text="test",
+        budget=50_000.0,
+        niche="beauty",
     )
     assert scn.budget == 50_000.0
 
 
 def test_budget_curves_public_api():
     from oransim.world_model.budget import (
-        hill_saturation, frequency_fatigue, apply_budget_curves, BudgetCurveConfig
+        apply_budget_curves,
+        frequency_fatigue,
+        hill_saturation,
     )
+
     # Hill: doubling budget does not double impressions
     assert abs(hill_saturation(2.0) - 4.0 / 3.0) < 1e-9
     # Hill: at ratio=0 → 0
@@ -711,13 +785,17 @@ def test_budget_curves_public_api():
 
 def test_http_client_module():
     from oransim.runtime.http_client import (
-        post_json, _fallback_chain, _backoff_seconds,
-        RETRYABLE_STATUS, NON_RETRYABLE_STATUS,
+        NON_RETRYABLE_STATUS,
+        RETRYABLE_STATUS,
+        _backoff_seconds,
+        _fallback_chain,
     )
+
     assert 429 in RETRYABLE_STATUS
     assert 401 in NON_RETRYABLE_STATUS
     # Fallback chain parsing
     import os
+
     os.environ["LLM_MODEL_FALLBACK"] = "gpt-4o-mini,deepseek-chat"
     chain = _fallback_chain("gpt-5.4")
     assert chain == ["gpt-5.4", "gpt-4o-mini", "deepseek-chat"]
@@ -733,8 +811,15 @@ def test_env_example_shipped():
     envx = root / ".env.example"
     assert envx.exists(), ".env.example missing — external users need it"
     content = envx.read_text()
-    for key in ("LLM_MODE", "LLM_BASE_URL", "LLM_API_KEY", "LLM_MODEL",
-                "SOUL_POOL_N", "POP_SIZE", "PORT"):
+    for key in (
+        "LLM_MODE",
+        "LLM_BASE_URL",
+        "LLM_API_KEY",
+        "LLM_MODEL",
+        "SOUL_POOL_N",
+        "POP_SIZE",
+        "PORT",
+    ):
         assert key in content, f"missing env key: {key}"
 
 
@@ -747,6 +832,7 @@ def test_no_sensitive_terms_in_package():
     gate between desensitization regressions and the public repo.
     """
     import subprocess
+
     # Pattern built from hex / split strings to avoid matching this file.
     # Parts:
     #   hui[-_]?tun  — matches huitun, hui-tun, hui_tun (any case)
@@ -796,7 +882,8 @@ def test_no_sensitive_terms_in_package():
     paths = [p for p in paths if Path(p).exists()]
     result = subprocess.run(
         [
-            "grep", "-rIEi",   # -i makes it case-insensitive
+            "grep",
+            "-rIEi",  # -i makes it case-insensitive
             pattern,
             *paths,
             "--include=*.py",
@@ -824,6 +911,5 @@ def test_no_sensitive_terms_in_package():
     )
     # grep returns 1 when no matches — that's the good path
     assert result.returncode == 1, (
-        "🚨 SENSITIVE TERM LEAK — would ship to public repo:\n"
-        f"{result.stdout}"
+        "🚨 SENSITIVE TERM LEAK — would ship to public repo:\n" f"{result.stdout}"
     )

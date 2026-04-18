@@ -11,15 +11,15 @@ Only tracks the LLM-soul subset (typically 100-10k agents), not the full 1M pool
 
 Disk layout: ${STREAM_MEMORY_DIR:-/tmp/oransim_memory}/agent_{id}.json
 """
-from __future__ import annotations
-import os
-import json
-import time
-import threading
-from collections import deque
-from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Optional, Deque
 
+from __future__ import annotations
+
+import json
+import os
+import threading
+import time
+from collections import deque
+from dataclasses import dataclass
 
 _ENABLED = os.environ.get("STREAM_MEMORY", "0") in ("1", "true", "True")
 _DIR = os.environ.get("STREAM_MEMORY_DIR", "/tmp/oransim_memory")
@@ -34,13 +34,13 @@ def enabled() -> bool:
 @dataclass
 class AgentMemory:
     agent_id: int
-    profile: Dict
-    status: Dict
-    events: Deque[Dict]
-    perceptions: Deque[Dict]
+    profile: dict
+    status: dict
+    events: deque[dict]
+    perceptions: deque[dict]
     updated_at: float
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "agent_id": self.agent_id,
             "profile": self.profile,
@@ -51,7 +51,7 @@ class AgentMemory:
         }
 
     @classmethod
-    def from_dict(cls, d: Dict) -> "AgentMemory":
+    def from_dict(cls, d: dict) -> AgentMemory:
         return cls(
             agent_id=int(d["agent_id"]),
             profile=d.get("profile", {}),
@@ -61,10 +61,10 @@ class AgentMemory:
             updated_at=float(d.get("updated_at", time.time())),
         )
 
-    def recent_events(self, k: int = 5) -> List[Dict]:
+    def recent_events(self, k: int = 5) -> list[dict]:
         return list(self.events)[-k:]
 
-    def recent_perceptions(self, k: int = 3) -> List[Dict]:
+    def recent_perceptions(self, k: int = 3) -> list[dict]:
         return list(self.perceptions)[-k:]
 
     def summary_for_prompt(self) -> str:
@@ -82,7 +82,7 @@ class AgentMemory:
 class StreamMemoryStore:
     def __init__(self, persist_dir: str = _DIR):
         self.dir = persist_dir
-        self.cache: Dict[int, AgentMemory] = {}
+        self.cache: dict[int, AgentMemory] = {}
         self.lock = threading.Lock()
         self._stats = {"reads": 0, "writes": 0, "disk_hits": 0, "events_recorded": 0}
         if _ENABLED:
@@ -91,7 +91,7 @@ class StreamMemoryStore:
     def _path(self, agent_id: int) -> str:
         return os.path.join(self.dir, f"agent_{agent_id}.json")
 
-    def get(self, agent_id: int) -> Optional[AgentMemory]:
+    def get(self, agent_id: int) -> AgentMemory | None:
         if not _ENABLED:
             return None
         self._stats["reads"] += 1
@@ -112,7 +112,7 @@ class StreamMemoryStore:
                 return None
         return None
 
-    def get_or_create(self, agent_id: int, profile: Optional[Dict] = None) -> AgentMemory:
+    def get_or_create(self, agent_id: int, profile: dict | None = None) -> AgentMemory:
         mem = self.get(agent_id)
         if mem is not None:
             return mem
@@ -128,31 +128,39 @@ class StreamMemoryStore:
             self.cache[agent_id] = mem
         return mem
 
-    def record_event(self, agent_id: int, kind: str, content: str,
-                     metadata: Optional[Dict] = None,
-                     profile: Optional[Dict] = None):
+    def record_event(
+        self,
+        agent_id: int,
+        kind: str,
+        content: str,
+        metadata: dict | None = None,
+        profile: dict | None = None,
+    ):
         if not _ENABLED:
             return
         mem = self.get_or_create(agent_id, profile=profile)
-        mem.events.append({
-            "ts": time.time(),
-            "kind": kind,
-            "content": content,
-            "meta": metadata or {},
-        })
+        mem.events.append(
+            {
+                "ts": time.time(),
+                "kind": kind,
+                "content": content,
+                "meta": metadata or {},
+            }
+        )
         mem.updated_at = time.time()
         self._stats["events_recorded"] += 1
 
-    def record_perception(self, agent_id: int, thought: str,
-                          event_ref: Optional[int] = None):
+    def record_perception(self, agent_id: int, thought: str, event_ref: int | None = None):
         if not _ENABLED:
             return
         mem = self.get_or_create(agent_id)
-        mem.perceptions.append({
-            "ts": time.time(),
-            "thought": thought,
-            "event_ref": event_ref,
-        })
+        mem.perceptions.append(
+            {
+                "ts": time.time(),
+                "thought": thought,
+                "event_ref": event_ref,
+            }
+        )
         mem.updated_at = time.time()
 
     def update_status(self, agent_id: int, **patch):
@@ -162,7 +170,7 @@ class StreamMemoryStore:
         mem.status.update(patch)
         mem.updated_at = time.time()
 
-    def flush(self, agent_ids: Optional[List[int]] = None):
+    def flush(self, agent_ids: list[int] | None = None):
         if not _ENABLED:
             return
         ids = agent_ids if agent_ids is not None else list(self.cache.keys())
@@ -177,7 +185,7 @@ class StreamMemoryStore:
             except Exception:
                 pass
 
-    def stats(self) -> Dict:
+    def stats(self) -> dict:
         return {
             "enabled": _ENABLED,
             "dir": self.dir,
@@ -195,5 +203,5 @@ def store() -> StreamMemoryStore:
     return _global_store
 
 
-def memory_stats() -> Dict:
+def memory_stats() -> dict:
     return _global_store.stats()
