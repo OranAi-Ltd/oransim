@@ -356,9 +356,14 @@ cf = wm.counterfactual(features, arm_idx=2)         # do(T = arm 2) 反事实
 <details>
 <summary><b>LightGBM 分位数世界模型</b> —— 快速 baseline</summary>
 
-每个 KPI 3 个分位数回归器（P35 / P50 / P65）。亚毫秒推理、无 GPU 需求。特征工程含：素材 embedding（OpenAI `text-embedding-3-small` —— 当前仅文本，多模态走 UEB 在 v0.5 落地）· 平台先验 · KOL 特征 · 时序信号 · PCA 降维行为特征。参考：Ke et al. 2017（LightGBM）、Koenker 2005（分位数回归）。
+每个 KPI 3 个分位数回归器（P35 / P50 / P65）。亚毫秒推理、无 GPU 需求。参考：Ke et al. 2017（LightGBM）、Koenker 2005（分位数回归）。
 
-保留作为生产默认 fallback（直到 v0.2 因果 Transformer 权重发布），也用于 OrancBench 消融对比。
+**两种配置分开讲清楚**：
+
+- **`LightGBMQuantileWorldModel` 类能吃什么特征** —— 完整 pipeline：素材 embedding（OpenAI `text-embedding-3-small` via `RealTextEmbedder` / UEB）+ KOL embedding + 人口学 + 时序信号 + PCA 降维行为特征。自己训带 embedding 的 pkl 切进去就行。
+- **shipped `data/models/world_model_demo.pkl` 实际含什么** —— 是**纯表格特征的消融基线**：7 个标量（`platform_id` / `niche_idx` / `budget` / `budget_bucket` / `kol_tier_idx` / `kol_fan_count` / `kol_engagement_rate`），在 2000 条合成场景上训练（1800 训 / 200 留出），**不含 text embedding**。不带 embedding 是故意的：pkl ~2MB 可以 offline 跑（不需要 OpenAI key），同时作为 embedding 路径的干净消融对比。200 条留出集上 R²：impressions 0.89 · clicks 0.78 · conversions 0.73 · revenue 0.69（完整看 `data/models/model_card.md`）。
+
+embedding 在 shipped 栈实际流动的路径：UEB → soul agent persona 匹配 + `kol_content_match` (T2-A2) + `search_elasticity` (T3-A6)。Causal Transformer 路径原生消费 1536 维 creative embedding，等 OrancBench v0.5 权重到位就直接能跑。
 
 ```python
 wm = get_world_model("lightgbm_quantile")
