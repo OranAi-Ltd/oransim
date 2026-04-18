@@ -425,20 +425,46 @@ class CausalNeuralHawkesProcess(DiffusionModel):
         event_lam = lam[0, idx, type_ids.squeeze(0)]  # [N]
         log_sum = torch.log(event_lam.clamp(min=1e-12)).sum()
 
-        # Compensator approximation: piecewise-constant intensity over
-        # each inter-event interval. We use the intensity at event i-1
-        # (state before observing event i) to respect the causal ordering —
-        # integrating (t_{i-1}, t_i] with the post-event intensity at i
-        # would leak future information into the compensator. Full Monte
-        # Carlo integration (Chen et al. ICLR 2021) lands in v0.2.
-        comp = torch.zeros((), device=self._device)
+        # Compensator. Three choices:
+        #   - "rectangle"   (default): piecewise-constant intensity using
+        #     ``lam[i-1]``. Fast, respects causal ordering (no leakage from
+        #     the event at ``i`` into the interval that ends at ``i``).
+        #   - "trapezoidal": linear-interpolation integral
+        #     ``(lam[i-1] + lam[i]) / 2 * Δt`` — exact when intensity is
+        #     linear within an interval; strictly tighter than rectangle.
+        #   - "mc": Monte Carlo — sample ``n_mc_samples`` uniform points per
+        #     interval, linearly interpolate intensity at each, average. Adds
+        #     variance but converges to the trapezoidal mean and reflects
+        #     the spirit of Chen et al. (ICLR 2021).
+        comp = self._integrate_compensator(lam, times)
+        return float((log_sum - comp).item())
+
+    def _integrate_compensator(self, lam: "Any", times: "Any") -> "Any":
+        torch = self._torch
         abs_times = times.squeeze(0)
-        for i in range(1, abs_times.shape[0]):
-            t0, t1 = float(abs_times[i - 1].item()), float(abs_times[i].item())
+        N = abs_times.shape[0]
+        comp = torch.zeros((), device=self._device)
+        mode = self.config.compensator
+        n_mc = max(1, self.config.n_mc_samples)
+        for i in range(1, N):
+            t0 = float(abs_times[i - 1].item())
+            t1 = float(abs_times[i].item())
             if t1 <= t0:
                 continue
-            comp = comp + lam[0, i - 1].sum() * (t1 - t0)
-        return float((log_sum - comp).item())
+            width = t1 - t0
+            lam_lo = lam[0, i - 1].sum()
+            if mode == "rectangle":
+                comp = comp + lam_lo * width
+            elif mode == "trapezoidal":
+                lam_hi = lam[0, i].sum()
+                comp = comp + 0.5 * (lam_lo + lam_hi) * width
+            else:  # "mc"
+                lam_hi = lam[0, i].sum()
+                # Uniform samples in (0, 1) → linearly interpolated intensities
+                u = torch.rand(n_mc, device=self._device)
+                interp = lam_lo + (lam_hi - lam_lo) * u
+                comp = comp + interp.mean() * width
+        return comp
 
     # ---------------------------------------------------------------- train
 
@@ -474,12 +500,10 @@ class CausalNeuralHawkesProcess(DiffusionModel):
                 idx = torch.arange(lam.shape[1], device=self._device)
                 event_lam = lam[0, idx, type_ids.squeeze(0)]
                 log_sum = torch.log(event_lam.clamp(min=1e-12)).sum()
-                comp = torch.zeros((), device=self._device)
-                abs_times = times.squeeze(0)
-                for i in range(1, abs_times.shape[0]):
-                    gap = max(0.0, float(abs_times[i].item() - abs_times[i - 1].item()))
-                    # Use intensity at i-1 to integrate (t_{i-1}, t_i] without leaking the event at i.
-                    comp = comp + lam[0, i - 1].sum() * gap
+                # Use the same compensator estimator chosen at config time —
+                # rectangle / trapezoidal / mc. See ``_integrate_compensator``
+                # for derivation.
+                comp = self._integrate_compensator(lam, times)
                 nll = -(log_sum - comp)
                 nll.backward()
                 torch.nn.utils.clip_grad_norm_(self._net.parameters(), cfg.grad_clip)

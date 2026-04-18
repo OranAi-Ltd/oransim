@@ -330,6 +330,7 @@ class CausalTransformerWorldModel(WorldModel):
             TYPE_TREATMENT = 1
             TYPE_OUTCOME = 2
             TYPE_CLS = 3
+            TYPE_CONTEXT = 4  # CInA: pooled prior-campaign summary token
 
             def __init__(self) -> None:
                 super().__init__()
@@ -339,9 +340,11 @@ class CausalTransformerWorldModel(WorldModel):
                 self.proj_demo = nn.Linear(cfg.demographic_feature_dim, cfg.d_model) # COVARIATE
                 self.proj_budget = nn.Linear(1, cfg.d_model)                         # TREATMENT
                 self.proj_time = nn.Linear(cfg.time_feature_dim, cfg.d_model)        # COVARIATE
+                # Outcome projection for CInA context tokens.
+                self.proj_outcome = nn.Linear(len(cfg.kpi_heads), cfg.d_model)
 
-                # Token-type embedding (covariate / treatment / outcome / cls)
-                self.type_embed = nn.Embedding(4, cfg.d_model)
+                # Token-type embedding (covariate / treatment / outcome / cls / context)
+                self.type_embed = nn.Embedding(5, cfg.d_model)
                 self.cls = nn.Parameter(torch.zeros(1, 1, cfg.d_model))
 
                 # Sinusoidal position
@@ -448,34 +451,96 @@ class CausalTransformerWorldModel(WorldModel):
                 else:
                     self._dag_bias = dag_bias.to(self._dag_bias.device)
 
+            # CInA in-context --------------------------------------------------
+
+            def _tokenize_context(self, context: list[dict]) -> "torch.Tensor":
+                """Pool each context entry into a single TYPE_CONTEXT token.
+
+                Each entry is a dict with the same feature keys used by the
+                query (creative_embed / kol_feat / demo_feat / budget /
+                platform_id / time_feat) plus an ``outcome`` tensor of shape
+                ``[B, n_kpis]`` holding the observed KPI targets. We compute
+                the 7 per-feature projections, mean-pool them into a single
+                d_model vector, add the outcome projection, and add the
+                TYPE_CONTEXT embedding. Result: ``[B, len(context), d_model]``.
+                """
+                if not context:
+                    return None  # type: ignore[return-value]
+
+                per_entry = []
+                for entry in context:
+                    parts = [
+                        self.proj_creative(entry["creative_embed"]),
+                        self.proj_kol(entry["kol_feat"]),
+                        self.proj_budget(entry["budget"]),
+                        self.proj_platform(entry["platform_id"]),
+                        self.proj_demo(entry["demo_feat"]),
+                        self.proj_time(entry["time_feat"]),
+                    ]
+                    feat_pool = torch.stack(parts, dim=0).mean(dim=0)     # [B, d]
+                    outcome_tok = self.proj_outcome(entry["outcome"])     # [B, d]
+                    ctx_tok = feat_pool + outcome_tok                     # [B, d]
+                    per_entry.append(ctx_tok)
+                ctx_tokens = torch.stack(per_entry, dim=1)                # [B, C, d]
+
+                # Add TYPE_CONTEXT embedding
+                B, C, _ = ctx_tokens.shape
+                ctx_types = torch.full((B, C), self.TYPE_CONTEXT, device=ctx_tokens.device, dtype=torch.long)
+                ctx_tokens = ctx_tokens + self.type_embed(ctx_types)
+                return ctx_tokens
+
             # Forward ----------------------------------------------------------
 
-            def encode(self, features: dict) -> "torch.Tensor":
+            def encode(self, features: dict, context: list[dict] | None = None) -> "torch.Tensor":
                 seq, _ = self.tokenize(features)
+                if context:
+                    ctx = self._tokenize_context(context)
+                    if ctx is not None:
+                        # Prepend context tokens so query tokens can attend to them
+                        seq = torch.cat([ctx, seq], dim=1)
                 dag_bias = self._dag_bias if cfg.dag_attention_bias else None
+                # If a DAG bias is installed, it was sized for the query-only
+                # sequence — expand with zero-padding for context tokens
+                if dag_bias is not None and context:
+                    ctx_len = len(context)
+                    L_total = seq.shape[1]
+                    padded = torch.zeros(L_total, L_total, device=seq.device)
+                    padded[ctx_len:, ctx_len:] = dag_bias[: L_total - ctx_len, : L_total - ctx_len]
+                    dag_bias = padded
                 for blk in self.blocks:
                     seq = blk(seq, dag_bias=dag_bias)
                 seq = self.final_norm(seq)
-                return seq[:, 0]  # CLS
+                # CLS now sits at position ``len(context) + 0``, not position 0
+                cls_pos = len(context) if context else 0
+                # But CLS was prepended BEFORE context in tokenize()? Check:
+                # tokenize() prepends CLS → [CLS, ...query_tokens]. If we prepend
+                # context BEFORE that, the order is [...context, CLS, ...query].
+                # So cls_pos = ctx_len (if context) else 0.
+                return seq[:, cls_pos]
 
-            def forward_factual(self, features: dict) -> dict:
-                h = self.encode(features)
+            def forward_factual(self, features: dict, context: list[dict] | None = None) -> dict:
+                h = self.encode(features, context=context)
                 return {name: head(h) for name, head in zip(cfg.kpi_heads, self.factual_heads)}
 
-            def forward_counterfactual(self, features: dict, arm_idx: "torch.Tensor") -> dict:
+            def forward_counterfactual(
+                self,
+                features: dict,
+                arm_idx: "torch.Tensor",
+                context: list[dict] | None = None,
+            ) -> dict:
                 """Counterfactual prediction ``Y | do(T = arm_idx)``."""
                 if self.cf_heads is None:
                     raise RuntimeError(
                         "counterfactual head disabled — set use_counterfactual_head=True"
                     )
-                h = self.encode(features)
+                h = self.encode(features, context=context)
                 return {
                     name: head(h, arm_idx) for name, head in zip(cfg.kpi_heads, self.cf_heads)
                 }
 
-            def treatment_logits(self, features: dict) -> "torch.Tensor":
+            def treatment_logits(self, features: dict, context: list[dict] | None = None) -> "torch.Tensor":
                 """Probe treatment from representation — used by IPTW adversary."""
-                return self.treatment_probe(self.encode(features))
+                return self.treatment_probe(self.encode(features, context=context))
 
         net = CausalTransformerNet().to(self._device)
         return net
@@ -529,16 +594,31 @@ class CausalTransformerWorldModel(WorldModel):
 
     # ---------------------------------------------------------------- predict
 
-    def predict(self, features: dict[str, Any]) -> WorldModelPrediction:
+    def predict(
+        self,
+        features: dict[str, Any],
+        *,
+        context: list[dict[str, Any]] | None = None,
+    ) -> WorldModelPrediction:
+        """Factual prediction, optionally amortized over a prior-campaign
+        ``context`` set (CInA, Arik & Pfister NeurIPS 2023)."""
         torch = self._torch
         self._net.eval()
         batched = self._batch_one(features)
+        ctx = self._prep_context(context)
         with torch.no_grad():
-            raw = self._net.forward_factual(batched)
-        return self._materialize_prediction(raw, latent={"head": "factual"})
+            raw = self._net.forward_factual(batched, context=ctx)
+        return self._materialize_prediction(
+            raw,
+            latent={"head": "factual", "context_size": 0 if context is None else len(context)},
+        )
 
     def counterfactual(
-        self, features: dict[str, Any], arm_idx: int
+        self,
+        features: dict[str, Any],
+        arm_idx: int,
+        *,
+        context: list[dict[str, Any]] | None = None,
     ) -> WorldModelPrediction:
         """Predict ``Y | do(T = arm_idx)``.
 
@@ -551,12 +631,38 @@ class CausalTransformerWorldModel(WorldModel):
         torch = self._torch
         self._net.eval()
         batched = self._batch_one(features)
+        ctx = self._prep_context(context)
         arm = torch.tensor([arm_idx], device=self._device, dtype=torch.long)
         with torch.no_grad():
-            raw = self._net.forward_counterfactual(batched, arm)
+            raw = self._net.forward_counterfactual(batched, arm, context=ctx)
         return self._materialize_prediction(
-            raw, latent={"head": "counterfactual", "arm_idx": arm_idx}
+            raw,
+            latent={
+                "head": "counterfactual",
+                "arm_idx": arm_idx,
+                "context_size": 0 if context is None else len(context),
+            },
         )
+
+    def _prep_context(self, context: list[dict[str, Any]] | None):
+        """Batchify + tensorize each context entry for CInA in-context path."""
+        if not context:
+            return None
+        return [self._batch_one_with_outcome(entry) for entry in context]
+
+    def _batch_one_with_outcome(self, entry: dict[str, Any]) -> dict[str, Any]:
+        torch = self._torch
+        out: dict[str, Any] = {}
+        for k, v in entry.items():
+            t = torch.as_tensor(v, device=self._device)
+            if t.dim() == 0:
+                t = t.unsqueeze(0)
+            if k == "platform_id":
+                t = t.long()
+            else:
+                t = t.float()
+            out[k] = t.unsqueeze(0)  # prepend batch dim
+        return out
 
     def _materialize_prediction(self, raw: dict, *, latent: dict) -> WorldModelPrediction:
         out: dict[str, dict[float, float]] = {}

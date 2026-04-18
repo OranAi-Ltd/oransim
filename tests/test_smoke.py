@@ -427,6 +427,120 @@ def test_example_notebooks_valid_json():
         assert len(nb["cells"]) > 0
 
 
+# ----------------------------------------------------------- Phase O (v0.2 gap closure)
+
+
+def test_v2_endpoints_wired_to_registries():
+    """Gap 1: /api/v2/* endpoints must route through model registries."""
+    import os
+    os.environ["POP_SIZE"] = "10000"
+    os.environ["SOUL_POOL_N"] = "5"
+    os.environ["LLM_MODE"] = "mock"
+    from fastapi.testclient import TestClient
+    from oransim import api
+    c = TestClient(api.app)
+
+    # Registry introspection
+    r = c.get("/api/v2/registry")
+    assert r.status_code == 200
+    j = r.json()
+    assert "causal_transformer" in j["world_model"]
+    assert "causal_neural_hawkes" in j["diffusion"]
+    assert "bayes_net" in j["synthesizer"]
+
+    # LightGBM baseline — shipped pkl path
+    r = c.post(
+        "/api/v2/world_model/predict?model=lightgbm_quantile",
+        json={"features": {
+            "niche": "beauty", "kol_tier": "mid", "budget": 80_000,
+            "budget_bucket": 2, "kol_fan_count": 240_000,
+            "kol_engagement_rate": 0.042,
+        }},
+    )
+    assert r.status_code == 200
+    j = r.json()
+    assert "kpi_quantiles" in j
+    assert j["kpi_quantiles"]["impressions"]["0.5"] > 0
+
+    # Parametric Hawkes forecast
+    r = c.post(
+        "/api/v2/diffusion/forecast?model=parametric_hawkes",
+        json={"seed_events": [[0.0, "impression"], [60.0, "like"]]},
+    )
+    assert r.status_code == 200
+    assert r.json()["n_events_simulated"] > 0
+
+    # Synthesizer
+    r = c.post("/api/v2/synthesizer/generate?model=bayes_net", json={"N": 100, "seed": 42})
+    assert r.status_code == 200
+    assert r.json()["N"] == 100
+
+    # Deferred synthesizer returns 501 not 500
+    r = c.post("/api/v2/synthesizer/generate?model=tabddpm", json={"N": 100})
+    assert r.status_code == 501
+
+
+@pytest.mark.skipif(not _torch_available(), reason="CInA context test requires torch")
+def test_cina_in_context_path():
+    """Gap 2: CausalTransformer must accept a context= argument."""
+    import torch
+    from oransim.world_model import CausalTransformerWorldModel, CausalTransformerWMConfig
+
+    cfg = CausalTransformerWMConfig(n_layers=2, d_model=64, n_heads=4, dag_attention_bias=False)
+    wm = CausalTransformerWorldModel(cfg)
+
+    def _make_features(seed):
+        g = torch.Generator().manual_seed(seed)
+        return {
+            "creative_embed": torch.randn(cfg.creative_embed_dim, generator=g),
+            "kol_feat":       torch.randn(cfg.kol_feature_dim, generator=g),
+            "demo_feat":      torch.randn(cfg.demographic_feature_dim, generator=g),
+            "platform_id":    torch.tensor(0, dtype=torch.long),
+            "budget":         torch.tensor([0.5]),
+            "time_feat":      torch.tensor([0.0, 1.0, 0.0, 1.0]),
+        }
+
+    query = _make_features(42)
+    pred_no_ctx = wm.predict(query)
+    assert pred_no_ctx.latent["context_size"] == 0
+
+    ctx_entry = _make_features(100)
+    ctx_entry["outcome"] = torch.tensor([1.0, 0.02, 0.001, 50.0])
+    ctx_entry2 = _make_features(101)
+    ctx_entry2["outcome"] = torch.tensor([0.8, 0.015, 0.0008, 42.0])
+    pred_ctx = wm.predict(query, context=[ctx_entry, ctx_entry2])
+    assert pred_ctx.latent["context_size"] == 2
+    a = pred_no_ctx.kpi_quantiles["impressions"][0.50]
+    b = pred_ctx.kpi_quantiles["impressions"][0.50]
+    assert abs(a - b) > 1e-6, "CInA context token had no effect on the prediction"
+
+
+@pytest.mark.skipif(not _torch_available(), reason="MC compensator test requires torch")
+def test_mc_compensator_branch():
+    """Gap 3: CausalNeuralHawkes compensator modes must actually branch."""
+    import torch
+    from oransim.diffusion import CausalNeuralHawkesProcess, CausalNeuralHawkesConfig
+
+    events = [(float(i * 15.0), "impression" if i % 2 == 0 else "like") for i in range(12)]
+
+    def _ll(mode):
+        cfg = CausalNeuralHawkesConfig(n_layers=2, d_model=32, n_heads=4, compensator=mode, n_mc_samples=8)
+        nh = CausalNeuralHawkesProcess(cfg)
+        torch.manual_seed(0)
+        for p in nh._net.parameters():
+            p.data.mul_(0.0).add_(0.01)
+        return nh.log_likelihood(events)
+
+    ll_rect = _ll("rectangle")
+    ll_trap = _ll("trapezoidal")
+    ll_mc   = _ll("mc")
+    for v in (ll_rect, ll_trap, ll_mc):
+        assert isinstance(v, float)
+        assert v == v  # not NaN
+    assert abs(ll_trap - ll_rect) > 1e-6
+    assert abs(ll_mc - ll_rect) > 1e-6
+
+
 # ----------------------------------------------------------- Phase J (v0.2 quick wins)
 
 
