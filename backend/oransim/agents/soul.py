@@ -46,6 +46,102 @@ COMMENT_TEMPLATES_NEG = [
 ]
 
 
+# ── Phase V · persona_card enrichment ─────────────────────────────────────
+# 把 persona_card 从 3 行扩到 ~6 行，多出来的内容全部从**同一份** interest /
+# bigfive 向量派生。SYSTEM 提示保持不变（cache 折扣 + JSON schema 稳定）。
+# LLM 拿到的 user message 因此更 grounded，级联出更贴真人的反应。
+
+TAG_POOL: List[str] = [
+    "美妆", "母婴", "数码", "美食", "穿搭", "健身", "理财",
+    "旅行", "宠物", "汽车", "游戏", "读书", "咖啡", "家居",
+]
+
+# 8 个 archetype 原型。每个是 tag → 权重字典；对 persona 的 per-tag 激活做
+# 加权打分，最高分对应的 label 写进 persona card。"通用中间派" 作为打分
+# 差距不显著时的 fallback（最低阈值分）。
+ARCHETYPE_ANCHORS: Dict[str, Dict[str, float]] = {
+    "Z 世代美妆早鸟":       {"美妆": 1.0, "穿搭": 0.8, "咖啡": 0.3, "旅行": 0.2},
+    "职场妈妈价格敏感型":   {"母婴": 1.0, "美食": 0.6, "家居": 0.5, "理财": 0.3},
+    "理性科技中产":         {"数码": 1.0, "理财": 0.7, "汽车": 0.5, "读书": 0.3},
+    "健身精致生活派":       {"健身": 1.0, "美食": 0.5, "美妆": 0.3, "旅行": 0.4},
+    "文艺旅行向往者":       {"旅行": 1.0, "读书": 0.7, "咖啡": 0.5, "美食": 0.3},
+    "游戏宅数字土著":       {"游戏": 1.0, "数码": 0.7, "汽车": 0.2},
+    "宠物家居温柔派":       {"宠物": 1.0, "家居": 0.8, "美食": 0.3},
+    "通用中间派":           {},  # fallback
+}
+ARCHETYPE_LABELS: List[str] = list(ARCHETYPE_ANCHORS.keys())
+
+
+def _tag_activations(interest_vec: np.ndarray, signed: bool = False) -> Dict[str, float]:
+    """Collapse 64-d interest vector onto TAG_POOL via mod-grouping.
+
+    signed=True keeps direction (用于 anchor/anti-anchor 区分偏好 / 反感)；
+    signed=False 取绝对值（用于 archetype 打分，方向不相关）。
+    """
+    activations = {tag: 0.0 for tag in TAG_POOL}
+    for d, v in enumerate(np.asarray(interest_vec).ravel()):
+        activations[TAG_POOL[d % len(TAG_POOL)]] += float(v if signed else abs(v))
+    return activations
+
+
+def _pick_archetype(abs_activations: Dict[str, float]) -> str:
+    best_label = "通用中间派"
+    best_score = -1.0
+    # 所有锚点的平均激活作为 fallback 阈值
+    mean_act = sum(abs_activations.values()) / max(1, len(abs_activations))
+    fallback_threshold = mean_act * 1.1
+    for label, weights in ARCHETYPE_ANCHORS.items():
+        if not weights:
+            continue
+        score = sum(abs_activations.get(t, 0.0) * w for t, w in weights.items())
+        if score > best_score:
+            best_score = score
+            best_label = label
+    # 如果最高分和第二高分差距太小（archetype 不显著），回退到通用中间派
+    if best_score < fallback_threshold:
+        return "通用中间派"
+    return best_label
+
+
+def _pick_anchors(signed_activations: Dict[str, float], n: int = 3) -> List[str]:
+    """最想看的 n 个 tag（signed activation 最高）。"""
+    return [t for t, _ in sorted(signed_activations.items(), key=lambda kv: -kv[1])[:n]]
+
+
+def _pick_anti_anchors(signed_activations: Dict[str, float], n: int = 3,
+                        exclude: set = None) -> List[str]:
+    """最不想看的 n 个 tag（signed activation 最低且不在 exclude 集合里）。"""
+    exclude = exclude or set()
+    result: List[str] = []
+    for t, _ in sorted(signed_activations.items(), key=lambda kv: kv[1]):
+        if t in exclude:
+            continue
+        result.append(t)
+        if len(result) >= n:
+            break
+    return result
+
+
+def _psych_bullets(bigfive: np.ndarray) -> List[str]:
+    """Bigfive 5D → 最多 4 个显著 facets。阈值对称（0.65 / 0.35）避免 Persona
+    只显示「情绪稳定」这种单 facet 空洞输出。"""
+    O, C, E, A, N = (float(bigfive[i]) for i in range(5))
+    bits: List[str] = []
+    if O > 0.65: bits.append("对新鲜事物特别敏感")
+    elif O < 0.35: bits.append("倾向经过验证的选择")
+    if C > 0.65: bits.append("注重细节 · 反复比价")
+    elif C < 0.35: bits.append("冲动消费多")
+    if E > 0.65: bits.append("爱分享 · 晒图评论频繁")
+    elif E < 0.35: bits.append("沉默围观 · 很少留言")
+    if A > 0.70: bits.append("容易被真诚文案打动")
+    elif A < 0.30: bits.append("对广告本能反感")
+    if N > 0.65: bits.append("容易被焦虑痛点驱动")
+    elif N < 0.35: bits.append("情绪稳定 · 不追热点")
+    if not bits:
+        bits.append("典型佛系 · 信息密度敏感")
+    return bits[:4]
+
+
 @dataclass
 class Persona:
     id: int                 # population index
@@ -57,16 +153,27 @@ class Persona:
     income_tier: int
     interests: List[str]
     psych: str
+    # Phase V · 向量派生的四项 enrichment
+    archetype: str = "通用中间派"
+    anchors: List[str] = field(default_factory=list)
+    anti_anchors: List[str] = field(default_factory=list)
+    psych_bullets: List[str] = field(default_factory=list)
 
     def one_liner(self) -> str:
         return f"{self.age}岁{self.gender}·{self.city}·{self.occupation}·月入分位{self.income_tier}/10"
 
     def full_card(self) -> str:
-        return (
-            f"{self.one_liner()}\n"
-            f"兴趣：{', '.join(self.interests)}\n"
-            f"性格：{self.psych}"
-        )
+        lines = [
+            self.one_liner(),
+            f"兴趣：{', '.join(self.interests)}",
+            f"原型画像：{self.archetype}",
+            f"常看内容：{' / '.join(self.anchors) if self.anchors else '（无显著偏好）'}",
+            f"不爱看：{' / '.join(self.anti_anchors) if self.anti_anchors else '（无显著反感）'}",
+            f"性格：{self.psych}",
+        ]
+        if self.psych_bullets:
+            lines.append("性格特征：\n  • " + "\n  • ".join(self.psych_bullets))
+        return "\n".join(lines)
 
 
 def build_persona(pop: Population, idx: int, rng: np.random.Generator) -> Persona:
@@ -83,13 +190,19 @@ def build_persona(pop: Population, idx: int, rng: np.random.Generator) -> Person
     city = str(rng.choice(city_list))
     occ = OCCUPATION[pop.occ_idx[idx]]
 
-    # interests: top-5 dims of interest vector → symbolic tags
-    top_dims = np.argsort(-np.abs(pop.interest[idx]))[:5]
-    tag_pool = ["美妆", "母婴", "数码", "美食", "穿搭", "健身", "理财",
-                "旅行", "宠物", "汽车", "游戏", "读书", "咖啡", "家居"]
-    interests = [tag_pool[d % len(tag_pool)] for d in top_dims]
+    interest_vec = pop.interest[idx]
+    # Phase V · 向量派生（tag-level 统一口径，避免 dim-level 和 tag-level 打架）
+    abs_act = _tag_activations(interest_vec, signed=False)
+    signed_act = _tag_activations(interest_vec, signed=True)
 
-    # psych from big five
+    # interests: top-5 tags by **signed tag-level activation**（把 64 dim 按
+    # mod-14 归到 tag 上加和后排序）。放弃原先的 dim-level argsort，避免一个
+    # tag 的净活跃度为负、却因为某个大正 dim 挤进 interests、然后又在 tag 净和
+    # 上进 anti_anchors 的矛盾。downstream infer_one 的 niche match 因此自然地
+    # 变成「正向品类匹配」。
+    interests = [t for t, _ in sorted(signed_act.items(), key=lambda kv: -kv[1])[:5]]
+
+    # psych from big five（保留原 one-line 语义用于 backward compat）
     bf = pop.bigfive[idx]
     psych_bits = []
     if bf[0] > 0.7: psych_bits.append("喜欢尝新")
@@ -99,11 +212,18 @@ def build_persona(pop: Population, idx: int, rng: np.random.Generator) -> Person
     if bf[4] < 0.3: psych_bits.append("情绪稳定")
     if not psych_bits: psych_bits = ["佛系"]
 
+    archetype = _pick_archetype(abs_act)
+    anchors = _pick_anchors(signed_act, n=3)
+    anti_anchors = _pick_anti_anchors(signed_act, n=3, exclude=set(anchors))
+    psych_bullets = _psych_bullets(bf)
+
     return Persona(
         id=int(idx), age=age, gender=gender, city=city,
         city_tier=city_tier, occupation=occ,
         income_tier=int(pop.income[idx]),
         interests=interests, psych="，".join(psych_bits),
+        archetype=archetype, anchors=anchors, anti_anchors=anti_anchors,
+        psych_bullets=psych_bullets,
     )
 
 
