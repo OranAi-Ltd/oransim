@@ -19,22 +19,45 @@ class SandboxSession:
     current_result: ScenarioResult
     history: list[Scenario] = field(default_factory=list)
     created_at: float = field(default_factory=time.time)
+    # Which compute path the most recent update used:
+    #   "baseline"    — freshly created, never updated
+    #   "full_rerun"  — creative changed, ran full scenario.run (authoritative)
+    #   "counterfactual" — alloc/kol/audience changed, Pearl 3-step from baseline U
+    #   "fast_approx" — budget-only patch, Hill saturation + frequency-fatigue
+    #                    closed-form scaling of the last result. Much faster for
+    #                    slider UX but NOT a full world-model re-simulation.
+    # Exposed in snapshot() so UI can label which regime the numbers are from.
+    last_mode: str = "baseline"
 
     def snapshot(self) -> dict:
         def kpi_round(d):
-            return {k: round(float(v), 4) for k, v in d.items()}
+            # Some total_kpis entries are annotations (e.g. '_budget_scaling_note')
+            # — round only numeric values, pass strings/bools through.
+            out = {}
+            for k, v in d.items():
+                if isinstance(v, (int, float)):
+                    out[k] = round(float(v), 4)
+                else:
+                    out[k] = v
+            return out
+
+        def kpi_delta(key):
+            cv = self.current_result.total_kpis.get(key, 0)
+            bv = self.baseline_result.total_kpis.get(key, 0)
+            if isinstance(cv, (int, float)) and isinstance(bv, (int, float)):
+                return round(cv - bv, 4)
+            return None
 
         return {
             "id": self.id,
+            "mode": self.last_mode,
             "baseline_kpis": kpi_round(self.baseline_result.total_kpis),
             "current_kpis": kpi_round(self.current_result.total_kpis),
             "delta": {
-                k: round(
-                    self.current_result.total_kpis.get(k, 0)
-                    - self.baseline_result.total_kpis.get(k, 0),
-                    4,
-                )
+                k: d
                 for k in self.current_result.total_kpis
+                for d in [kpi_delta(k)]
+                if d is not None
             },
             "current_scenario": {
                 "total_budget": self.current.total_budget,
@@ -55,7 +78,9 @@ class SandboxStore:
 
     def create(self, baseline: Scenario) -> SandboxSession:
         baseline_result = self.runner.run(baseline, n_monte_carlo=5)
-        sid = str(uuid.uuid4())[:8]
+        # Full 32-hex UUID (128-bit entropy). uuid4()[:8] was 4B space —
+        # guessable in minutes on an exposed host. Frontend treats sid opaque.
+        sid = uuid.uuid4().hex
         sess = SandboxSession(
             id=sid,
             baseline=baseline,
@@ -113,6 +138,7 @@ class SandboxStore:
         # Dispatch to right compute path
         if creative_changed:
             new_result = self.runner.run(new, n_monte_carlo=5)
+            sess.last_mode = "full_rerun"
         elif alloc_changed or kol_changed:
             # counterfactual from baseline with new allocation, preserving baseline U
             intervention = {
@@ -124,6 +150,7 @@ class SandboxStore:
             new_result = self.runner.counterfactual(
                 sess.baseline, sess.baseline_result, intervention
             )
+            sess.last_mode = "counterfactual"
         elif budget_changed:
             # Non-linear budget scaling (saturation + frequency fatigue):
             #   - cost = 预算本身线性（投多少花多少 — 平台按实际花费计费）
@@ -193,14 +220,16 @@ class SandboxStore:
 
             # 附加 audit 元数据方便前端展示
             scaled.total_kpis["_budget_scaling_note"] = (
-                f"Hill 饱和 + 频次疲劳：预算 {ratio:.2f}x → "
+                f"⚡ 近似模式（Hill 饱和 + 频次疲劳，不重跑模型）：预算 {ratio:.2f}x → "
                 f"曝光 {effective_impr_ratio:.2f}x / 点击 {effective_click_ratio:.2f}x / "
                 f"ROI 从 {prev.total_budget and sess.current_result.total_kpis.get('roi',0):.2f} → "
                 f"{scaled.total_kpis['roi']:.2f}"
             )
             new_result = scaled
+            sess.last_mode = "fast_approx"
         else:
             new_result = sess.current_result
+            sess.last_mode = "noop"
 
         sess.current = new
         sess.current_result = new_result

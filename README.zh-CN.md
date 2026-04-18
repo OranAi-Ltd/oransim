@@ -196,7 +196,18 @@ python -m uvicorn oransim.api:app --port 8001 &
 <img src="assets/architecture.svg" alt="Oransim 架构图" width="100%"/>
 </div>
 
-一次典型预测链路：**素材 + 预算** → **PlatformAdapter**（经可插拔 **DataProvider** 取数据）→ **因果 Transformer 世界模型**（事实 + per-arm 反事实分位数预测）+ **Agent 层**（POP_SIZE-scalable IPF + 10k LLM 人格）→ **因果引擎**（64 节点 Pearl SCM + 三步 `do()` 反事实）→ **因果神经 Hawkes**（14 天扩散 + 干预 rollout）→ **预测 JSON**（14-19 个 schema）。*LightGBM quantile 和参数化 Hawkes 通过 registry 作为快速 baseline 可用。*
+一次典型预测链路：**素材 + 预算** → **PlatformAdapter**（经可插拔 **DataProvider** 取数据）→ **世界模型**（事实 + 反事实预测）+ **Agent 层**（POP_SIZE-scalable IPF + LLM 人格）→ **因果引擎**（64 节点 Pearl SCM + 三步 `do()` 反事实）→ **扩散**（14 天干预感知 rollout）→ **预测 JSON**（14-19 个 schema）。
+
+**默认走哪条 / 研究栈怎么开：**
+
+| 位置 | 开箱默认 | 研究栈（opt-in） |
+|---|---|---|
+| 世界模型 | LightGBM 量化 baseline（`data/models/world_model_demo.pkl`）+ 手写结构化公式 | `CausalTransformerWorldModel`（CaT / TARNet / Dragonnet / CInA）— 本地训或 `POST /api/v2/world_model/predict?model=causal_transformer` 切换 |
+| 扩散 | 参数化指数核 Hawkes (Hawkes 1971) | `CausalNeuralHawkesProcess`（Mei & Eisner + Zuo et al. + Geng et al.）— 同样 opt-in：`POST /api/v2/diffusion/forecast?model=causal_neural_hawkes` |
+| Agent | `StatisticalAgents`（向量化，CPU） | `SoulAgentPool` LLM 人格（`/api/predict` 勾 `use_llm=true`） |
+| 沙盘 | 只改预算时用 Hill 饱和 + 频次疲劳闭式公式快算（response 里 `mode: "fast_approx"` 标出来），滑块响应快；改创意 / alloc / KOL 触发真实重跑（`mode: "counterfactual"` 或 `"full_rerun"`）。 | — |
+
+*registry 是扩展点。默认 `/api/predict` 走 baseline 栈是因为它今天就带权重能跑；`/api/v2/*` 是训好权重后 A/B 切到研究栈的路径。两条路径共用同一套 SCM / agent / Hawkes 管道。*
 
 两轴可扩展：
 - **平台轴** —— XHS（v1 legacy 直接可跑）+ TikTok / Instagram / YouTube Shorts / Douyin（合成数据 MVP）；Twitter / Bilibili / LinkedIn 在路线图

@@ -127,6 +127,14 @@ async function runPredict() {
     method:"POST", headers:{"content-type":"application/json"},
     body: JSON.stringify(body)
   });
+  if (!r1.ok) {
+    // Non-2xx: surface the backend's real detail instead of blowing up
+    // with "SyntaxError: Unexpected token '<' in JSON" when it returns HTML.
+    let detail = `/api/predict → ${r1.status}`;
+    try { const j = await r1.json(); if (j && j.detail) detail += ` · ${j.detail}`; }
+    catch (_) { try { detail += ` · ${(await r1.text()).slice(0, 200)}`; } catch (_) {} }
+    throw new Error(detail);
+  }
   const pred = await r1.json();
   // Also call V1 (CCG) — captures trace for ∞ V1 tab
   fetch(API + "/api/predict_v1", {method:"POST", headers:{"content-type":"application/json"},
@@ -153,6 +161,12 @@ async function runPredict() {
     method:"POST", headers:{"content-type":"application/json"},
     body: JSON.stringify(body)
   });
+  if (!r2.ok) {
+    let detail = `/api/sandbox/session → ${r2.status}`;
+    try { const j = await r2.json(); if (j && j.detail) detail += ` · ${j.detail}`; }
+    catch (_) {}
+    throw new Error(detail);
+  }
   const s = await r2.json();
   SESSION_ID = s.id;
   LAST_BASELINE = s.baseline_kpis;
@@ -1099,6 +1113,10 @@ async function onSlide() {
     method:"PATCH", headers:{"content-type":"application/json"},
     body: JSON.stringify(patch)
   });
+  if (!r.ok) {
+    log(`❌ 沙盘更新失败 · ${r.status}`);
+    return;
+  }
   const s = await r.json();
   renderSnapshot(s);
 
@@ -1107,6 +1125,10 @@ async function onSlide() {
     method:"POST", headers:{"content-type":"application/json"},
     body: JSON.stringify(patch)
   });
+  if (!cfr.ok) {
+    log(`❌ 反事实计算失败 · ${cfr.status}`);
+    return;
+  }
   const cf = await cfr.json();
   renderCATE(cf.cate);
 }
@@ -1126,7 +1148,18 @@ function renderSnapshot(s) {
     return `<div class="kpi"><div class="v">${fmt(cur)}</div><div class="l">${label}</div>
             <div class="d ${cls}">Δ ${delta>=0?"+":""}${deltaPct}</div></div>`;
   }).join("");
-  document.getElementById("kpis").innerHTML = grid;
+  // Compute-mode badge — tells the client whether these numbers come from a
+  // full model rerun or from the fast-approx Hill/fatigue shortcut.
+  const modeBadge = ({
+    "fast_approx":    '<span class="badge" style="background:#7A5A10" title="仅改预算：Hill 饱和 + 频次疲劳快速近似，不重跑 world model">⚡ 近似</span>',
+    "counterfactual": '<span class="badge" style="background:#1F5F3B" title="Pearl 3 步反事实：保留 baseline 的残差 U，重跑 world + agents">反事实重跑</span>',
+    "full_rerun":     '<span class="badge" style="background:#1F5F3B" title="创意变更：重新 abduction + 完整模拟">完整重跑</span>',
+    "baseline":       '<span class="badge" style="background:#2a3040">基线</span>',
+    "noop":           '',
+  })[s.mode] || '';
+  document.getElementById("kpis").innerHTML =
+    (modeBadge ? `<div style="grid-column:1/-1;padding:0 0 6px;font-size:11px">${modeBadge}${k._budget_scaling_note?` <span class="hint" style="margin-left:6px">${k._budget_scaling_note}</span>`:''}</div>` : '')
+    + grid;
 
   document.getElementById("per-plat").innerHTML = Object.entries(s.per_platform || {}).map(([p,kk]) =>
     `<div class="seg"><span>${p}</span><span>CTR ${(kk.ctr*100).toFixed(2)}% · CVR ${(kk.cvr*100).toFixed(2)}% · ROI ${kk.roi.toFixed(2)}x</span></div>`

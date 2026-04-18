@@ -191,7 +191,18 @@ The frontend shows a yellow banner at the top whenever the backend is still in m
 <img src="assets/architecture.svg" alt="Oransim architecture diagram" width="100%"/>
 </div>
 
-A typical prediction request flows: **Creative + Budget** → **PlatformAdapter** (pulls data via pluggable **DataProvider**) → **Causal Transformer World Model** (factual + per-arm counterfactual quantile predictions) + **Agent Layer** (POP_SIZE-scalable IPF + 10k LLM personas) → **Causal Engine** (64-node Pearl SCM + 3-step `do()` counterfactuals) → **Causal Neural Hawkes** (14-day diffusion with intervention rollout) → **Prediction JSON** (14–19 schemas). *LightGBM quantile and parametric Hawkes are available as fast baselines via the registry.*
+A typical prediction request flows: **Creative + Budget** → **PlatformAdapter** (pulls data via pluggable **DataProvider**) → **World Model** (factual + counterfactual predictions) + **Agent Layer** (POP_SIZE-scalable IPF + LLM personas) → **Causal Engine** (64-node Pearl SCM + 3-step `do()` counterfactuals) → **Diffusion** (14-day intervention-aware rollout) → **Prediction JSON** (14–19 schemas).
+
+**What runs where:**
+
+| Surface | Default (ships today) | Research-grade (opt-in) |
+|---|---|---|
+| World model | LightGBM quantile baseline (`data/models/world_model_demo.pkl`) + hand-coded structural formula | `CausalTransformerWorldModel` (CaT / TARNet / Dragonnet / CInA) — train locally, or swap in via `POST /api/v2/world_model/predict?model=causal_transformer` |
+| Diffusion | Parametric exponential-kernel Hawkes (Hawkes 1971) | `CausalNeuralHawkesProcess` (Mei & Eisner + Zuo et al. + Geng et al.) — same opt-in pattern: `POST /api/v2/diffusion/forecast?model=causal_neural_hawkes` |
+| Agents | `StatisticalAgents` (vectorised, CPU) | `SoulAgentPool` LLM personas (enable via `use_llm=true` on `/api/predict`) |
+| Sandbox | Budget-only slider uses a Hill-saturation + frequency-fatigue closed form (`mode: "fast_approx"` in the response) so the slider is responsive. Non-budget edits (creative / alloc / KOL) trigger a real model re-run (`mode: "counterfactual"` or `"full_rerun"`). | — |
+
+*The registry is the extension point. Default `/api/predict` uses the baseline stack because it's what ships with weights today; `/api/v2/*` is how you A/B swap in the research stack once you've trained it. Both routes share the same SCM / agent / Hawkes plumbing.*
 
 Two-axis extensibility:
 - **Platform** axis — XHS (legacy, v1 live) + TikTok / Instagram / YouTube Shorts / Douyin (MVP on synthetic); Twitter / Bilibili / LinkedIn on roadmap

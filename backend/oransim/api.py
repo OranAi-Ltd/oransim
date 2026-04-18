@@ -273,7 +273,16 @@ def _build_scenario(req: PredictRequest) -> tuple[Scenario, dict]:
     for plat in req.platform_alloc:
         kol = pick_kol_by_spec(KOLS, plat, niche=req.kol_niche)
         kol_per[plat] = kol
-    today = date.fromisoformat(req.today) if req.today else date.today()
+    if req.today:
+        try:
+            today = date.fromisoformat(req.today)
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"invalid `today`: {req.today!r}, expect ISO YYYY-MM-DD",
+            ) from None
+    else:
+        today = date.today()
     # Auto-pull world sentiment when user leaves default "neutral"
     sentiment = req.sentiment
     world = None
