@@ -607,6 +607,142 @@ def test_cina_in_context_path():
     assert abs(a - b) > 1e-6, "CInA context token had no effect on the prediction"
 
 
+@pytest.mark.skipif(not _torch_available(), reason="requires torch")
+def test_cnhp_kv_cache_matches_full_forward():
+    """Pin that the KV-cache incremental path produces the same hidden state
+    (and thus the same intensity) as a full-sequence forward. Regression
+    protection for the forecast() speedup.
+    """
+    import torch
+    from oransim.diffusion import CausalNeuralHawkesConfig, CausalNeuralHawkesProcess
+
+    torch.manual_seed(42)
+    cfg = CausalNeuralHawkesConfig(n_layers=2, d_model=32, n_heads=4, dropout=0.0)
+    nh = CausalNeuralHawkesProcess(cfg)
+    net = nh._net
+    net.eval()
+
+    # 7-event stream so the incremental + full forwards can both produce a
+    # last-position intensity to compare.
+    events = [
+        (0.0, "impression"),
+        (15.0, "like"),
+        (30.0, "impression"),
+        (45.0, "share"),
+        (60.0, "conversion"),
+        (90.0, "like"),
+        (120.0, "save"),
+    ]
+    type_ids, dt, treatment_ids, _ = nh._prep_stream(events)
+
+    with torch.no_grad():
+        # Full-seq path (what training uses)
+        h_full = net(type_ids, dt, treatment_ids)
+        lam_full = net.intensity(h_full)[:, -1]
+
+        # Cached path: seed with the first N-1 events, then add the last one
+        # incrementally. Final intensity at the new token should match lam_full.
+        caches = net.new_kv_caches()
+        _ = net(
+            type_ids[:, :-1],
+            dt[:, :-1],
+            treatment_ids[:, :-1],
+            kv_caches=caches,
+            is_incremental=False,
+        )
+        h_inc = net(
+            type_ids[:, -1:],
+            dt[:, -1:],
+            treatment_ids[:, -1:],
+            kv_caches=caches,
+            is_incremental=True,
+        )
+        lam_inc = net.intensity(h_inc)[:, -1]
+
+    assert lam_full.shape == lam_inc.shape
+    max_abs = (lam_full - lam_inc).abs().max().item()
+    assert max_abs < 1e-5, f"KV-cache incremental diverges from full forward: {max_abs:.2e}"
+
+
+@pytest.mark.skipif(not _torch_available(), reason="requires torch")
+def test_cnhp_batched_fit_equivalence():
+    """Batched NLL (padded mini-batch) over K streams equals the sum of
+    unbatched log-likelihoods on each stream. Pins that fit()'s batch_size
+    path matches the reference per-stream computation to FP noise.
+    """
+    import torch
+    from oransim.diffusion import CausalNeuralHawkesConfig, CausalNeuralHawkesProcess
+
+    cfg = CausalNeuralHawkesConfig(n_layers=2, d_model=32, n_heads=4, dropout=0.0)
+    torch.manual_seed(0)
+    nh = CausalNeuralHawkesProcess(cfg)
+    nh._net.eval()
+
+    streams = [
+        [(0.0, "impression"), (20.0, "like"), (60.0, "share")],
+        [
+            (0.0, "impression"),
+            (15.0, "like"),
+            (30.0, "impression"),
+            (50.0, "conversion"),
+        ],
+        [
+            (0.0, "impression"),
+            (10.0, "comment"),
+            (40.0, "like"),
+            (80.0, "share"),
+            (90.0, "save"),
+        ],
+    ]
+
+    with torch.no_grad():
+        type_ids, dt, treatment_ids, times, mask = nh._prep_batch(streams)
+        h = nh._net(type_ids, dt, treatment_ids)
+        lam = nh._net.intensity(h)
+        event_lam = torch.gather(lam, 2, type_ids.unsqueeze(-1)).squeeze(-1)
+        log_sum = (torch.log(event_lam.clamp(min=1e-12)) * mask).sum()
+        comp = nh._integrate_compensator_batched(lam, times, mask)
+        batched_nll = float(-(log_sum - comp).item())
+        unbatched_nll = -sum(nh.log_likelihood(s) for s in streams)
+
+    assert (
+        abs(batched_nll - unbatched_nll) < 1e-2
+    ), f"batched NLL {batched_nll} diverges from unbatched sum {unbatched_nll}"
+
+
+@pytest.mark.skipif(not _torch_available(), reason="requires torch")
+def test_cnhp_kv_cache_rollback_reverts_state():
+    """Rejection in Ogata thinning rolls back the virtual-τ token from the
+    cache. After rollback, a subsequent incremental call with the SAME new
+    token must produce the same hidden state as it did before the rollback.
+    """
+    import torch
+    from oransim.diffusion import CausalNeuralHawkesConfig, CausalNeuralHawkesProcess
+
+    torch.manual_seed(7)
+    cfg = CausalNeuralHawkesConfig(n_layers=2, d_model=32, n_heads=4, dropout=0.0)
+    nh = CausalNeuralHawkesProcess(cfg)
+    net = nh._net
+    net.eval()
+
+    type_ids, dt, treatment_ids, _ = nh._prep_stream(
+        [(0.0, "impression"), (20.0, "like"), (40.0, "share")]
+    )
+    caches = net.new_kv_caches()
+    with torch.no_grad():
+        net(type_ids, dt, treatment_ids, kv_caches=caches, is_incremental=False)
+
+        virtual_type = torch.tensor([[0]], dtype=torch.long)
+        virtual_dt = torch.tensor([[5.0]], dtype=torch.float32)
+        virtual_tr = torch.tensor([[0]], dtype=torch.long)
+
+        h1 = net(virtual_type, virtual_dt, virtual_tr, kv_caches=caches, is_incremental=True)
+        net.rollback_last_token(caches)
+        h2 = net(virtual_type, virtual_dt, virtual_tr, kv_caches=caches, is_incremental=True)
+
+    assert (h1 - h2).abs().max().item() < 1e-6, "rollback did not restore state"
+
+
 @pytest.mark.skipif(not _torch_available(), reason="MC compensator test requires torch")
 def test_mc_compensator_branch():
     """Gap 3: CausalNeuralHawkes compensator modes must actually branch."""
