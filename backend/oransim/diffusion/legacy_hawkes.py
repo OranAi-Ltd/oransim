@@ -21,7 +21,7 @@ from typing import Dict, List, Optional
 
 from ..data.population import Population
 from ..agents.statistical import OutcomeBatch
-from ..world_model.model import ImpressionResult
+from ..platforms.xhs.world_model_legacy import ImpressionResult
 
 
 N_AGE = 6; N_GENDER = 2; N_CITY = 5

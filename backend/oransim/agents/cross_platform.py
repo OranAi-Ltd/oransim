@@ -14,7 +14,7 @@ import numpy as np
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
-from ..world_model.model import PlatformWorldModel, AudienceFilter, ImpressionResult
+from ..platforms.xhs.world_model_legacy import PlatformWorldModel, AudienceFilter, ImpressionResult
 from ..data.creatives import Creative
 from ..data.kols import KOL
 

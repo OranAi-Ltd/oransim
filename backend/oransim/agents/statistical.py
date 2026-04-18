@@ -13,7 +13,7 @@ from typing import Dict, Optional
 from ..data.population import Population
 from ..data.creatives import Creative
 from ..data.kols import KOL
-from ..world_model.model import ImpressionResult
+from ..platforms.xhs.world_model_legacy import ImpressionResult
 
 
 def _sigmoid(x):

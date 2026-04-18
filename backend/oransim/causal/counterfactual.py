@@ -12,7 +12,7 @@ from typing import Dict, Optional, List
 from ..data.creatives import Creative
 from ..data.kols import KOL
 from ..data.platforms import PLATFORMS
-from ..world_model.model import PlatformWorldModel, AudienceFilter, ImpressionResult
+from ..platforms.xhs.world_model_legacy import PlatformWorldModel, AudienceFilter, ImpressionResult
 from ..agents.statistical import StatisticalAgents, OutcomeBatch
 
 

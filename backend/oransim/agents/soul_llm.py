@@ -1,10 +1,14 @@
-"""Real LLM soul agents — OpenAI-compatible client (DeepSeek / Qwen / local vLLM / GPT).
+"""Real LLM soul agents — OpenAI-compatible client.
+
+Works with any OpenAI-compatible provider: OpenAI, Anthropic via proxy,
+Google Gemini via proxy, DeepSeek, Qwen DashScope, local vLLM / TGI, etc.
 
 Zero extra deps (uses urllib). Switch via env:
   LLM_MODE=mock|api         (default: mock)
-  LLM_BASE_URL=...          (default: https://api.deepseek.com/v1)
+  LLM_BASE_URL=...          (default: https://api.openai.com/v1)
   LLM_API_KEY=...
-  LLM_MODEL=deepseek-chat   (or qwen-turbo, gpt-4o-mini, Qwen/Qwen3-4B-Instruct, ...)
+  LLM_MODEL=gpt-5.4         (or gpt-4o-mini, deepseek-chat, qwen-turbo,
+                              Qwen/Qwen3-4B-Instruct, etc.)
 
 Drop-in replacement for SoulAgentPool.infer_one when LLM_MODE=api.
 """
@@ -14,9 +18,9 @@ from typing import Dict, Optional
 from .soul import Persona
 
 MODE = os.environ.get("LLM_MODE", "mock")
-BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.deepseek.com/v1").rstrip("/")
+BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1").rstrip("/")
 API_KEY = os.environ.get("LLM_API_KEY", "")
-MODEL = os.environ.get("LLM_MODEL", "deepseek-chat")
+MODEL = os.environ.get("LLM_MODEL", "gpt-5.4")
 TIMEOUT = float(os.environ.get("LLM_TIMEOUT", "15"))
 
 
