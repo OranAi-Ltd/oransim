@@ -235,9 +235,27 @@ cf = wm.counterfactual(features, arm_idx=2)         # do(T = arm 2) 反事实
 </details>
 
 <details>
+<summary><b>通用 Embedding Bus (UEB)</b> —— 现在只做文本，v0.5 接多模态</summary>
+
+所有数据源（素材文案、KOL 个签、用户评论、粉丝画像表格、平台事件流）都走统一的 `Embedder` ABC，输出固定维度向量。下游模块（世界模型 / agent / causal 层）从来见不到 modality 特定代码 —— registry 本身就是 modality-generic。
+
+**v0.2 已 ship**：
+- `RealTextEmbedder` —— OpenAI 兼容的 `text-embedding-3-small`，复用 soul_llm 的同一个网关（一个 key 搞定）。API 不可用时自动降级到确定性 hash embedder。
+- `TabularEmbedder` · `CategoricalEmbedder` · `TimeSeriesEmbedder` · `GeoEmbedder` · `EventEmbedder` —— 非学习 baseline。
+
+**v0.5 留的桩**（调用会 raise `NotImplementedError` 指向 ROADMAP.md#v05）：
+- `ImageEmbedderStub` —— 计划 backend：CLIP / Qwen-VL / SigLIP / ImageBind
+- `VideoEmbedderStub` —— 计划 backend：I-JEPA v2 / TimeSformer / VideoMAE v2 / Qwen-VL 视频模式
+- `AudioEmbedderStub` —— 计划 backend：Whisper-v3 encoder / CLAP / AudioMAE
+
+接入真实实现是一个 ~50 行的 `Embedder` 子类，下游零改动。详见 `backend/oransim/runtime/embedding_bus.py`。
+
+</details>
+
+<details>
 <summary><b>LightGBM 分位数世界模型</b> —— 快速 baseline</summary>
 
-每个 KPI 3 个分位数回归器（P35 / P50 / P65）。亚毫秒推理、无 GPU 需求。特征工程含：素材 embedding（OpenAI `text-embedding-3-small`）· 平台先验 · KOL 特征 · 时序信号 · PCA 降维行为特征。参考：Ke et al. 2017（LightGBM）、Koenker 2005（分位数回归）。
+每个 KPI 3 个分位数回归器（P35 / P50 / P65）。亚毫秒推理、无 GPU 需求。特征工程含：素材 embedding（OpenAI `text-embedding-3-small` —— 当前仅文本，多模态走 UEB 在 v0.5 落地）· 平台先验 · KOL 特征 · 时序信号 · PCA 降维行为特征。参考：Ke et al. 2017（LightGBM）、Koenker 2005（分位数回归）。
 
 保留作为生产默认 fallback（直到 v0.2 因果 Transformer 权重发布），也用于 OrancBench 消融对比。
 

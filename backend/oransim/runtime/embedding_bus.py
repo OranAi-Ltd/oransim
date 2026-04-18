@@ -180,6 +180,79 @@ class EventEmbedder(Embedder):
         return v.astype(np.float32) / (np.linalg.norm(v) + 1e-8)
 
 
+# ---------------- Multi-modal stubs (v0.5 roadmap hooks) ----------------
+#
+# Oransim v0.2 only ships a real *text* embedder (OpenAI-compat
+# text-embedding-3-small via real_embedder.RealTextEmbedder). Image / video /
+# audio embedders are stubs that raise NotImplementedError pointing at
+# ROADMAP.md#v05. The ABC contract, `modality` field, and the registry are
+# all ready — dropping a real CLIP / SigLIP / Whisper implementation in is a
+# ~50-line Embedder subclass with no downstream changes.
+#
+# Why stubs now: documents the extension surface in code (not just
+# docs/ROADMAP), gives callers a typed error when they try to embed a
+# non-text modality, and prevents silent fallbacks to hash-mock that would
+# misleadingly "just work" on image inputs.
+
+_MULTIMODAL_ROADMAP_MSG = (
+    "Multi-modal embedders (image / video / audio) are a v0.5 roadmap item. "
+    "Oransim v0.2 ships only the real text embedder. "
+    "See ROADMAP.md#v05 and docs/en/architecture.md for the planned "
+    "CLIP / Qwen-VL / SigLIP (image), I-JEPA / TimeSformer (video), "
+    "Whisper-v3 / CLAP (audio) backends."
+)
+
+
+class ImageEmbedderStub(Embedder):
+    """Stub for image embedders. Raises NotImplementedError until v0.5 lands.
+
+    Planned backends: CLIP (OpenAI), Qwen-VL (Alibaba), SigLIP (Google),
+    ImageBind (Meta). Drop-in swap once the weights are selected.
+    """
+    name = "image-stub-v0.2"
+    modality = "image"
+
+    def __init__(self, dim: int = EMB_DIM):
+        self.output_dim = dim
+
+    def embed(self, item: Any) -> np.ndarray:
+        raise NotImplementedError(_MULTIMODAL_ROADMAP_MSG)
+
+
+class VideoEmbedderStub(Embedder):
+    """Stub for video embedders. Raises NotImplementedError until v0.5 lands.
+
+    Planned backends: I-JEPA v2 (Meta), TimeSformer, VideoMAE v2,
+    or Qwen-VL video mode. Typical choice is image-backbone + temporal
+    pooling for short-form video (TikTok / Reels / Shorts 15-60s).
+    """
+    name = "video-stub-v0.2"
+    modality = "video"
+
+    def __init__(self, dim: int = EMB_DIM):
+        self.output_dim = dim
+
+    def embed(self, item: Any) -> np.ndarray:
+        raise NotImplementedError(_MULTIMODAL_ROADMAP_MSG)
+
+
+class AudioEmbedderStub(Embedder):
+    """Stub for audio embedders. Raises NotImplementedError until v0.5 lands.
+
+    Planned backends: Whisper-v3 encoder (OpenAI, speech-heavy), CLAP
+    (music / ambient), AudioMAE. Primary use case: BGM-mood recognition
+    for short-video creatives.
+    """
+    name = "audio-stub-v0.2"
+    modality = "audio"
+
+    def __init__(self, dim: int = EMB_DIM):
+        self.output_dim = dim
+
+    def embed(self, item: Any) -> np.ndarray:
+        raise NotImplementedError(_MULTIMODAL_ROADMAP_MSG)
+
+
 # ---------------- Registry ----------------
 
 @dataclass

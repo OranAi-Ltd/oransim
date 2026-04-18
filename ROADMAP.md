@@ -72,7 +72,12 @@ Themes:
 - ✅ ~~Transformer World Model~~ — **shipped in v0.1.0-alpha** as `CausalTransformerWorldModel` (CaT + CausalDAG-Transformer + TARNet/Dragonnet + BCAUSS + CInA). Pretrained weights arrive with v0.2.
 - 🎯 **Pretrained-weight release** — trained checkpoints for both primary models on the 100k synthetic corpus, published at https://github.com/ORAN-cgsj/oransim/releases
 - 🎯 **Cross-platform transfer learning** — pretrain world model on XHS data, fine-tune on TikTok with few-shot adapter layer; quantify transfer gain
-- **Vision-Language Model (VLM) creative understanding** — CLIP / Qwen-VL / GPT-5.4-Vision to embed image + video creatives; compare against text-only baseline
+- 🎯 **Multi-modal embedders** — v0.2 ships stub classes (`ImageEmbedderStub` / `VideoEmbedderStub` / `AudioEmbedderStub` in `runtime/embedding_bus.py`) that raise `NotImplementedError` pointing here. v0.5 lands real backends:
+  - **Image**: CLIP (OpenAI) / Qwen-VL (Alibaba) / SigLIP (Google) / ImageBind (Meta)
+  - **Video**: I-JEPA v2 (Meta) / TimeSformer / VideoMAE v2, or Qwen-VL video mode — typical choice is image backbone + temporal pooling for short-form video (TikTok / Reels / Shorts 15-60s)
+  - **Audio**: Whisper-v3 encoder (OpenAI, speech-heavy) / CLAP (music, ambient) / AudioMAE — primary use case is BGM-mood recognition for short-video creatives
+  - Drop-in via the existing `Embedder` ABC — no downstream changes in agent / world_model / causal layers (UEB registry is already modality-generic)
+- **Vision-Language Model (VLM) creative understanding** — use the embedders above + existing Causal Transformer world model to score creatives end-to-end (image → embedding → predicted KPI uplift); compare against text-only baseline
 - **RLHF for soul agents** — fine-tune the LLM persona layer using real marketer thumbs-up/down feedback
 
 ### 🌐 Platforms

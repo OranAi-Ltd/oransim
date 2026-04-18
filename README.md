@@ -237,9 +237,27 @@ cf = wm.counterfactual(features, arm_idx=2)         # do(T = arm 2)
 </details>
 
 <details>
+<summary><b>Universal Embedding Bus (UEB)</b> — text-only today, multi-modal hooks for v0.5</summary>
+
+Every data source (creative copy, KOL bio, user comment, fan-profile tabular record, platform event stream) flows through a shared `Embedder` ABC that produces a fixed-dim vector. Downstream modules (world_model / agent / causal) never see modality-specific code — the registry is modality-generic.
+
+**Shipped today (v0.2)**:
+- `RealTextEmbedder` — OpenAI-compatible `text-embedding-3-small` via the same gateway as `soul_llm` (one key for everything). Falls back to a deterministic hash embedder if the API is unavailable.
+- `TabularEmbedder`, `CategoricalEmbedder`, `TimeSeriesEmbedder`, `GeoEmbedder`, `EventEmbedder` — non-learned baselines.
+
+**Stubs for v0.5** (raise `NotImplementedError` pointing to ROADMAP.md#v05 if called):
+- `ImageEmbedderStub` — planned backends: CLIP / Qwen-VL / SigLIP / ImageBind
+- `VideoEmbedderStub` — planned backends: I-JEPA v2 / TimeSformer / VideoMAE v2 / Qwen-VL video
+- `AudioEmbedderStub` — planned backends: Whisper-v3 encoder / CLAP / AudioMAE
+
+Dropping a real implementation in is a ~50-line `Embedder` subclass with no downstream changes. See `backend/oransim/runtime/embedding_bus.py`.
+
+</details>
+
+<details>
 <summary><b>LightGBM Quantile World Model</b> — fast baseline</summary>
 
-Three quantile regressors (P35, P50, P65) per KPI. Sub-millisecond inference, zero GPU requirement. Feature engineering includes creative embeddings (OpenAI `text-embedding-3-small`), platform priors, KOL features, temporal signals, and PCA-reduced behavioral features. Refs: Ke et al. 2017 (LightGBM), Koenker 2005 (Quantile Regression).
+Three quantile regressors (P35, P50, P65) per KPI. Sub-millisecond inference, zero GPU requirement. Feature engineering includes creative embeddings (OpenAI `text-embedding-3-small` — text only today, multi-modal via the UEB above lands in v0.5), platform priors, KOL features, temporal signals, and PCA-reduced behavioral features. Refs: Ke et al. 2017 (LightGBM), Koenker 2005 (Quantile Regression).
 
 Kept as the production default until the Causal Transformer checkpoints ship in v0.2. Also used as an ablation baseline in OrancBench.
 
