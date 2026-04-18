@@ -1,6 +1,6 @@
 # Oransim Roadmap
 
-> **Updated:** 2026-04-18 · **Current version:** 0.1.0-alpha
+> **Updated:** 2026-04-19 · **Current version:** 0.2.0-alpha
 >
 > This roadmap is aspirational. Item inclusion does not guarantee delivery; priorities shift with user feedback, research breakthroughs, and commercial signal. Give a 👍 reaction on the [tracking issue](https://github.com/OranAi-Ltd/oransim/issues) to help us prioritize.
 
@@ -69,8 +69,8 @@ Themes:
 ## v0.5 · Mid (Q4 2026 – Q1 2027)
 
 ### 🧠 Models & Algorithms
-- ✅ ~~Neural Hawkes Process~~ — **shipped in v0.1.0-alpha** as `CausalNeuralHawkesProcess` (Zuo ICML'20 + Geng NeurIPS'22 counterfactual TPP). Pretrained weights arrive with v0.2.
-- ✅ ~~Transformer World Model~~ — **shipped in v0.1.0-alpha** as `CausalTransformerWorldModel` (CaT + CausalDAG-Transformer + TARNet/Dragonnet + BCAUSS + CInA). Pretrained weights arrive with v0.2.
+- ✅ ~~Neural Hawkes Process~~ — **shipped in v0.1.0-alpha** as `CausalNeuralHawkesProcess` (Zuo ICML'20 + Geng NeurIPS'22 counterfactual TPP). Pretrained weights arrive with OrancBench v0.5.
+- ✅ ~~Transformer World Model~~ — **shipped in v0.1.0-alpha** as `CausalTransformerWorldModel` (CaT + CausalDAG-Transformer + TARNet/Dragonnet + BCAUSS + CInA). Pretrained weights arrive with OrancBench v0.5.
 - 🎯 **Pretrained-weight release** — trained checkpoints for both primary models on the 100k synthetic corpus, published at https://github.com/OranAi-Ltd/oransim/releases
 - 🎯 **Cross-platform transfer learning** — pretrain world model on XHS data, fine-tune on TikTok with few-shot adapter layer; quantify transfer gain
 - 🎯 **Multi-modal embedders** — v0.2 ships stub classes (`ImageEmbedderStub` / `VideoEmbedderStub` / `AudioEmbedderStub` in `runtime/embedding_bus.py`) that raise `NotImplementedError` pointing here. v0.5 lands real backends:
