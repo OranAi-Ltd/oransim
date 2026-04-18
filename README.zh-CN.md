@@ -21,6 +21,10 @@
 
 ---
 
+<p align="center">
+<img src="assets/screenshots/hero.png" alt="Oransim · 60 秒完成带反事实推理的广告预演" width="100%"/>
+</p>
+
 ## 一句话介绍
 
 > **把 Oransim 当作广告预测界的 Figma。** 粘一段广告文案，拖个滑块，看预测**为什么**变了——以及换种做法会发生什么。反事实推理天生内建，不是外挂补丁。
@@ -71,7 +75,30 @@ python -m http.server 8090 --directory frontend
 
 想用真 LLM？设置 `LLM_MODE=api` + `LLM_API_KEY` + `LLM_MODEL`。用 `LLM_PROVIDER` 选原生格式（`openai` · `anthropic` · `gemini` · `qwen`）；`openai` 是默认值，也覆盖 DeepSeek / vLLM / 任何 OpenAI-compat 网关。详见 [docs/zh/quickstart.md](docs/zh/quickstart.md) 与 [.env.example](.env.example)。
 
-> **注意**：v0.1.0-alpha 只含骨架代码，完整后端（含前端 demo 和截图）在 v0.2 到位（见 [ROADMAP.md](ROADMAP.md)）。关注仓库等待后续更新。
+> **注意**：v0.1.0-alpha 只含骨架代码，完整后端（含前端 demo）在 v0.2 到位（见 [ROADMAP.md](ROADMAP.md)）。关注仓库等待后续更新。
+
+---
+
+## 🎬 实际效果
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**三栏工作界面** —— 左：素材 + 预算 + 反事实滑块 · 中：KPI / 百万智能体 / AI 群聊 tab（「更多 ›」下拉藏着 Hawkes / SCM / CATE / Schema 等深度视图）· 右：逐 persona 的 LLM 反应。
+
+<img src="assets/screenshots/main-three-col.png" alt="三栏预测界面" width="100%"/>
+
+</td>
+<td width="50%" valign="top">
+
+**100 万智能体中的意见传播** —— 粘入广告文案，观察四色意见波（绿=点击 / 紫=强购意 / 红=跳过 / 蓝=好奇）从 KOL 种子向外扩散，级联感染粉丝。
+
+<img src="assets/screenshots/society-100m.png" alt="百万智能体中的意见传播" width="100%"/>
+
+</td>
+</tr>
+</table>
 
 ---
 

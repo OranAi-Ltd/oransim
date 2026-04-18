@@ -21,6 +21,10 @@
 
 ---
 
+<p align="center">
+<img src="assets/screenshots/hero.png" alt="Oransim hero · 60-second prediction with counterfactual reasoning over a 1M-agent society" width="100%"/>
+</p>
+
 ## TL;DR
 
 > **Think of Oransim as Figma for ad prediction.** Paste your ad copy, move a slider, see *why* the prediction changes — and what would happen if you'd chosen differently. Counterfactual reasoning built in, not bolted on.
@@ -73,7 +77,30 @@ python -m http.server 8090 --directory frontend
 
 To use real LLMs, set `LLM_MODE=api` + `LLM_API_KEY` + `LLM_MODEL`. Select the native request format via `LLM_PROVIDER` (`openai` · `anthropic` · `gemini` · `qwen`); `openai` is the default and also covers DeepSeek / vLLM / any OpenAI-compat gateway. See [docs/en/quickstart.md](docs/en/quickstart.md) and [.env.example](.env.example).
 
-> **Note:** v0.1.0-alpha ships skeleton code only. Full backend (including the web demo and screenshots) lands in v0.2 (see [ROADMAP.md](ROADMAP.md)). Follow the repo to get notified.
+> **Note:** v0.1.0-alpha ships skeleton code only. Full backend (including the web demo) lands in v0.2 (see [ROADMAP.md](ROADMAP.md)). Follow the repo to get notified.
+
+---
+
+## 🎬 See It In Action
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**Three-panel working UI** — left: creative + budget + sliders · center: KPI / 百万智能体 / AI-群聊 tabs (+「更多 ›」dropdown for deep analysis) · right: per-persona LLM reactions.
+
+<img src="assets/screenshots/main-three-col.png" alt="Three-panel prediction UI" width="100%"/>
+
+</td>
+<td width="50%" valign="top">
+
+**Opinion-propagation through a 1M-agent society** — drop an ad copy, watch color-coded opinion waves (green=click / purple=high intent / red=skip / blue=curious) ripple outward from KOL seeds, cascading to their followers in real time.
+
+<img src="assets/screenshots/society-100m.png" alt="Opinion propagation over 1M agents" width="100%"/>
+
+</td>
+</tr>
+</table>
 
 ---
 
