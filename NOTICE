@@ -1,0 +1,14 @@
+Oransim
+Copyright 2026 OranAI Ltd. (橙果视界（深圳）科技有限公司)
+
+This product includes software developed by OranAI Ltd. and Oransim contributors.
+
+Portions of this software build upon the following open-source projects:
+  - FastAPI (MIT License) — https://github.com/tiangolo/fastapi
+  - Pydantic (MIT License) — https://github.com/pydantic/pydantic
+  - NumPy (BSD-3-Clause) — https://numpy.org/
+  - SciPy (BSD-3-Clause) — https://scipy.org/
+  - scikit-learn (BSD-3-Clause) — https://scikit-learn.org/
+  - LightGBM (MIT License) — https://github.com/microsoft/LightGBM
+
+See individual package licenses for details.
