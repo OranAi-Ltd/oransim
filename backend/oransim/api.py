@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import time
+from contextlib import asynccontextmanager
 from datetime import date
 
 import numpy as np
@@ -52,48 +53,89 @@ if not logger.handlers:
     logger.addHandler(_h)
     logger.setLevel(logging.INFO)
 
-# ---------------- Bootstrap ----------------
-logger.info("[Oransim] bootstrapping…")
-t0 = time.time()
-POP_SIZE = int(os.environ.get("POP_SIZE", "100000"))
-POP = generate_population(N=POP_SIZE, seed=42)
-logger.info(
-    f"  population 100k ready  ({time.time()-t0:.1f}s)  marginal KL={marginal_fit_report(POP)}"
-)
-WM = PlatformWorldModel(POP)
-AG = StatisticalAgents(POP)
-SOULS = SoulAgentPool(POP, n=int(os.environ.get("SOUL_POOL_N", "100")), seed=7)
-KOLS = generate_kol_library(n_per_platform=30)
-RUNNER = ScenarioRunner(WM, AG)
-SANDBOX = SandboxStore(RUNNER)
-HAWKES = HawkesSimulator(POP, beta=0.9, branching=0.35)
-RECSYS_RL = RecSysRLSimulator(WM)
-BRAND_STORE = BrandMemoryState.empty(POP.N)  # one global brand; prod would be per-brand dict
-
-# Pluggable Agent Providers — Oransim naming
-SLOC_PROVIDER = SLOCProvider(AG, SOULS, None, None)  # partition injected after Voronoi build
-OASIS_PROVIDER = OASISProvider(SOULS, POP, n_total=10_000, activation_prob=0.05)
-VORONOI_PROVIDER = SLOC_PROVIDER  # backward compat for legacy callers
-
-# V1 — Universal Embedding Bus
-bootstrap_default_sources()
+# ---------------- Runtime state (populated by _bootstrap via lifespan) ----------------
+POP = None
+WM = None
+AG = None
+SOULS = None
+KOLS = None
+RUNNER = None
+SANDBOX = None
+HAWKES = None
+RECSYS_RL = None
+BRAND_STORE = None
+SLOC_PROVIDER = None
+OASIS_PROVIDER = None
+VORONOI_PROVIDER = None
+PARTITION = None
+PERSONA_TO_SLOT: dict[int, int] = {}
 
 
-# Auto-index the data we already have so N > 0 from the start
+def _bootstrap() -> None:
+    """Idempotent heavy init: population → world model → agents → KOLs → Voronoi.
+
+    Called from lifespan on app startup. Safe to call multiple times — returns
+    early if already initialized. Previously ran at import-time, which forced
+    tests + lightweight scripts to pay the full ~10s init cost. Moving it to
+    lifespan defers the work to real startup and keeps ``import oransim.api``
+    cheap for metadata inspection.
+    """
+    global POP, WM, AG, SOULS, KOLS, RUNNER, SANDBOX, HAWKES, RECSYS_RL, BRAND_STORE
+    global SLOC_PROVIDER, OASIS_PROVIDER, VORONOI_PROVIDER, PARTITION, PERSONA_TO_SLOT
+    if POP is not None:
+        return
+    logger.info("[Oransim] bootstrapping…")
+    t0 = time.time()
+    pop_size = int(os.environ.get("POP_SIZE", "100000"))
+    POP = generate_population(N=pop_size, seed=42)
+    logger.info(
+        f"  population {pop_size} ready  ({time.time()-t0:.1f}s)"
+        f"  marginal KL={marginal_fit_report(POP)}"
+    )
+    WM = PlatformWorldModel(POP)
+    AG = StatisticalAgents(POP)
+    SOULS = SoulAgentPool(POP, n=int(os.environ.get("SOUL_POOL_N", "100")), seed=7)
+    KOLS = generate_kol_library(n_per_platform=30)
+    RUNNER = ScenarioRunner(WM, AG)
+    SANDBOX = SandboxStore(RUNNER)
+    HAWKES = HawkesSimulator(POP, beta=0.9, branching=0.35)
+    RECSYS_RL = RecSysRLSimulator(WM)
+    BRAND_STORE = BrandMemoryState.empty(POP.N)
+
+    SLOC_PROVIDER = SLOCProvider(AG, SOULS, None, None)
+    OASIS_PROVIDER = OASISProvider(SOULS, POP, n_total=10_000, activation_prob=0.05)
+    VORONOI_PROVIDER = SLOC_PROVIDER
+
+    bootstrap_default_sources()
+    _bootstrap_index()
+    logger.info(
+        f"  UEB ready: {len(BUS.list_sources())} sources, "
+        f"{sum(s['n_items'] for s in BUS.list_sources())} items pre-indexed"
+    )
+
+    logger.info(f"  building Voronoi partition ({len(SOULS.idx)} souls)...")
+    t1 = time.time()
+    PARTITION = voronoi_partition(POP, [int(i) for i in SOULS.idx])
+    PERSONA_TO_SLOT = {int(pid): slot for slot, pid in enumerate(SOULS.idx)}
+    SLOC_PROVIDER.partition = PARTITION
+    SLOC_PROVIDER.persona_to_slot = PERSONA_TO_SLOT
+    logger.info(
+        f"  done in {time.time()-t1:.1f}s · max territory {PARTITION.weights.max():.3f}"
+        f" mean {PARTITION.weights.mean():.4f}"
+    )
+    logger.info(f"[Oransim] ready in {time.time()-t0:.1f}s")
+    logger.info(f"[Oransim] LLM: {llm_info()}")
+
+
 def _bootstrap_index() -> None:
-    # 100 persona cards → comment-style text
     persona_texts = [p.full_card() for p in SOULS.personas.values()]
     BUS.index("comment_text", persona_texts)
-    # KOL niches as text
     BUS.index("competitor_signal", [f"{k.niche}·{k.fan_count}fans·{k.platform}" for k in KOLS])
-    # KOL audience embeddings (already 64-d)
     import numpy as _np
 
     BUS.index("kol_audience", [_np.asarray(k.emb) for k in KOLS])
-    # Sample 5000 user interests (cheap subsample of 100k pop)
     sample_idx = _np.random.default_rng(0).choice(POP.N, size=5000, replace=False)
     BUS.index("user_interest", [POP.interest[i] for i in sample_idx])
-    # User demo (12-dim onehot-ish) for same sample
     user_demo = _np.stack(
         [
             _np.concatenate(
@@ -110,7 +152,6 @@ def _bootstrap_index() -> None:
         ]
     )
     BUS.index("user_demo", list(user_demo))
-    # World events (if cached)
     try:
         ws = get_world_state()
         if ws and ws.get("events"):
@@ -119,26 +160,10 @@ def _bootstrap_index() -> None:
         pass
 
 
-_bootstrap_index()
-logger.info(
-    f"  UEB ready: {len(BUS.list_sources())} sources, {sum(s['n_items'] for s in BUS.list_sources())} items pre-indexed"
-)
-
-# Voronoi partition: 100 souls own ~1k territory each in a 100k pop
-logger.info(f"  building Voronoi partition ({len(SOULS.idx)} souls)...")
-t1 = time.time()
-PARTITION = voronoi_partition(POP, [int(i) for i in SOULS.idx])
-PERSONA_TO_SLOT = {int(pid): slot for slot, pid in enumerate(SOULS.idx)}
-# Inject partition into SLOC provider
-SLOC_PROVIDER.partition = PARTITION
-SLOC_PROVIDER.persona_to_slot = PERSONA_TO_SLOT
-logger.info(
-    f"  done in {time.time()-t1:.1f}s · max territory {PARTITION.weights.max():.3f}"
-    f" mean {PARTITION.weights.mean():.4f}"
-)
-
-logger.info(f"[Oransim] ready in {time.time()-t0:.1f}s")
-logger.info(f"[Oransim] LLM: {llm_info()}")
+@asynccontextmanager
+async def _lifespan(app_: FastAPI):
+    _bootstrap()
+    yield
 
 
 # ---------------- FastAPI ----------------
@@ -146,6 +171,7 @@ app = FastAPI(
     title="Oransim",
     description="Causal Digital Twin for Marketing at Scale",
     version="0.1.0a0",
+    lifespan=_lifespan,
 )
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
