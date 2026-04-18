@@ -1,0 +1,56 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please fill in as much as you can — reproducible bugs get fixed fastest.
+  - type: input
+    id: version
+    attributes:
+      label: Oransim version
+      placeholder: "0.1.0a0"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Linux
+        - macOS
+        - Windows (via Docker)
+        - Docker
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug description
+      description: What did you expect? What happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal commands or code to reproduce
+      render: bash
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / stack trace
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission
+      options:
+        - label: I searched existing issues to avoid duplicates
+          required: true
+        - label: I'm using the latest release
+          required: true

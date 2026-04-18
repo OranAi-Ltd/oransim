@@ -1,0 +1,55 @@
+name: 🌐 Platform Adapter Request
+description: Request support for a new platform (e.g., LinkedIn, Pinterest, Reddit)
+labels: ["adapter-request", "platforms", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for requesting a new platform adapter! Please help us assess demand and feasibility.
+  - type: input
+    id: platform_name
+    attributes:
+      label: Platform name
+      placeholder: "LinkedIn, Pinterest, Reddit, Snapchat, Twitch, etc."
+    validations:
+      required: true
+  - type: dropdown
+    id: region
+    attributes:
+      label: Primary region
+      options:
+        - Global
+        - North America
+        - Europe
+        - Greater China
+        - Southeast Asia
+        - Japan/Korea
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: data_availability
+    attributes:
+      label: Data source availability
+      description: Is there a public API? A third-party data vendor? Scraping the only option?
+    validations:
+      required: true
+  - type: textarea
+    id: key_fields
+    attributes:
+      label: Key fields / schemas
+      description: What KOL/post/fan metrics are available that differ from XHS's model?
+  - type: textarea
+    id: business_case
+    attributes:
+      label: Business case
+      description: Why should we prioritize this platform?
+    validations:
+      required: true
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I'd be willing to co-develop the adapter (provide data source expertise, review PRs, test)
+        - label: I work at a brand/agency that would use this (feel free to reach out privately)

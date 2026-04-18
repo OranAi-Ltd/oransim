@@ -1,0 +1,10 @@
+# Default reviewer for all files until contributor team grows
+* @[TBD: GITHUB_HANDLE]
+
+# Architecture / core — require CTO review
+/backend/oransim/platforms/base.py @[TBD: GITHUB_HANDLE]
+/backend/oransim/data/schema/ @[TBD: GITHUB_HANDLE]
+/backend/oransim/causal/ @[TBD: GITHUB_HANDLE]
+/docs/ @[TBD: GITHUB_HANDLE]
+/LICENSE @[TBD: GITHUB_HANDLE]
+/NOTICE @[TBD: GITHUB_HANDLE]
