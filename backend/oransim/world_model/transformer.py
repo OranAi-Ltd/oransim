@@ -317,12 +317,27 @@ class CausalTransformerWorldModel(WorldModel):
                 )
 
             def forward(self, h: torch.Tensor, arm_idx: torch.Tensor) -> torch.Tensor:
-                # arm_idx: [B]
-                B = h.shape[0]
-                out_list = []
-                for b in range(B):
-                    out_list.append(self.arms[int(arm_idx[b].item())](h[b : b + 1]))
-                return torch.cat(out_list, dim=0)
+                """Vectorized per-arm quantile prediction.
+
+                h:       [B, d_model]
+                arm_idx: [B]  (long)
+                returns: [B, n_quantiles]
+
+                Old implementation looped over the batch and called ``.item()``
+                per row, forcing a GPU→host sync every step (at B=256 this
+                dominated training wall-time). Now we run all arms on the full
+                batch in parallel and ``gather`` the per-row arm's output —
+                strictly more flops (linear in n_arms) but zero syncs, and
+                n_arms is small (typically 2–5) so the tradeoff is a big win
+                on any accelerator.
+                """
+                # Run every arm on the whole batch → [n_arms, B, n_quant]
+                stacked = torch.stack([arm(h) for arm in self.arms], dim=0)
+                # Permute to [B, n_arms, n_quant] so we can gather along dim 1
+                stacked = stacked.permute(1, 0, 2)
+                n_quant = stacked.size(-1)
+                idx = arm_idx.long().view(-1, 1, 1).expand(-1, 1, n_quant)
+                return stacked.gather(1, idx).squeeze(1)
 
         # ---- Token-type embedding and feature projections ----
 

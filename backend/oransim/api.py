@@ -176,17 +176,26 @@ app = FastAPI(
     version="0.2.0a0",
     lifespan=_lifespan,
 )
-# CORS: configurable via OSIM_CORS_ORIGINS (comma-separated). Defaults to the
-# local dev frontend (:8090) + backend (:8001); set "*" only if you understand
-# the implications — wildcard + cookies is disallowed by the browser anyway.
+# CORS: two knobs so browser-demo works whether we serve on localhost, a public
+# IP, or a reverse proxy.
+#   OSIM_CORS_ORIGINS        comma-separated exact allowlist (defaults to local)
+#   OSIM_CORS_ORIGIN_REGEX   regex for demo-port hosts; set empty to disable
+# The regex default admits common demo ports (8090/8091/8092/8094/8001) on any
+# host, so pointing a public-IP frontend at this backend "just works" without
+# editing code. For production, set a specific allowlist and clear the regex.
 _cors_env = os.environ.get(
     "OSIM_CORS_ORIGINS",
     "http://localhost:8090,http://127.0.0.1:8090,http://localhost:8001,http://127.0.0.1:8001",
 )
 _cors_origins = [o.strip() for o in _cors_env.split(",") if o.strip()]
+_cors_regex = os.environ.get(
+    "OSIM_CORS_ORIGIN_REGEX",
+    r"^https?://[^/]+:(8090|8091|8092|8094|8001)$",
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
+    allow_origin_regex=_cors_regex or None,
     allow_methods=["*"],
     allow_headers=["*"],
 )

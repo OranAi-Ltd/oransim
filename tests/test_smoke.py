@@ -84,6 +84,48 @@ def test_causal_transformer_defers_torch_import():
         get_world_model("causal_transformer")
 
 
+@pytest.mark.skipif(not _torch_available(), reason="requires torch")
+def test_counterfactual_head_vectorized_matches_naive_loop():
+    """Pin the vectorized CounterfactualHead — it must produce identical output
+    to the prior .item()-loop implementation, since the speedup win only
+    matters if numerics are preserved. Regressing to the loop would silently
+    bring back per-row GPU syncs at training time.
+    """
+    import torch
+    import torch.nn as nn
+    from oransim.world_model import get_world_model
+
+    wm = get_world_model("causal_transformer")
+    # cf_heads is a ModuleList with one CounterfactualHead per KPI; grab one.
+    cf_heads_list = getattr(wm, "cf_heads", None) or getattr(wm, "_net", None).cf_heads
+    assert cf_heads_list is not None, "counterfactual head not constructed"
+    head = cf_heads_list[0]
+    assert hasattr(head, "arms") and len(head.arms) >= 2
+
+    torch.manual_seed(7)
+    for m in head.arms[0].modules():
+        if isinstance(m, nn.Linear):
+            d_model = m.in_features
+            break
+
+    B = 32
+    h = torch.randn(B, d_model)
+    arm_idx = torch.randint(0, len(head.arms), (B,))
+
+    head.eval()
+    with torch.no_grad():
+        y_vec = head(h, arm_idx)
+        # Reference: naive loop, slice arm-by-arm
+        y_ref = torch.cat(
+            [head.arms[int(arm_idx[b].item())](h[b : b + 1]) for b in range(B)],
+            dim=0,
+        )
+
+    assert y_vec.shape == y_ref.shape
+    # FP noise tolerance
+    assert (y_vec - y_ref).abs().max().item() < 1e-5
+
+
 @pytest.mark.skipif(_torch_available(), reason="torch is installed; deferral test is a no-op")
 def test_causal_neural_hawkes_defers_torch_import():
     from oransim.diffusion import get_diffusion_model
