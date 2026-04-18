@@ -39,16 +39,35 @@ v0.2 ships a synthetic demo corpus (2.3 MB — 200 KOLs, 2k scenarios, 100 event
 
 Causal Transformer + Causal Neural Hawkes ship architecture + training loop + inference code only (`pip install 'oransim[ml]'`). **Pretrained weights land with [OrancBench v0.5](ROADMAP.md#v05--mid-q4-2026--q1-2027)** — the current synthetic corpus sits inside the LightGBM baseline's hypothesis class, so CT/NH factual R² wouldn't beat it. The v0.5 causal-native tasks (confounded treatment · CATE heterogeneity · temporal intervention) are where CT/NH structurally win, and that's when weights go out.
 
+## Why this isn't one model
+
+Ad prediction looks like regression, but it's actually 5 unrelated hard subproblems stacked on top of each other. Skip any one and the others don't hold.
+
+**1. Treatment ≠ observation · historical data is selected, not sampled.** High-budget campaigns almost always go to tier-1 KOLs. When you ask `do(budget=50k, kol=mid-tier)`, that combination appears zero times in training. Naive regression credits the ROI to budget when the real driver was KOL quality. You need a loss that decouples the learned representation from treatment assignment — that's why HSIC / adversarial-IPTW / BCAUSS exist, not academic flavor.
+
+**2. Budget curves are saturated and fatigue-driven.** Doubling spend doesn't double impressions; a user's CTR drops to 40% on their 3rd exposure to the same creative. Linear models extrapolate wrong to budgets they never saw. Hill saturation is 30 years of MMM industry-validated functional form — without it you're inventing your own curve (Dubé-Manchanda 2005 + Naik-Raman 2003).
+
+**3. Diffusion is a self-exciting point process, not an independent time series.** A 14-day engagement curve typically shows a second burst from reposts. RNN/Transformer can fit observed curves but can't answer "what if we stopped boosting on day 3" — that needs intervention rollout *inside* the temporal model. Hawkes intensity is the only family with native `do()`-over-time support (Mei-Eisner 2017 + Zuo 2020 + Geng 2022).
+
+**4. MMM answers totals; decisions answer "A vs B".** Robyn / Meta LightweightMMM give you the total revenue curve. But the actual marketing question is usually "should I swap KOL A for B" — that's per-arm counterfactual, not total attribution. You need multi-head structure that emits all treatment-arm outcomes in a single forward pass (TARNet / Dragonnet are built for exactly this).
+
+**5. Creatives are multi-modal; the rest of the stack shouldn't care.** Short videos have frames + BGM + subtitles + KOL faces; product pages have images + 3D models. If the embedder layer doesn't project every modality into the same vector space, the budget curve / Hawkes / SCM each need to refit for each new modality. UEB's job is to make downstream code modality-blind — you add a new input, zero downstream changes (text shipped; CLIP / SigLIP / I-JEPA / Whisper on v0.5).
+
+Get all 5 right and you have Oransim. Each layer isn't there to sound good — each one is the only answer to one specific question the others can't handle.
+
 <details>
-<summary><b>🧠 The causal stack</b> — research lineage for each component (click to expand)</summary>
+<summary>Research lineage per layer (click to expand)</summary>
 
-Oransim's counterfactual path is native, not bolted on after a predictor:
+- **Problem 1 balancing loss** → HSIC (Gretton 2005) · adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
+- **Problem 1 per-arm heads** → TARNet (Shalit ICML 2017) · Dragonnet (Shi NeurIPS 2019)
+- **Problem 1 in-context amortization** → CInA (Arik & Pfister NeurIPS 2023)
+- **Problem 2 budget curves** → Hill saturation (Dubé & Manchanda 2005) + frequency fatigue (Naik & Raman 2003)
+- **Problem 3 Hawkes** → Mei & Eisner NeurIPS 2017 · Zuo ICML 2020 · Geng NeurIPS 2022 (counterfactual TPP)
+- **SCM** → Pearl 3-step (abduction → action → prediction), 64 nodes / 117 edges, discourse + cascade mediators (Sunstein 2017)
+- **Agent population** → IPF / Deming-Stephan 1940 baseline; Bayesian-network / TabDDPM variants on roadmap
+- **Embedding bus** → modality-generic; text via OpenAI-compat today, multi-modal (CLIP / Qwen-VL / I-JEPA / Whisper / CLAP) on v0.5
 
-- 🧠 **Causal Transformer World Model** — 6-layer multi-head self-attention with explicit *treatment / covariate / outcome* factorization, DAG-aware attention bias, per-arm counterfactual heads, and a representation-balancing loss. Draws from recent work: **CaT** (Melnychuk et al. ICML 2022), **CausalDAG-Transformer**, **BCAUSS**, **CInA** (Arik & Pfister NeurIPS 2023), **TARNet / Dragonnet**. ([arch details](#causal-transformer-world-model))
-- ⚡ **Causal Neural Hawkes Process** — Transformer-parameterized temporal point process for 14-day diffusion with *treatment vs control* event typing and intervention-aware intensity. Follows **Mei & Eisner (NeurIPS 2017)**, **Zuo et al. (ICML 2020)**, **Geng et al. (NeurIPS 2022)** on counterfactual TPPs. ([arch details](#causal-neural-hawkes-process))
-- 🌐 **64-node Structural Causal Model** — Pearl's 3-step counterfactual evaluation (abduction → action → prediction) over a hand-designed marketing funnel graph (117 edges), with mediators for group discourse (Sunstein 2017) and information cascades.
-- 👥 **agent-based population** — Iterative Proportional Fitting (IPF, Deming & Stephan 1940) baseline calibrated to demographic priors; pluggable `PopulationSynthesizer` interface with Bayesian-network (v0.2), CTGAN (v0.5), and Causal-DAG-guided TabDDPM (v1.0 research) variants on the roadmap. Top-10k salient agents get LLM personas for qualitative feedback.
-- 🧪 **LightGBM Quantile baseline** — fast zero-dependency fallback, three quantile regressors (P35/P50/P65) per KPI. Retained for production latency targets and benchmark comparison.
+See [`backend/oransim/world_model/transformer.py`](backend/oransim/world_model/transformer.py) and [`backend/oransim/diffusion/neural_hawkes.py`](backend/oransim/diffusion/neural_hawkes.py) for the implementations.
 
 </details>
 

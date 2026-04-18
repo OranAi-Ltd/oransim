@@ -39,14 +39,40 @@ v0.2 自带合成 demo 数据集（2.3 MB · 200 KOL / 2k scenarios / 100 event 
 
 因果 Transformer + 因果神经 Hawkes 目前只 ship 架构 + 训练 loop + 推理代码（`pip install 'oransim[ml]'`）。**预训权重延到 [OrancBench v0.5](ROADMAP.md#v05--mid-q4-2026--q1-2027) 再发** —— 当前合成数据对 LightGBM 来说是 in-hypothesis，CT/NH 在 factual R² 上压不住它；v0.5 的 causal-native 任务（confounded treatment · CATE heterogeneity · temporal intervention）才是这俩架构能真正拉开差距的场景。
 
-<details>
-<summary><b>🧠 因果栈</b> —— 每块组件的研究谱系（点开展开）</summary>
+## 为什么这不是一个模型能搞定的事
 
-- 🧠 **因果 Transformer 世界模型 (Causal Transformer World Model)** —— 6 层多头 self-attention，显式 *treatment / covariate / outcome* 三类 token 分解、DAG-aware 注意力偏置、per-arm 反事实头、表征平衡损失。融合近年因果 Transformer 研究：**CaT** (Melnychuk et al. ICML 2022)、**CausalDAG-Transformer**、**BCAUSS**、**CInA** (Arik & Pfister NeurIPS 2023)、**TARNet / Dragonnet**。([架构细节](#causal-transformer-world-model))
-- ⚡ **因果神经 Hawkes 过程 (Causal Neural Hawkes Process)** —— Transformer 参数化的时序点过程，14 天扩散预测，*treatment vs control* 事件类型区分、干预感知强度函数。建立在 **Mei & Eisner (NeurIPS 2017)**、**Zuo et al. (ICML 2020)**、**Geng et al. (NeurIPS 2022) 因果 TPP** 之上。([架构细节](#causal-neural-hawkes-process))
-- 🌐 **64 节点结构因果模型 (SCM)** —— Pearl 三步反事实（溯因 → 干预 → 预测），手工设计的营销漏斗图（117 条边），含群体话语（Sunstein 2017）与信息级联的 mediator。
-- 👥 **虚拟人口（默认 100k，可通过 POP_SIZE 扩到 1M）** —— IPF 迭代比例拟合（Deming & Stephan 1940）baseline 对齐人口学先验；可插拔 `PopulationSynthesizer` 接口，Bayesian Network（v0.2）· CTGAN（v0.5）· **Causal-DAG-guided TabDDPM**（v1.0 研究项目）在路线图。取最显著 10k agent 升级为 LLM 驱动人格。
-- 🧪 **LightGBM Quantile baseline** —— 快速零依赖 fallback，每 KPI 三个分位数回归器（P35/P50/P65）。保留用于生产延迟敏感场景 + 基准对比。
+广告预测看起来像 regression，实际上里面塞了 5 个彼此无关的硬子问题。任何一个不单独建，其他的就解不好。
+
+**1. Treatment ≠ observation · 历史数据是被选择的**
+高预算 campaign 几乎总是被分给头部 KOL。问 `do(budget=5万, kol=中腰部)` 时，这个组合在训练集里一次都没出现。朴素回归会把头部 KOL 的 ROI 归因到预算上。必须有一层 loss 把表征和 treatment 解耦——这就是 balancing loss 存在的理由（HSIC / adversarial-IPTW / BCAUSS，不是学术装饰）。
+
+**2. Budget 曲线是饱和非线性 + 频次疲劳**
+翻一倍预算不会翻一倍曝光；同一用户看到第 3 次同样广告，CTR 掉到 40%。线性模型外推到没见过的预算就错。Hill saturation 是 30 年 MMM 行业验证过的函数形式，不用它你就在自己编曲线（Dubé-Manchanda 2005 + Naik-Raman 2003）。
+
+**3. 扩散是自激点过程，不是独立时间序列**
+广告发出后 14 天曲线会出现二次 burst（转发触发）。RNN/Transformer 能拟合观察到的曲线，但回答不了「第 3 天停投后面会怎样」——这需要在时间维度上做 intervention rollout。Hawkes intensity 是唯一原生支持 `do()`-over-time 的 family（Mei-Eisner 2017 / Zuo 2020 / Geng 2022）。
+
+**4. MMM 做总量，不回答「A 和 B 哪个更好」**
+Robyn / LightweightMMM 那类只给总曲线，但营销决策往往是「我该换哪个 KOL」——这是 per-arm counterfactual 不是 total attribution。需要多头结构一次 forward 输出所有 treatment arm 下的 outcome（TARNet / Dragonnet 为此而生）。
+
+**5. 素材是多模态的，下游代码不能为每种模态重写**
+短视频有画面 + BGM + 字幕 + KOL 人脸；商品页有图 + 三维模型。如果 embedder 层不把所有模态映到同一向量空间，budget 曲线 / Hawkes / SCM 就得各自拟合 4 次。UEB 让下游对 modality 盲——一行不改就能吃新模态（文本已 ship；CLIP / SigLIP / I-JEPA / Whisper 排 v0.5）。
+
+把这 5 个问题都建对，就是 Oransim。每一层不是为了叫得好听，是为了一个具体问题必须这样建。
+
+<details>
+<summary>每层对应的研究谱系（点开展开）</summary>
+
+- **问题 1 平衡损失** → HSIC (Gretton 2005) · adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
+- **问题 1 per-arm 反事实头** → TARNet (Shalit ICML 2017) · Dragonnet (Shi NeurIPS 2019)
+- **问题 1 in-context 摊销** → CInA (Arik & Pfister NeurIPS 2023)
+- **问题 2 预算曲线** → Hill 饱和 (Dubé & Manchanda 2005) + 频次疲劳 (Naik & Raman 2003)
+- **问题 3 Hawkes** → Mei & Eisner NeurIPS 2017 · Zuo ICML 2020 · Geng NeurIPS 2022 (counterfactual TPP)
+- **SCM** → Pearl 三步（溯因 → 干预 → 预测），64 节点 / 117 边，含话语 + 级联 mediator (Sunstein 2017)
+- **Agent 人口池** → IPF / Deming-Stephan 1940 baseline；Bayesian Network / TabDDPM 变体在路线图
+- **Embedding bus** → modality-generic；文本当前走 OpenAI-compat，多模态（CLIP / Qwen-VL / I-JEPA / Whisper / CLAP）v0.5
+
+实现代码：[`backend/oransim/world_model/transformer.py`](backend/oransim/world_model/transformer.py)、[`backend/oransim/diffusion/neural_hawkes.py`](backend/oransim/diffusion/neural_hawkes.py)。
 
 </details>
 
