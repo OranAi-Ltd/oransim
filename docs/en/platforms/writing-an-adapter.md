@@ -45,6 +45,6 @@ assert result.impressions > 0
 - Add tests under `tests/test_platforms_<your_platform>.py`
 - Update the Platform Adapter Matrix in the README
 - Update the roadmap entry (move from "🟡 stub" to "✅ v1")
-- Sign off commits per [DCO](../../../CONTRIBUTING.md#developer-certificate-of-origin-dco)
+- Sign off commits per [DCO](https://github.com/ORAN-cgsj/oransim/blob/main/CONTRIBUTING.md#developer-certificate-of-origin-dco)
 
 Full walkthrough coming with v0.2. In the meantime, consult the `platforms/xhs/` reference implementation once it lands.

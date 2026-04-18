@@ -1,0 +1,100 @@
+site_name: Oransim
+site_description: Causal Digital Twin for Marketing at Scale
+site_url: https://oran-cgsj.github.io/oransim/docs/
+site_author: OranAI Ltd.
+repo_url: https://github.com/ORAN-cgsj/oransim
+repo_name: ORAN-cgsj/oransim
+edit_uri: edit/main/docs/
+
+copyright: Copyright &copy; 2026 OranAI Ltd. — Apache-2.0
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - search.highlight
+    - search.share
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep orange
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep orange
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Light mode
+  font:
+    text: EB Garamond
+    code: JetBrains Mono
+  logo: ../assets/logo.svg
+  favicon: ../assets/logo.svg
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ORAN-cgsj/oransim
+    - icon: fontawesome/solid/envelope
+      link: mailto:cto@orannai.com
+  generator: false
+
+nav:
+  - Home: index.md
+  - Quickstart: en/quickstart.md
+  - Architecture: en/architecture.md
+  - Platforms:
+    - Matrix: en/platforms/index.md
+    - Writing an Adapter: en/platforms/writing-an-adapter.md
+    - Writing a DataProvider: en/platforms/writing-a-provider.md
+  - Benchmarks: en/benchmarks/README.md
+  - Schemas: en/schemas/README.md
+  - 中文:
+    - 快速开始: zh/quickstart.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.arithmatex:
+      generic: true
+
+plugins:
+  - search
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

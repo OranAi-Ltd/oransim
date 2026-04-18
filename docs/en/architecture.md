@@ -2,7 +2,7 @@
 
 > **Status:** Coming soon (v0.2). This page will document the full system architecture in depth.
 
-For v0.1.0-alpha, see the [README Architecture section](../../README.md#%EF%B8%8F-architecture) and the [architecture.svg](../../assets/architecture.svg) diagram.
+For v0.1.0-alpha, see the [README Architecture section](https://github.com/ORAN-cgsj/oransim/blob/main/README.md#%EF%B8%8F-architecture) and the [architecture.svg](https://raw.githubusercontent.com/ORAN-cgsj/oransim/main/assets/architecture.svg) diagram.
 
 ## Design Principles
 
@@ -40,4 +40,4 @@ backend/oransim/
 7. Soul agent feedback + discourse mediator signals feed back into funnel weights
 8. Final JSON: 14–19 schemas, returned to client
 
-See the [ROADMAP](../../ROADMAP.md) for Neural Hawkes + Transformer world model details.
+See the [ROADMAP](https://github.com/ORAN-cgsj/oransim/blob/main/ROADMAP.md) for Neural Hawkes + Transformer world model details.

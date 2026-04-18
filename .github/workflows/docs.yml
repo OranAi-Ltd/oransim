@@ -1,0 +1,53 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
+      - 'README.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-docs
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install MkDocs + Material
+        run: |
+          pip install mkdocs>=1.6 mkdocs-material>=9.5
+
+      - name: Build site
+        run: mkdocs build --strict --site-dir _site
+
+      - name: Upload artifact for later Pages deploy
+        uses: actions/upload-artifact@v4
+        with:
+          name: mkdocs-site
+          path: _site
+          retention-days: 7
+
+  # Note: deploying this to GitHub Pages simultaneously with the existing
+  # root-level index.html landing page would require a subdirectory deploy
+  # (gh-pages branch under /docs). Left as a follow-up — v0.2.1 will wire
+  # the two together. For now this job produces the site artifact for
+  # manual inspection + unblocks `mkdocs build --strict` validation.
