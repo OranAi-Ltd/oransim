@@ -576,6 +576,60 @@ def test_tiktok_adapter_mvp():
     assert pred_2x["impressions"] < 2.0 * pred_1x["impressions"]
 
 
+def test_instagram_adapter_mvp():
+    """Instagram Reels adapter + synthetic provider must fulfill the canonical contract."""
+    from oransim.platforms.instagram import InstagramAdapter, InstagramSyntheticProvider
+    from oransim.data.schema import CanonicalKOL
+
+    provider = InstagramSyntheticProvider(seed=42)
+    adapter = InstagramAdapter(data_provider=provider)
+    assert adapter.platform_id == "instagram"
+
+    kol = adapter.get_kol("IG_KOL_000042")
+    assert isinstance(kol, CanonicalKOL)
+    assert kol.platform == "instagram"
+    assert kol.fan_profile is not None
+
+    from types import SimpleNamespace
+    normal = SimpleNamespace(caption="promo", duration_sec=18.0, music_mood="upbeat")
+    trending = SimpleNamespace(caption="promo", duration_sec=18.0, music_mood="trending")
+    p_normal = adapter.simulate_impression(normal, budget=50_000)
+    p_trending = adapter.simulate_impression(trending, budget=50_000)
+    # Impressions unchanged but clicks and conversions boosted by trending-audio factor
+    assert abs(p_normal["impressions"] - p_trending["impressions"]) < 1e-6
+    assert p_trending["clicks"] > p_normal["clicks"]
+    assert p_trending["conversions"] > p_normal["conversions"]
+
+
+def test_youtube_shorts_adapter_mvp():
+    """YouTube Shorts adapter + synthetic provider must fulfill the canonical contract."""
+    from oransim.platforms.youtube_shorts import (
+        YouTubeShortsAdapter,
+        YouTubeShortsSyntheticProvider,
+    )
+    from oransim.data.schema import CanonicalKOL
+
+    provider = YouTubeShortsSyntheticProvider(seed=42)
+    adapter = YouTubeShortsAdapter(data_provider=provider)
+    assert adapter.platform_id == "youtube_shorts"
+
+    kol = adapter.get_kol("YS_KOL_000042")
+    assert isinstance(kol, CanonicalKOL)
+    assert kol.platform == "youtube_shorts"
+
+    from types import SimpleNamespace
+    no_cta = SimpleNamespace(caption="clip", duration_sec=30.0, has_subscribe_cta=False)
+    with_cta = SimpleNamespace(caption="clip", duration_sec=30.0, has_subscribe_cta=True)
+    p_no = adapter.simulate_impression(no_cta, budget=50_000)
+    p_yes = adapter.simulate_impression(with_cta, budget=50_000)
+    # Impressions + clicks unaffected; conversions lifted by subscribe CTA
+    assert abs(p_no["impressions"] - p_yes["impressions"]) < 1e-6
+    assert abs(p_no["clicks"] - p_yes["clicks"]) < 1e-6
+    assert p_yes["conversions"] > p_no["conversions"]
+    # Search long-tail factor > 1 (Shorts has that structural prior)
+    assert p_no["factors"]["search_longtail_factor"] > 1.0
+
+
 def test_douyin_adapter_mvp():
     """Douyin mirrors TikTok but with Greater-China priors + livestream boost."""
     from oransim.platforms.douyin import DouyinAdapter, DouyinSyntheticProvider

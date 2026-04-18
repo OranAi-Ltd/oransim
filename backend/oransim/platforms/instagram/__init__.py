@@ -1,18 +1,10 @@
-"""Instagram platform adapter.
+"""Instagram Reels adapter (MVP).
 
-Status: 🟡 stub — roadmap v0.5 (Q4 2026).
-
-To track progress or volunteer: see ROADMAP.md and
-https://github.com/ORAN-cgsj/oransim/issues?q=label%3Aplatforms+instagram
-
-Attempting to use this adapter today will raise NotImplementedError.
+v0.2 status: MVP — synthetic-data-driven. Emphasis on Reels rather than
+Feed posts since Reels is now Meta's primary short-video surface.
 """
 
-from typing import Any
+from .adapter import InstagramAdapter, InstagramAdapterConfig
+from .providers.synthetic import InstagramSyntheticProvider
 
-
-def __getattr__(name: str) -> Any:
-    raise NotImplementedError(
-        "Instagram adapter is on the roadmap for v0.5. "
-        "See https://github.com/ORAN-cgsj/oransim/blob/main/ROADMAP.md"
-    )
+__all__ = ["InstagramAdapter", "InstagramAdapterConfig", "InstagramSyntheticProvider"]

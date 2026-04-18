@@ -112,8 +112,8 @@ See [`docs/en/architecture.md`](docs/en/architecture.md) for the full design.
 |----------------------|----------|---------|-------------------------------------|----------------------|-----------|
 | 🔴 XHS / RedNote     | Greater China | ✅ v1   | Synthetic / CSV / JSON / OpenAPI | Causal Transformer + LightGBM baseline | — |
 | ⚫ TikTok            | Global   | 🟢 MVP  | Synthetic                        | LightGBM baseline    | v0.5 (real panels) |
-| 🟣 Instagram Reels   | Global   | 🟡 stub | —                                 | —                    | v0.5 (Q4 2026) |
-| 🔴 YouTube Shorts    | Global   | 🟡 stub | —                                 | —                    | v0.7 (Q1 2027) |
+| 🟣 Instagram Reels   | Global   | 🟢 MVP  | Synthetic                        | LightGBM baseline    | v0.5 (real panels) |
+| 🔴 YouTube Shorts    | Global   | 🟢 MVP  | Synthetic                        | LightGBM baseline    | v0.5 (real panels) |
 | 🔵 Douyin            | Greater China | 🟢 MVP | Synthetic                        | LightGBM baseline    | v0.5 (real panels) |
 | ⚪ Twitter / X       | Global   | 📋 planned | —                             | —                    | v0.5 |
 | 📺 Bilibili          | Greater China | 📋 planned | —                        | —                    | v1.0 |

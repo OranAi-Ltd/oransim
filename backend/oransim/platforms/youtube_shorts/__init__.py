@@ -1,18 +1,16 @@
-"""YouTube Shorts platform adapter.
+"""YouTube Shorts adapter (MVP).
 
-Status: 🟡 stub — roadmap v0.7 (Q1 2027).
-
-To track progress or volunteer: see ROADMAP.md and
-https://github.com/ORAN-cgsj/oransim/issues?q=label%3Aplatforms+youtube
-
-Attempting to use this adapter today will raise NotImplementedError.
+v0.2 status: MVP — synthetic-data-driven. YouTube Shorts inherits
+YouTube's search + recommendation infrastructure plus a dedicated
+short-form feed, giving it structurally longer discovery tails than
+pure-feed platforms.
 """
 
-from typing import Any
+from .adapter import YouTubeShortsAdapter, YouTubeShortsAdapterConfig
+from .providers.synthetic import YouTubeShortsSyntheticProvider
 
-
-def __getattr__(name: str) -> Any:
-    raise NotImplementedError(
-        "YouTube Shorts adapter is on the roadmap for v0.7. "
-        "See https://github.com/ORAN-cgsj/oransim/blob/main/ROADMAP.md"
-    )
+__all__ = [
+    "YouTubeShortsAdapter",
+    "YouTubeShortsAdapterConfig",
+    "YouTubeShortsSyntheticProvider",
+]

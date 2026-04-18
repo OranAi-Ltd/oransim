@@ -110,8 +110,8 @@ python -m http.server 8090 --directory frontend
 |----------------------|-----------|---------|---------------------------------------|-----------------------|--------|
 | 🔴 小红书 / XHS      | 大中华区  | ✅ v1   | Synthetic / CSV / JSON / OpenAPI    | 因果 Transformer + LightGBM baseline | — |
 | ⚫ TikTok            | 全球      | 🟢 MVP  | Synthetic                            | LightGBM baseline     | v0.5（接真 panel） |
-| 🟣 Instagram Reels   | 全球      | 🟡 stub | —                                     | —                     | v0.5（2026 Q4） |
-| 🔴 YouTube Shorts    | 全球      | 🟡 stub | —                                     | —                     | v0.7（2027 Q1） |
+| 🟣 Instagram Reels   | 全球      | 🟢 MVP  | Synthetic                            | LightGBM baseline     | v0.5（接真 panel） |
+| 🔴 YouTube Shorts    | 全球      | 🟢 MVP  | Synthetic                            | LightGBM baseline     | v0.5（接真 panel） |
 | 🔵 抖音 / Douyin     | 大中华区  | 🟢 MVP  | Synthetic                            | LightGBM baseline     | v0.5（接真 panel） |
 | ⚪ Twitter / X       | 全球      | 📋 规划 | —                                    | —                     | v0.5 |
 | 📺 Bilibili          | 大中华区  | 📋 规划 | —                                    | —                     | v1.0 |
