@@ -8,8 +8,8 @@ name: Docs
 #   /assets/*        → static assets (SVG / screenshots)
 #   /docs/           → MkDocs Material site
 #
-# First deploy is self-bootstrapping: configure-pages has enablement: true so
-# we don't need the manual Settings → Pages → Source = "GitHub Actions" step.
+# Pages was enabled once via `gh api -X POST /repos/.../pages`. If you fork
+# this repo you can run the same command, or click Settings → Pages.
 
 on:
   push:
@@ -58,11 +58,9 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
-        with:
-          # Auto-enable Pages on first run so we don't need the manual
-          # Settings → Pages → Source = "GitHub Actions" click. Without this
-          # the action returns HttpError: Not Found when Pages is disabled.
-          enablement: true
+        # Pages was one-shot enabled via `gh api -X POST .../pages -f build_type=workflow`.
+        # enablement:true would need Pages-write token scope which the default
+        # GITHUB_TOKEN doesn't have ("Resource not accessible by integration").
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

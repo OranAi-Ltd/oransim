@@ -37,7 +37,7 @@ from .data.platforms import PLATFORMS
 from .data.population import generate_population, marginal_fit_report
 from .data.world_events import category_lift, get_world_state, refresh_world_state
 from .diffusion.legacy_hawkes import HawkesSimulator, hawkes_result_to_dict
-from .platforms.xhs.prs import XHSPRS as PRS
+from .platforms.xhs.prs import PRS  # shared XHSPRS instance
 from .platforms.xhs.recsys_rl import RecSysRLSimulator, rl_report_to_dict
 from .platforms.xhs.world_model_legacy import AudienceFilter, PlatformWorldModel
 from .runtime.embedding_bus import BUS, bootstrap_default_sources
