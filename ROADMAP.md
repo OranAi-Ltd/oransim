@@ -2,7 +2,7 @@
 
 > **Updated:** 2026-04-18 · **Current version:** 0.1.0-alpha
 >
-> This roadmap is aspirational. Item inclusion does not guarantee delivery; priorities shift with user feedback, research breakthroughs, and commercial signal. Give a 👍 reaction on the [tracking issue](https://github.com/ORAN-cgsj/oransim/issues) to help us prioritize.
+> This roadmap is aspirational. Item inclusion does not guarantee delivery; priorities shift with user feedback, research breakthroughs, and commercial signal. Give a 👍 reaction on the [tracking issue](https://github.com/deterministically/oransim/issues) to help us prioritize.
 
 Oransim's roadmap is organized across three horizons and eight themes. Each horizon is cumulative — v1.0 ships everything from v0.2 and v0.5 plus new items.
 
@@ -70,7 +70,7 @@ Themes:
 ### 🧠 Models & Algorithms
 - ✅ ~~Neural Hawkes Process~~ — **shipped in v0.1.0-alpha** as `CausalNeuralHawkesProcess` (Zuo ICML'20 + Geng NeurIPS'22 counterfactual TPP). Pretrained weights arrive with v0.2.
 - ✅ ~~Transformer World Model~~ — **shipped in v0.1.0-alpha** as `CausalTransformerWorldModel` (CaT + CausalDAG-Transformer + TARNet/Dragonnet + BCAUSS + CInA). Pretrained weights arrive with v0.2.
-- 🎯 **Pretrained-weight release** — trained checkpoints for both primary models on the 100k synthetic corpus, published at https://github.com/ORAN-cgsj/oransim/releases
+- 🎯 **Pretrained-weight release** — trained checkpoints for both primary models on the 100k synthetic corpus, published at https://github.com/deterministically/oransim/releases
 - 🎯 **Cross-platform transfer learning** — pretrain world model on XHS data, fine-tune on TikTok with few-shot adapter layer; quantify transfer gain
 - 🎯 **Multi-modal embedders** — v0.2 ships stub classes (`ImageEmbedderStub` / `VideoEmbedderStub` / `AudioEmbedderStub` in `runtime/embedding_bus.py`) that raise `NotImplementedError` pointing here. v0.5 lands real backends:
   - **Image**: CLIP (OpenAI) / Qwen-VL (Alibaba) / SigLIP (Google) / ImageBind (Meta)
@@ -193,9 +193,9 @@ To keep the project focused, these are **not** on the roadmap (may change with c
 
 ## Getting Involved
 
-- Open an [Issue](https://github.com/ORAN-cgsj/oransim/issues) to propose roadmap changes
+- Open an [Issue](https://github.com/deterministically/oransim/issues) to propose roadmap changes
 - Pick up a `good first issue` or `help wanted` item
-- Join [Discussions](https://github.com/ORAN-cgsj/oransim/discussions) for design conversations
+- Join [Discussions](https://github.com/deterministically/oransim/discussions) for design conversations
 - Enterprise sponsors influencing the roadmap: contact `cto@orannai.com`
 
 ## Changelog of the Roadmap

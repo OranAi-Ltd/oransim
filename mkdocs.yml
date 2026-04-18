@@ -2,8 +2,8 @@ site_name: Oransim
 site_description: Causal Digital Twin for Marketing at Scale
 site_url: https://oran-cgsj.github.io/oransim/docs/
 site_author: OranAI Ltd.
-repo_url: https://github.com/ORAN-cgsj/oransim
-repo_name: ORAN-cgsj/oransim
+repo_url: https://github.com/deterministically/oransim
+repo_name: deterministically/oransim
 edit_uri: edit/main/docs/
 
 copyright: Copyright &copy; 2026 OranAI Ltd. — Apache-2.0
@@ -50,7 +50,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/ORAN-cgsj/oransim
+      link: https://github.com/deterministically/oransim
     - icon: fontawesome/solid/envelope
       link: mailto:cto@orannai.com
   generator: false

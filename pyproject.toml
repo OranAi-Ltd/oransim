@@ -72,10 +72,10 @@ ml = [
 
 [project.urls]
 Homepage = "https://oran.cn/oransim"
-Documentation = "https://github.com/ORAN-cgsj/oransim#readme"
-Repository = "https://github.com/ORAN-cgsj/oransim"
-Issues = "https://github.com/ORAN-cgsj/oransim/issues"
-Changelog = "https://github.com/ORAN-cgsj/oransim/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/deterministically/oransim#readme"
+Repository = "https://github.com/deterministically/oransim"
+Issues = "https://github.com/deterministically/oransim/issues"
+Changelog = "https://github.com/deterministically/oransim/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["backend"]

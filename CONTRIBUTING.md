@@ -82,20 +82,20 @@ python -m http.server 8090 --directory frontend
 
 ## Reporting Bugs
 
-Use the [Bug Report issue template](https://github.com/ORAN-cgsj/oransim/issues/new?template=bug_report.yml).
+Use the [Bug Report issue template](https://github.com/deterministically/oransim/issues/new?template=bug_report.yml).
 
 ## Proposing Features
 
-For significant features, open a [Feature Request](https://github.com/ORAN-cgsj/oransim/issues/new?template=feature_request.yml) or start a [Discussion](https://github.com/ORAN-cgsj/oransim/discussions) first to align on approach before coding.
+For significant features, open a [Feature Request](https://github.com/deterministically/oransim/issues/new?template=feature_request.yml) or start a [Discussion](https://github.com/deterministically/oransim/discussions) first to align on approach before coding.
 
 ## Platform Adapter Requests
 
-Want support for a platform we haven't covered yet (e.g., LinkedIn, Pinterest)? File an [Adapter Request](https://github.com/ORAN-cgsj/oransim/issues/new?template=adapter_request.yml).
+Want support for a platform we haven't covered yet (e.g., LinkedIn, Pinterest)? File an [Adapter Request](https://github.com/deterministically/oransim/issues/new?template=adapter_request.yml).
 
 ## Community
 
-- **Discussions**: https://github.com/ORAN-cgsj/oransim/discussions
-- **Issues**: https://github.com/ORAN-cgsj/oransim/issues
+- **Discussions**: https://github.com/deterministically/oransim/discussions
+- **Issues**: https://github.com/deterministically/oransim/issues
 - **Email**: cto@orannai.com (maintainer)
 
 ## License

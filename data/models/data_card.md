@@ -117,5 +117,5 @@ Deterministic output. Identical seed → byte-identical files.
 ## Maintenance
 
 Please report data-quality issues via
-<https://github.com/ORAN-cgsj/oransim/issues>. Contact `cto@orannai.com`
+<https://github.com/deterministically/oransim/issues>. Contact `cto@orannai.com`
 for commercial-data-licensing enquiries.

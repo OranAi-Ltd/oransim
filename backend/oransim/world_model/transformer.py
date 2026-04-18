@@ -61,7 +61,7 @@ Weights
 -------
 
 Pretrained weights train on the OranAI synthetic 100k dataset and will ship
-starting v0.2 at https://github.com/ORAN-cgsj/oransim/releases. Until then,
+starting v0.2 at https://github.com/deterministically/oransim/releases. Until then,
 ``load_pretrained()`` raises :class:`FileNotFoundError`. Train locally with
 ``python -m backend.scripts.train_transformer_wm --config <yaml>``.
 """
@@ -915,7 +915,7 @@ class CausalTransformerWorldModel(WorldModel):
                 "  1. Train locally: "
                 "python -m backend.scripts.train_transformer_wm --config default\n"
                 "  2. Watch for weights at "
-                "https://github.com/ORAN-cgsj/oransim/releases (starting v0.2)\n"
+                "https://github.com/deterministically/oransim/releases (starting v0.2)\n"
                 "  3. Use the LightGBM baseline: get_world_model('lightgbm_quantile')"
             )
         torch = _require_torch()

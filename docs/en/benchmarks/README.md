@@ -17,10 +17,10 @@
 - **v0.5 (Q4 2026)** — 500 scenarios with human rater scores + public leaderboard
 - **v1.0 (2027)** — 5,000 multimodal scenarios (text + image + video) + vertical sub-benchmarks
 
-See the full [ROADMAP](https://github.com/ORAN-cgsj/oransim/blob/main/ROADMAP.md) for details.
+See the full [ROADMAP](https://github.com/deterministically/oransim/blob/main/ROADMAP.md) for details.
 
 ## Reproducibility Note
 
-v0.1.0-alpha benchmark numbers in the root README are produced from **100k synthetic samples**. They are not directly comparable to real-world production traffic. See [`data/models/data_card.md`](https://github.com/ORAN-cgsj/oransim/blob/main/data/models/data_card.md) for data-generating process.
+v0.1.0-alpha benchmark numbers in the root README are produced from **100k synthetic samples**. They are not directly comparable to real-world production traffic. See [`data/models/data_card.md`](https://github.com/deterministically/oransim/blob/main/data/models/data_card.md) for data-generating process.
 
 Enterprise-edition real-world benchmarks are published separately under NDA.

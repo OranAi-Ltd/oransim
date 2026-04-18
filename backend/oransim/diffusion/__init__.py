@@ -21,7 +21,7 @@ Pick via the registry::
     diff = get_diffusion_model("parametric_hawkes")      # baseline
 
 Pretrained weights train on OranAI synthetic event streams and ship at
-https://github.com/ORAN-cgsj/oransim/releases starting v0.2.
+https://github.com/deterministically/oransim/releases starting v0.2.
 """
 
 from .base import DiffusionModel, DiffusionConfig, DiffusionForecast

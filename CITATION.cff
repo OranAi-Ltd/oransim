@@ -6,7 +6,7 @@ type: software
 version: 0.1.0-alpha
 date-released: "2026-04-18"
 license: Apache-2.0
-repository-code: "https://github.com/ORAN-cgsj/oransim"
+repository-code: "https://github.com/deterministically/oransim"
 url: "https://oran.cn/oransim"
 authors:
   - family-names: Yin
@@ -32,4 +32,4 @@ preferred-citation:
     - family-names: Yin
       given-names: Fakong
       affiliation: "OranAI Ltd."
-  url: "https://github.com/ORAN-cgsj/oransim"
+  url: "https://github.com/deterministically/oransim"

@@ -4,11 +4,11 @@
 ### Causal Digital Twin for Marketing at Scale
 
 <p>
-  <a href="https://github.com/ORAN-cgsj/oransim/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/ORAN-cgsj/oransim?color=blue"></a>
+  <a href="https://github.com/deterministically/oransim/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/deterministically/oransim?color=blue"></a>
   <a href="https://pypi.org/project/oransim/"><img alt="PyPI" src="https://img.shields.io/pypi/v/oransim?label=PyPI"></a>
   <a href="https://pypi.org/project/oransim/"><img alt="Python" src="https://img.shields.io/pypi/pyversions/oransim"></a>
-  <a href="https://github.com/ORAN-cgsj/oransim/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ORAN-cgsj/oransim/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://github.com/ORAN-cgsj/oransim/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/ORAN-cgsj/oransim?style=social"></a>
+  <a href="https://github.com/deterministically/oransim/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/deterministically/oransim/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/deterministically/oransim/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/deterministically/oransim?style=social"></a>
   <a href="https://oran.cn/oransim"><img alt="Website" src="https://img.shields.io/badge/website-oran.cn-FF6B35"></a>
 </p>
 
@@ -62,7 +62,7 @@ Oransim is built **causal-first** — counterfactual reasoning is first-class, n
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/ORAN-cgsj/oransim.git
+git clone https://github.com/deterministically/oransim.git
 cd oransim
 pip install -e '.[dev]'
 
@@ -164,7 +164,7 @@ See [`docs/en/architecture.md`](docs/en/architecture.md) for the full design.
 | 📺 Bilibili          | Greater China | 📋 planned | —                        | —                    | v1.0 |
 | ✒️ LinkedIn          | Global   | 📋 planned | —                             | —                    | v1.0 |
 
-**Want another platform?** Open an [Adapter Request](https://github.com/ORAN-cgsj/oransim/issues/new?template=adapter_request.yml) — we prioritize based on community demand.
+**Want another platform?** Open an [Adapter Request](https://github.com/deterministically/oransim/issues/new?template=adapter_request.yml) — we prioritize based on community demand.
 
 ---
 
@@ -419,8 +419,8 @@ We love contributions — platform adapters, world-model improvements, docs, ben
 
 - **Start here**: [CONTRIBUTING.md](CONTRIBUTING.md)
 - **Sign off commits** per [DCO](CONTRIBUTING.md#developer-certificate-of-origin-dco): `git commit -s`
-- **Good first issues**: [see labels](https://github.com/ORAN-cgsj/oransim/issues?q=is%3Aissue+label%3A%22good+first+issue%22)
-- **Platform adapter requests**: [file here](https://github.com/ORAN-cgsj/oransim/issues/new?template=adapter_request.yml)
+- **Good first issues**: [see labels](https://github.com/deterministically/oransim/issues?q=is%3Aissue+label%3A%22good+first+issue%22)
+- **Platform adapter requests**: [file here](https://github.com/deterministically/oransim/issues/new?template=adapter_request.yml)
 
 By contributing, you agree your contribution is licensed under Apache-2.0. No CLA required.
 
@@ -436,7 +436,7 @@ If you use Oransim in research, please cite:
   title        = {Oransim: Causal Digital Twin for Marketing at Scale},
   version      = {0.1.0-alpha},
   date         = {2026-04-18},
-  url          = {https://github.com/ORAN-cgsj/oransim},
+  url          = {https://github.com/deterministically/oransim},
   organization = {OranAI Ltd.}
 }
 ```
@@ -460,7 +460,7 @@ Third-party dependencies retain their original licenses. We are not affiliated w
 Oransim is built by **[OranAI Ltd.](https://oran.cn)** (橙果视界（深圳）科技有限公司).
 
 **Core Maintainers**
-- **Fakong Yin** — CTO & Core Architect · [cto@orannai.com](mailto:cto@orannai.com) · [@ORAN-cgsj](https://github.com/ORAN-cgsj)
+- **Fakong Yin** — CTO & Core Architect · [cto@orannai.com](mailto:cto@orannai.com) · [@deterministically](https://github.com/deterministically)
 
 **Open roles** — we're hiring researchers (Causal ML, RL, Agent-based Simulation) and engineers (Platform, Infra). Reach out at [cto@orannai.com](mailto:cto@orannai.com).
 
@@ -470,11 +470,11 @@ Contributors appear on [`CONTRIBUTORS.md`](CONTRIBUTORS.md) (auto-generated).
 
 ## ⭐ Star History
 
-<a href="https://star-history.com/#ORAN-cgsj/oransim&Date">
+<a href="https://star-history.com/#deterministically/oransim&Date">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ORAN-cgsj/oransim&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ORAN-cgsj/oransim&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ORAN-cgsj/oransim&type=Date" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=deterministically/oransim&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=deterministically/oransim&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=deterministically/oransim&type=Date" />
   </picture>
 </a>
 
