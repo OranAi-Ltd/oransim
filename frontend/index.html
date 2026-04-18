@@ -16,8 +16,9 @@
   header h1 { font-size:18px; margin:0; font-weight:600; letter-spacing:0.5px; }
   header .tag { color:var(--muted); font-size:12px; }
   main { display:grid; grid-template-columns: 360px 1fr 360px; gap:16px; padding:16px; height: calc(100vh - 54px); overflow:hidden; }
-  .panel { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:16px; overflow:auto; }
-  .panel h3 { margin:0 0 10px; font-size:14px; color:var(--accent); font-weight:600; }
+  .panel { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:18px; overflow:auto; }
+  .panel h3 { margin:0 0 14px; font-size:17px; color:var(--accent); font-weight:600; letter-spacing:0.1px; }
+  .panel h3 + .hint, .panel h3 + .sub { font-size:12px; color:var(--muted); margin-top:-8px; margin-bottom:10px; }
   label { display:block; margin:8px 0 4px; color:var(--muted); font-size:12px; }
   input[type=text], textarea, select, input[type=number] {
     width:100%; background:#0f141c; color:var(--fg); border:1px solid var(--border);
@@ -49,11 +50,138 @@
   .edge { stroke:var(--border); stroke-width:1.2; fill:none; marker-end:url(#arr); }
   .badge { display:inline-block; background:#23304a; color:var(--accent); padding:2px 6px; border-radius:3px; font-size:11px; }
   .seg { font-size:12px; padding:4px 6px; background:#0f141c; border-radius:4px; margin:3px 0; display:flex; justify-content:space-between; }
-  .tab-row { display:flex; gap:4px; margin-bottom:10px; border-bottom:1px solid var(--border); }
-  .tab { padding:6px 10px; cursor:pointer; color:var(--muted); border-bottom:2px solid transparent; font-size:12px; }
+  .tab-row { display:flex; gap:4px; margin-bottom:14px; border-bottom:1px solid var(--border); }
+  .tab { padding:8px 14px; cursor:pointer; color:var(--muted); border-bottom:2px solid transparent; font-size:13px; font-weight:500; transition:color 120ms ease; }
+  .tab:hover { color:var(--fg); }
   .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
   .hint { color:var(--muted); font-size:11px; margin-top:4px; line-height:1.5; }
   #log { font-size:11px; color:var(--muted); max-height:160px; overflow:auto; font-family: Menlo, monospace; padding:6px; background:#0b0e14; border-radius:4px; margin-top:6px; }
+
+  /* ── Hero section (T-A) ─────────────────────────────────────────────── */
+  #hero {
+    position: relative;
+    width: 100%;
+    min-height: 62vh;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 40%, #12192a 0%, #0a0d14 60%, #06080d 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  #hero-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    display: block;
+    opacity: 0.85;
+    pointer-events: none;
+  }
+  #hero::after {
+    /* 底部向 main 过渡的渐隐 */
+    content: "";
+    position: absolute; left: 0; right: 0; bottom: 0; height: 80px;
+    background: linear-gradient(to bottom, transparent, var(--bg));
+    pointer-events: none;
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 11vh 28px 8vh;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 6px 14px;
+    border: 1px solid rgba(110,168,254,0.35);
+    border-radius: 999px;
+    background: rgba(110,168,254,0.06);
+    margin-bottom: 22px;
+  }
+  .hero-title {
+    font-size: 48px;
+    line-height: 1.12;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #fff;
+    margin: 0 0 14px;
+  }
+  .hero-title .grad {
+    background: linear-gradient(90deg, #6ea8fe 0%, #a855f7 55%, #5ed39b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .hero-sub {
+    font-size: 17px;
+    line-height: 1.55;
+    color: #c8d1e4;
+    max-width: 640px;
+    margin: 0 auto 28px;
+  }
+  .hero-input-row {
+    display: flex;
+    gap: 10px;
+    max-width: 640px;
+    margin: 0 auto;
+    align-items: stretch;
+  }
+  .hero-input-row input[type=text] {
+    flex: 1;
+    font-size: 15px;
+    padding: 14px 18px;
+    background: rgba(15,20,28,0.85);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(110,168,254,0.30);
+    border-radius: 8px;
+    color: #fff;
+  }
+  .hero-input-row input[type=text]::placeholder { color: #6a7388; }
+  .hero-cta {
+    padding: 14px 22px;
+    font-size: 15px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #6ea8fe 0%, #a855f7 100%);
+    color: #0b0e14;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 6px 18px rgba(110,168,254,0.35);
+    transition: transform 120ms ease;
+  }
+  .hero-cta:hover { transform: translateY(-1px); }
+  .hero-secondary {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 18px;
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .hero-secondary:hover { color: var(--fg); }
+  .hero-legend {
+    margin-top: 36px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: #8b93a7;
+  }
+  .hero-legend-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    vertical-align: middle; margin-right: 5px;
+  }
+  @media (max-width: 720px) {
+    .hero-title { font-size: 32px; }
+    .hero-sub { font-size: 14px; }
+    .hero-input-row { flex-direction: column; }
+  }
 </style>
 </head>
 <body>
@@ -64,24 +192,60 @@
   <span style="margin-left:auto" class="tag">API: <span id="api-status">…</span></span>
 </header>
 
+<!-- ── Hero (T-A) · 100 万智能体意见传播背景 + 单 CTA ─────────────────── -->
+<section id="hero">
+  <canvas id="hero-canvas" width="1800" height="900"></canvas>
+  <div class="hero-inner">
+    <span class="hero-eyebrow">Causal Digital Twin · 花钱之前先预演</span>
+    <h1 class="hero-title">60 秒预演，<span class="grad">100 万虚拟消费者</span>告诉你这条广告会不会火</h1>
+    <p class="hero-sub">
+      粘一段广告文案，看 AI 用户真实反应、14 天扩散曲线、反事实 ROI —— 以及整个消费者网络如何在背景里传播你的内容。
+    </p>
+    <div class="hero-input-row">
+      <input type="text" id="hero-caption" placeholder="例：新品芋泥奶茶 夏日限定 小众咖啡店上新 真实试喝不踩雷"
+             onkeydown="if(event.key==='Enter') heroLaunch()">
+      <button class="hero-cta" onclick="heroLaunch()">▶ 看一次完整预测</button>
+    </div>
+    <a class="hero-secondary" onclick="heroScrollToForm()">或向下滚动手动调参 ↓</a>
+    <div class="hero-legend">
+      <span><span class="hero-legend-dot" style="background:#22c55e"></span>点击 / 好感</span>
+      <span><span class="hero-legend-dot" style="background:#a855f7"></span>强购买冲动</span>
+      <span><span class="hero-legend-dot" style="background:#ef4444"></span>跳过 / 厌恶</span>
+      <span><span class="hero-legend-dot" style="background:#6ea8fe"></span>好奇观望</span>
+    </div>
+  </div>
+</section>
+
 <main>
   <!-- Left: Creative upload + plan -->
   <section class="panel">
     <h3>① 素材 & 投放计划</h3>
-    <div style="display:flex; gap:3px; margin-bottom:8px; flex-wrap:wrap;">
-      <button class="secondary" style="flex:1 1 30%; padding:5px; font-size:11px;" onclick="applyPreset('quick')" title="10 万虚拟消费者 + 8 个 AI 用户试看 — 约 10 秒">⚡ 轻量
-        <div style="font-size:9px; color:var(--muted)">10 秒出结果</div></button>
-      <button class="secondary" style="flex:1 1 30%; padding:5px; font-size:11px;" onclick="applyPreset('viral')" title="10 万虚拟消费者 + 50 个 AI 用户 + AI 评论区辩论 — 约 60 秒">🔥 爆款
-        <div style="font-size:9px; color:var(--muted)">含 AI 评论区</div></button>
-      <button class="secondary" style="flex:1 1 30%; padding:5px; font-size:11px;" onclick="applyPreset('crisis')" title="10 万虚拟消费者 + 80 个 AI 用户 + 90 天品牌追踪 — 约 2 分钟">⚠️ 危机
-        <div style="font-size:9px; color:var(--muted)">含 90 天品牌</div></button>
-      <button class="secondary" style="flex:1 1 30%; padding:5px; font-size:11px;" onclick="applyPreset('expert')" title="10 万虚拟消费者 + 100 个 AI 用户 + 五项高级分析全开 — 约 2-3 分钟">🧠 全开
-        <div style="font-size:9px; color:var(--muted)">五项分析</div></button>
-      <button class="secondary" style="flex:1 1 30%; padding:5px; font-size:11px; background:#2a1a3a; border-color:#a855f7;" onclick="applyPreset('mega')" title="100 万虚拟消费者 + 5000 个 AI 用户 + 全部高级分析 — 约 4-8 分钟，¥2-5 成本">🌍 极限壮观
-        <div style="font-size:9px; color:#a855f7;">1M + 5k AI</div></button>
-      <button class="secondary" style="flex:1 1 30%; padding:5px; font-size:11px;" onclick="document.getElementById('help-panel').open=!document.getElementById('help-panel').open">📖 帮我看懂
-        <div style="font-size:9px; color:var(--muted)">术语白话解释</div></button>
+    <div style="display:flex; gap:6px; margin-bottom:10px;">
+      <button class="secondary" style="flex:1; padding:9px 8px; font-size:12px; font-weight:600;"
+              onclick="applyPreset('quick')" title="100k 统计 + 8 LLM 灵魂 + 基础校准 · 15 秒">
+        ⚡ 极速
+        <div style="font-size:10px; font-weight:400; color:var(--muted); margin-top:2px;">15 秒 · 基础预测</div>
+      </button>
+      <button class="secondary" style="flex:1; padding:9px 8px; font-size:12px; font-weight:600; border-color:#a855f7; color:#cba8ff;"
+              onclick="applyPreset('expert')" title="100k 统计 + 100 LLM 灵魂 + ABCDE 全栈分析 · 约 2-3 分钟">
+        🧠 完整
+        <div style="font-size:10px; font-weight:400; color:var(--muted); margin-top:2px;">90s · 因果全栈</div>
+      </button>
+      <button class="secondary" style="flex:0 0 auto; padding:9px 12px; font-size:12px;"
+              onclick="document.getElementById('help-panel').open=!document.getElementById('help-panel').open"
+              title="术语白话解释">📖</button>
     </div>
+    <details style="margin-bottom:10px; font-size:11px;">
+      <summary style="color:var(--muted); cursor:pointer; padding:4px 0;">特殊场景预设 ›</summary>
+      <div style="display:flex; gap:4px; padding:6px 0; flex-wrap:wrap;">
+        <button class="secondary" style="flex:1 1 30%; padding:5px; font-size:11px;" onclick="applyPreset('viral')"
+                title="100k 统计 + 50 LLM + 群聊 + 评论区辩论 · 约 60s">🔥 爆款</button>
+        <button class="secondary" style="flex:1 1 30%; padding:5px; font-size:11px;" onclick="applyPreset('crisis')"
+                title="100k 统计 + 80 LLM + 90 天品牌追踪 · 约 2-3min">⚠️ 危机</button>
+        <button class="secondary" style="flex:1 1 30%; padding:5px; font-size:11px; background:#2a1a3a; border-color:#a855f7;"
+                onclick="applyPreset('mega')" title="1M 虚拟消费者 + 5k AI 灵魂 · 4-8 分钟 · ¥2-5 成本">🌍 1M 壮观</button>
+      </div>
+    </details>
 
     <details id="help-panel" style="margin-bottom:10px; padding:8px; background:#0f141c; border-radius:5px; border:1px solid #1e2a3d;">
       <summary style="color:var(--accent); cursor:pointer; font-size:12px; font-weight:bold;">💡 这是什么？怎么看？（点开看新手指南）</summary>
@@ -230,16 +394,19 @@
   <!-- Center: KPIs + DAG + CATE -->
   <section class="panel" style="display:flex; flex-direction:column;">
     <h3>③ 预测 & 反事实对比</h3>
-    <div class="tab-row">
+    <div class="tab-row" style="position:relative;">
       <div class="tab active" data-tab="kpi" onclick="setTab('kpi')">KPI</div>
-      <div class="tab" data-tab="life" onclick="setTab('life')">Hawkes</div>
-      <div class="tab" data-tab="chat" onclick="setTab('chat')">🗣️ 多 Agent 群聊</div>
-      <div class="tab" data-tab="front" onclick="setTab('front')">🚀 2026 前沿</div>
-      <div class="tab" data-tab="society" onclick="setTab('society')">🌍 100万智能体社会</div>
-      <div class="tab" data-tab="v1" onclick="setTab('v1')">∞ V1 架构</div>
-      <div class="tab" data-tab="dag" onclick="setTab('dag')">SCM</div>
-      <div class="tab" data-tab="cate" onclick="setTab('cate')">CATE</div>
-      <div class="tab" data-tab="schema" onclick="setTab('schema')">📋 Schema 输出</div>
+      <div class="tab" data-tab="society" onclick="setTab('society')">🌍 百万智能体</div>
+      <div class="tab" data-tab="chat" onclick="setTab('chat')">🗣️ AI 群聊</div>
+      <div class="tab" id="tab-more-btn" onclick="toggleTabMore(event)" style="margin-left:auto;">更多 ›</div>
+      <div id="tab-more-menu" style="display:none; position:absolute; top:34px; right:0; background:#0f141c; border:1px solid var(--border); border-radius:6px; padding:4px 0; z-index:10; min-width:180px; box-shadow:0 6px 24px rgba(0,0,0,0.4);">
+        <div class="tab" data-tab="life" onclick="setTab('life'); toggleTabMore()" style="display:block; border:0; padding:8px 14px;">📈 Hawkes 14 天曲线</div>
+        <div class="tab" data-tab="front" onclick="setTab('front'); toggleTabMore()" style="display:block; border:0; padding:8px 14px;">🚀 前沿分析 ABCDE</div>
+        <div class="tab" data-tab="dag" onclick="setTab('dag'); toggleTabMore()" style="display:block; border:0; padding:8px 14px;">🕸️ SCM 因果图</div>
+        <div class="tab" data-tab="cate" onclick="setTab('cate'); toggleTabMore()" style="display:block; border:0; padding:8px 14px;">📊 CATE 异质效应</div>
+        <div class="tab" data-tab="schema" onclick="setTab('schema'); toggleTabMore()" style="display:block; border:0; padding:8px 14px;">📋 Schema 输出</div>
+        <div class="tab" data-tab="v1" onclick="setTab('v1'); toggleTabMore()" style="display:block; border:0; padding:8px 14px;">∞ V1 CCG 架构</div>
+      </div>
     </div>
 
     <div id="tab-kpi">
@@ -382,6 +549,96 @@ const API = `${location.protocol}//${location.hostname}:8001`;
 let SESSION_ID = null;
 let LAST_BASELINE = null;
 
+// ─── Hero autoplay (T-A) ─────────────────────────────────────────────────
+// 生成 4500 个合成粒子（25 个高斯集群 + 背景均匀分布），作为 hero 背景数据。
+// 不依赖 backend，页面一打开就能跑动画；即使 API 挂了 hero 也不卡。
+function _generateHeroData(n = 4500, nClusters = 25) {
+  const points = new Array(n);
+  const centers = new Array(nClusters);
+  for (let c = 0; c < nClusters; c++) {
+    centers[c] = { x: 0.08 + Math.random() * 0.84, y: 0.12 + Math.random() * 0.76, size: 0.04 + Math.random() * 0.09 };
+  }
+  const gauss = () => {  // Box-Muller
+    const u = 1 - Math.random(), v = 1 - Math.random();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  };
+  for (let i = 0; i < n; i++) {
+    // 85% 聚类分布，15% 均匀背景
+    if (Math.random() < 0.85) {
+      const c = centers[(Math.random() * nClusters) | 0];
+      const x = Math.max(0.02, Math.min(0.98, c.x + gauss() * c.size));
+      const y = Math.max(0.02, Math.min(0.98, c.y + gauss() * c.size));
+      // 8% 是 soul agent（级联传播的种子），优先来自 cluster 中心附近
+      const is_soul = Math.random() < 0.08;
+      points[i] = { x, y, is_soul, tier: (Math.random() * 5) | 0 };
+    } else {
+      points[i] = { x: Math.random(), y: Math.random(), is_soul: false, tier: (Math.random() * 5) | 0 };
+    }
+  }
+  return { points };
+}
+
+function _startHeroAmbient() {
+  const c = document.getElementById("hero-canvas");
+  if (!c) return;
+  // 把 canvas 实际像素尺寸对齐 devicePixelRatio 保持清晰
+  const rect = c.getBoundingClientRect();
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  c.width = Math.floor(rect.width * dpr);
+  c.height = Math.floor(rect.height * dpr);
+  // T-C2: 1200 粒子 + 漂移 + 稀疏连线，既像 constellation 又保留 T-C1 波的叙事
+  const data = window._HERO_DATA || (window._HERO_DATA = _generateHeroData(1200, 14));
+  runOpinionCascade(c, data, {
+    initialWaves: 4,
+    primaryBurst: 2,
+    primaryIntervalMs: 1900,
+    waveSpeed: 0.13,
+    waveThick: 0.035,
+    waveTau: 3.2,
+    cascadeProb: 0.004,
+    maxWaves: 32,
+    trailFill: 'rgba(6,8,13,0.14)',
+    lowCpu: true,
+    drift: true,
+    driftSpeed: 0.010,
+    connect: {
+      threshold: 0.055,
+      alphaMax: 0.18,
+      rgb: "125,160,220",  // 冷蓝调 connect 线，与 T-C1 波形成对比
+    },
+  });
+}
+
+// 窗口尺寸变化 / DPR 变化时重新对齐 canvas
+window.addEventListener('resize', () => {
+  const c = document.getElementById("hero-canvas");
+  if (!c) return;
+  const rect = c.getBoundingClientRect();
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  c.width = Math.floor(rect.width * dpr);
+  c.height = Math.floor(rect.height * dpr);
+});
+
+function heroScrollToForm() {
+  const m = document.querySelector('main');
+  if (m) m.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function heroLaunch() {
+  const heroCap = document.getElementById("hero-caption");
+  const mainCap = document.getElementById("caption");
+  const text = (heroCap && heroCap.value || "").trim();
+  if (text && mainCap) mainCap.value = text;
+  heroScrollToForm();
+  // 稍等滚动完触发「极速」预设再预测，节奏自然
+  setTimeout(() => {
+    try { applyPreset('quick'); } catch(e) {}
+    setTimeout(() => {
+      try { runPredict(); } catch(e) {}
+    }, 350);
+  }, 700);
+}
+
 function log(msg) {
   const el = document.getElementById("log");
   const now = new Date().toLocaleTimeString();
@@ -396,6 +653,11 @@ async function healthcheck() {
   } catch (e) { document.getElementById("api-status").textContent = "❌ 连不上"; }
 }
 healthcheck();
+
+// 页面就绪后启动 hero ambient（放 setTimeout 让浏览器先完成首帧布局）
+window.addEventListener('load', () => {
+  setTimeout(_startHeroAmbient, 80);
+});
 
 // One-click preset configurations
 function applyPreset(kind) {
@@ -1587,6 +1849,27 @@ function setTab(name) {
   if (name === "schema" && window.LAST_SCHEMA) renderSchemaOutputs(window.LAST_SCHEMA);
 }
 
+function toggleTabMore(ev) {
+  if (ev) ev.stopPropagation();
+  const m = document.getElementById("tab-more-menu");
+  if (!m) return;
+  m.style.display = (m.style.display === "none" || !m.style.display) ? "block" : "none";
+  // click-outside 关闭
+  if (m.style.display === "block" && !m._bound) {
+    m._bound = true;
+    setTimeout(() => {
+      const close = (e) => {
+        if (!m.contains(e.target) && e.target.id !== "tab-more-btn") {
+          m.style.display = "none";
+          document.removeEventListener("click", close);
+          m._bound = false;
+        }
+      };
+      document.addEventListener("click", close);
+    }, 0);
+  }
+}
+
 let SOCIETY_DATA = null;
 let SOCIETY_MODE = "tier"; // tier | verdict | reach
 let GL_CTX = null, GL_PROG = null, GL_BUF_POS = null, GL_BUF_COL = null, GL_BUF_SIZE = null, GL_N = 0;
@@ -2019,36 +2302,297 @@ function updateSocietyStats(loadMs) {
   `;
 }
 
+// ─── T-C1 Opinion Propagation Engine ────────────────────────────────────
+// 多源径向波 + 按情感极性染色 + 命中粒子触发级联二级波 + 持续 RAF 循环
+// 同一引擎既给「🌊 舆论波」按钮用（定时版），也给 hero 背景用（持续 + 帧跳）。
+
+const CASCADE_HUES = {
+  positive:    [0x22, 0xc5, 0x5e],  // 绿 · 点击 / 好感
+  highIntent:  [0xa8, 0x55, 0xf7],  // 紫 · 强购意
+  negative:    [0xef, 0x44, 0x44],  // 红 · 跳过 / 厌恶
+  neutral:     [0x6e, 0xa8, 0xfe],  // 蓝 · 好奇 / 无倾向
+};
+const CASCADE_KINDS = Object.keys(CASCADE_HUES);
+
+const CASCADE_INSTANCES = new Map();  // canvasId → runtime state
+
+function _cascadePickSeedIdx(pts) {
+  // 70% 从 soul agent 抽（高影响力种子），30% 全量抽
+  const soulIdx = [];
+  for (let i = 0; i < pts.length; i++) if (pts[i].is_soul) soulIdx.push(i);
+  if (soulIdx.length > 0 && Math.random() < 0.7)
+    return soulIdx[(Math.random() * soulIdx.length) | 0];
+  return (Math.random() * pts.length) | 0;
+}
+
+function _cascadeSpawnWave(state, seedIdx, kind, amplitude, isSecondary, data) {
+  const p = data.points[seedIdx];
+  if (!p) return;
+  state.waves.push({
+    x: p.x, y: p.y, startT: performance.now(),
+    kind, amplitude, isSecondary, seedIdx,
+  });
+}
+
+function _cascadeSpawnPrimary(state, n, data) {
+  for (let i = 0; i < n; i++) {
+    const k = CASCADE_KINDS[(Math.random() * CASCADE_KINDS.length) | 0];
+    _cascadeSpawnWave(state, _cascadePickSeedIdx(data.points), k, 1.0, false, data);
+  }
+}
+
+function _cascadeFrame(state, now) {
+  if (!state.active) return;
+  const c = state.canvas;
+  if (!c) return;
+  const ctx = c.getContext("2d");
+  const W = c.width, H = c.height;
+  const data = state.data;
+  const pts = data.points;
+
+  // Low-CPU 帧跳（hero 背景用）
+  if (state.lowCpu) {
+    state.skipToggle = !state.skipToggle;
+    if (state.skipToggle) {
+      state.rafId = requestAnimationFrame((t) => _cascadeFrame(state, t));
+      return;
+    }
+  }
+
+  // Persistence-of-vision 轨迹
+  ctx.fillStyle = state.trailFill;
+  ctx.fillRect(0, 0, W, H);
+
+  // T-C2: drift + sparse connections substrate（放在波之前，让波光在连线之上）
+  if (state.drift || state.connect) _cascadeDriftAndConnect(state, now);
+
+  const WAVE_SPEED = state.waveSpeed;      // normalized/s
+  const WAVE_THICK = state.waveThick;      // normalized
+  const WAVE_TAU   = state.waveTau;        // seconds
+
+  const N = pts.length;
+  const glow = state._glowBuf || new Float32Array(N);
+  glow.fill(0);
+  state._glowBuf = glow;
+  const kindIdx = state._kindBuf || new Int8Array(N);
+  state._kindBuf = kindIdx;
+
+  const aliveWaves = [];
+  for (const w of state.waves) {
+    const age = (now - w.startT) / 1000;
+    if (age > WAVE_TAU) continue;
+    const r = age * WAVE_SPEED;
+    const envelope = Math.exp(-age / (WAVE_TAU * 0.5)) * w.amplitude;
+    if (envelope < 0.02) continue;
+    aliveWaves.push(w);
+
+    // 环带：只扫 |d - r| < WAVE_THICK 的粒子
+    const rLo2 = Math.max(0, r - WAVE_THICK);
+    const rHi  = r + WAVE_THICK;
+    const rHi2 = rHi * rHi;
+    const rLoSq = rLo2 * rLo2;
+    const kindOrd = CASCADE_KINDS.indexOf(w.kind);
+
+    for (let i = 0; i < N; i++) {
+      const p = pts[i];
+      const dx = p.x - w.x, dy = p.y - w.y;
+      const d2 = dx*dx + dy*dy;
+      if (d2 > rHi2 || d2 < rLoSq) continue;
+      const d = Math.sqrt(d2);
+      const ringDist = Math.abs(d - r);
+      if (ringDist > WAVE_THICK) continue;
+      const proximity = 1 - ringDist / WAVE_THICK;
+      const g = proximity * envelope;
+      if (g > glow[i]) {
+        glow[i] = g;
+        kindIdx[i] = kindOrd;
+      }
+      // 级联：0.2% 几率晋级为二级源（amplitude 减半）
+      if (!w.isSecondary && proximity > 0.92 && state.waves.length < state.maxWaves
+          && Math.random() < state.cascadeProb) {
+        _cascadeSpawnWave(state, i, w.kind, 0.55, true, data);
+      }
+    }
+  }
+  state.waves = aliveWaves;
+
+  // 渲染发光粒子
+  for (let i = 0; i < N; i++) {
+    const g = glow[i];
+    if (g < 0.04) continue;
+    const p = pts[i];
+    const x = p.x * (W - 20) + 10;
+    const y = p.y * (H - 20) + 10;
+    const rgb = CASCADE_HUES[CASCADE_KINDS[kindIdx[i]]] || CASCADE_HUES.neutral;
+    const rad = 1.6 + g * 4.2;
+    ctx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${Math.min(1, g*1.25)})`;
+    ctx.beginPath();
+    ctx.arc(x, y, rad, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 按节奏补发主波
+  if (now - state.lastPrimaryAt > state.primaryIntervalMs) {
+    _cascadeSpawnPrimary(state, state.primaryBurst, data);
+    state.lastPrimaryAt = now;
+  }
+
+  state.rafId = requestAnimationFrame((t) => _cascadeFrame(state, t));
+}
+
+/**
+ * 启动意见传播动画。
+ * @param {HTMLCanvasElement} canvas - 目标 2D canvas（如 society-canvas 或 hero-canvas）
+ * @param {Object} data - { points: [{x,y,is_soul,...}] }，归一化 [0,1]² 坐标
+ * @param {Object} opts - {
+ *   initialWaves=5, primaryBurst=3, primaryIntervalMs=2000,
+ *   waveSpeed=0.14, waveThick=0.03, waveTau=2.8, maxWaves=40,
+ *   cascadeProb=0.002, trailFill='rgba(10,14,22,0.22)', lowCpu=false
+ * }
+ * @returns {string} instance key (canvas id) 用于 stop
+ */
+// ─── T-C2: drift + sparse connections ────────────────────────────────
+// 每帧：粒子按 vx/vy 漂移（边界 wrap）+ 用 spatial grid 找邻居画稀疏连线。
+// 复杂度 O(N · k)，k = 邻格平均粒子数。4500 粒子 threshold=0.045 ≈ 400k 检查/帧。
+function _cascadeDriftAndConnect(state, now) {
+  const data = state.data;
+  const pts = data.points;
+  const N = pts.length;
+  const ctx = state.canvas.getContext("2d");
+  const W = state.canvas.width, H = state.canvas.height;
+
+  // dt 计算（首帧 dt=0）
+  const lastT = state._lastFrameT || now;
+  const dt = Math.min(0.05, (now - lastT) / 1000);
+  state._lastFrameT = now;
+
+  // Drift：更新位置
+  if (state.drift) {
+    const speedScale = state.driftSpeed || 0.012;
+    for (let i = 0; i < N; i++) {
+      const p = pts[i];
+      if (p.vx === undefined) {
+        p.vx = (Math.random() - 0.5) * speedScale;
+        p.vy = (Math.random() - 0.5) * speedScale;
+      }
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      // Wrap around
+      if (p.x < 0) p.x += 1; else if (p.x > 1) p.x -= 1;
+      if (p.y < 0) p.y += 1; else if (p.y > 1) p.y -= 1;
+    }
+  }
+
+  // Connections：spatial grid 找邻居画线
+  if (state.connect) {
+    const thr   = state.connect.threshold ?? 0.045;
+    const aMax  = state.connect.alphaMax ?? 0.22;
+    const lineRGB = state.connect.rgb || "140,170,220";
+    const gSize = Math.max(2, Math.ceil(1 / thr));
+    const grid = new Array(gSize * gSize);
+    for (let i = 0; i < grid.length; i++) grid[i] = null;
+
+    for (let i = 0; i < N; i++) {
+      const p = pts[i];
+      const gx = Math.min(gSize - 1, Math.max(0, Math.floor(p.x * gSize)));
+      const gy = Math.min(gSize - 1, Math.max(0, Math.floor(p.y * gSize)));
+      const cell = gy * gSize + gx;
+      if (grid[cell] === null) grid[cell] = [i];
+      else grid[cell].push(i);
+    }
+
+    const t2 = thr * thr;
+    ctx.lineWidth = 0.5;
+
+    // 遍历每格 × 右下邻格（避免双重计数）
+    for (let gy = 0; gy < gSize; gy++) {
+      for (let gx = 0; gx < gSize; gx++) {
+        const cellPts = grid[gy * gSize + gx];
+        if (!cellPts) continue;
+        // 本格内两两 + 右 + 下 + 右下 + 左下
+        const neighborOffsets = [[0,0],[1,0],[0,1],[1,1],[-1,1]];
+        for (const [dgx, dgy] of neighborOffsets) {
+          const ngx = gx + dgx, ngy = gy + dgy;
+          if (ngx < 0 || ngx >= gSize || ngy < 0 || ngy >= gSize) continue;
+          const nbrPts = (dgx === 0 && dgy === 0) ? cellPts : grid[ngy * gSize + ngx];
+          if (!nbrPts) continue;
+          for (let aIdx = 0; aIdx < cellPts.length; aIdx++) {
+            const a = cellPts[aIdx];
+            const pa = pts[a];
+            const startJ = (dgx === 0 && dgy === 0) ? aIdx + 1 : 0;
+            for (let bIdx = startJ; bIdx < nbrPts.length; bIdx++) {
+              const b = nbrPts[bIdx];
+              if (b === a) continue;
+              const pb = pts[b];
+              const ddx = pa.x - pb.x, ddy = pa.y - pb.y;
+              const d2 = ddx*ddx + ddy*ddy;
+              if (d2 > t2) continue;
+              const alpha = aMax * (1 - Math.sqrt(d2) / thr);
+              if (alpha < 0.02) continue;
+              ctx.strokeStyle = `rgba(${lineRGB},${alpha.toFixed(3)})`;
+              ctx.beginPath();
+              ctx.moveTo(pa.x * (W - 20) + 10, pa.y * (H - 20) + 10);
+              ctx.lineTo(pb.x * (W - 20) + 10, pb.y * (H - 20) + 10);
+              ctx.stroke();
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+function runOpinionCascade(canvas, data, opts) {
+  opts = opts || {};
+  if (!canvas || !data || !data.points) return null;
+  const key = canvas.id || "_cascade_default";
+  stopOpinionCascade(key);
+  const state = {
+    active: true, rafId: null, skipToggle: false,
+    canvas, data,
+    waves: [],
+    lastPrimaryAt: performance.now() - 9999,
+    waveSpeed:         opts.waveSpeed         ?? 0.14,
+    waveThick:         opts.waveThick         ?? 0.03,
+    waveTau:           opts.waveTau           ?? 2.8,
+    maxWaves:          opts.maxWaves          ?? 40,
+    primaryBurst:      opts.primaryBurst      ?? 3,
+    primaryIntervalMs: opts.primaryIntervalMs ?? 2000,
+    cascadeProb:       opts.cascadeProb       ?? 0.002,
+    trailFill:         opts.trailFill         || 'rgba(10,14,22,0.22)',
+    lowCpu:            !!opts.lowCpu,
+    drift:             !!opts.drift,
+    driftSpeed:        opts.driftSpeed        ?? 0.012,
+    connect:           opts.connect           || null,
+  };
+  CASCADE_INSTANCES.set(key, state);
+  _cascadeSpawnPrimary(state, opts.initialWaves ?? 5, data);
+  state.rafId = requestAnimationFrame((t) => _cascadeFrame(state, t));
+  return key;
+}
+
+function stopOpinionCascade(key) {
+  const k = key || "_cascade_default";
+  const state = CASCADE_INSTANCES.get(k);
+  if (!state) return;
+  state.active = false;
+  if (state.rafId) cancelAnimationFrame(state.rafId);
+  CASCADE_INSTANCES.delete(k);
+}
+
+// ─── 「🌊 舆论波」按钮：运行新引擎 8 秒版 ─────────────────────────────
 function animateSociety() {
   if (!SOCIETY_DATA) { renderSociety(30000); return; }
   const c = document.getElementById("society-canvas");
-  const ctx = c.getContext("2d");
-  const W = c.width, H = c.height;
-  let t = 0;
-  const pts = SOCIETY_DATA.points;
-  const anim = () => {
-    t += 0.03;
-    ctx.fillStyle = "rgba(10,14,22,0.25)";
-    ctx.fillRect(0, 0, W, H);
-    const wave_x = (Math.sin(t) * 0.5 + 0.5);
-    for (const p of pts) {
-      const x = p.x * (W - 20) + 10;
-      const y = p.y * (H - 20) + 10;
-      const dist = Math.abs(p.x - wave_x);
-      const intensity = Math.max(0, 1 - dist * 8);
-      if (intensity > 0.5) {
-        ctx.fillStyle = `rgba(110,168,254,${intensity})`;
-        ctx.fillRect(x, y, 2, 2);
-      } else {
-        ctx.fillStyle = "rgba(100,110,130,0.3)";
-        ctx.fillRect(x, y, 1, 1);
-      }
-    }
-    if (t < 12) requestAnimationFrame(anim);
-    else document.getElementById("society-stats").innerHTML += "<br>✅ 动画结束";
-  };
-  document.getElementById("society-stats").innerHTML = "🌊 舆论波动画中 (4 秒)...";
-  requestAnimationFrame(anim);
+  const key = runOpinionCascade(c, SOCIETY_DATA, {
+    initialWaves: 6, primaryBurst: 3, primaryIntervalMs: 1800,
+  });
+  const el = document.getElementById("society-stats");
+  if (el) el.innerHTML = "🌊 意见在 100 万智能体网络传播中（8 秒，含级联触发）...";
+  setTimeout(() => {
+    stopOpinionCascade(key);
+    if (el) el.innerHTML += "<br>✅ 传播结束 · 观察级联如何从 soul agent 扩散";
+  }, 8000);
 }
 
 async function refreshUEB() {
