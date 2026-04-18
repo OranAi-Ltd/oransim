@@ -9,14 +9,16 @@ This document walks you through the steps to publish the `oransim` repo and conf
 
 ## Step 1: Create the GitHub remote
 
-Choose a GitHub org or user handle. Our spec defaults to `oranai` as the org — if you haven't created it:
+The live repo is hosted at **`https://github.com/ORAN-cgsj/oransim`** (OranAI GitHub org handle `ORAN-cgsj`). Early drafts of this doc referenced `oranai` as a placeholder before the org handle was finalized — if you see that in any archived file, treat it as historical.
+
+If you're forking or bootstrapping a mirror under a different handle:
 
 1. Go to https://github.com/organizations/new
-2. Create the free org `oranai` (or your chosen name)
-3. Confirm the URL: `https://github.com/oranai`
+2. Create the free org (or reuse a user account)
+3. Confirm the URL: `https://github.com/<your-handle>`
 
 Then create the repo:
-1. https://github.com/organizations/oranai/repositories/new
+1. https://github.com/organizations/<your-handle>/repositories/new
 2. **Repository name**: `oransim`
 3. **Description**: `🧠 Causal Digital Twin for Marketing at Scale · Predict any marketing decision before you spend a dollar.`
 4. **Public** ✅
@@ -34,7 +36,7 @@ git branch -M main
 git push -u origin main
 ```
 
-If you used a different org/user, replace `oranai` above and run a find-replace on the repo:
+If you used a different org/user, replace `ORAN-cgsj` above and run a find-replace on the repo:
 
 ```bash
 cd /root/projects/oransim
