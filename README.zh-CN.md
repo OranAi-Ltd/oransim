@@ -199,7 +199,7 @@ python -m uvicorn oransim.api:app --port 8001 &
 一次典型预测链路：**素材 + 预算** → **PlatformAdapter**（经可插拔 **DataProvider** 取数据）→ **因果 Transformer 世界模型**（事实 + per-arm 反事实分位数预测）+ **Agent 层**（POP_SIZE-scalable IPF + 10k LLM 人格）→ **因果引擎**（64 节点 Pearl SCM + 三步 `do()` 反事实）→ **因果神经 Hawkes**（14 天扩散 + 干预 rollout）→ **预测 JSON**（14-19 个 schema）。*LightGBM quantile 和参数化 Hawkes 通过 registry 作为快速 baseline 可用。*
 
 两轴可扩展：
-- **平台轴** —— 当前 XHS，TikTok / Instagram / YouTube Shorts / Douyin 在路线图
+- **平台轴** —— XHS（v1 legacy 直接可跑）+ TikTok / Instagram / YouTube Shorts / Douyin（合成数据 MVP）；Twitter / Bilibili / LinkedIn 在路线图
 - **数据轴** —— 每平台多数据源插件（Synthetic / CSV / JSON / OpenAPI / 自定义）
 
 完整设计见 [`docs/zh/architecture.md`](docs/zh/architecture.md)。

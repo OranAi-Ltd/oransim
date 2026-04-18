@@ -194,7 +194,7 @@ The frontend shows a yellow banner at the top whenever the backend is still in m
 A typical prediction request flows: **Creative + Budget** → **PlatformAdapter** (pulls data via pluggable **DataProvider**) → **Causal Transformer World Model** (factual + per-arm counterfactual quantile predictions) + **Agent Layer** (POP_SIZE-scalable IPF + 10k LLM personas) → **Causal Engine** (64-node Pearl SCM + 3-step `do()` counterfactuals) → **Causal Neural Hawkes** (14-day diffusion with intervention rollout) → **Prediction JSON** (14–19 schemas). *LightGBM quantile and parametric Hawkes are available as fast baselines via the registry.*
 
 Two-axis extensibility:
-- **Platform** axis — XHS today; TikTok / Instagram / YouTube Shorts / Douyin on roadmap
+- **Platform** axis — XHS (legacy, v1 live) + TikTok / Instagram / YouTube Shorts / Douyin (MVP on synthetic); Twitter / Bilibili / LinkedIn on roadmap
 - **Data Provider** axis — pluggable per platform (Synthetic / CSV / JSON / OpenAPI / your own)
 
 See [`docs/en/architecture.md`](docs/en/architecture.md) for the full design.
