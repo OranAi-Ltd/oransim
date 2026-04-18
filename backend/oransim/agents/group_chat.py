@@ -375,7 +375,7 @@ def simulate_group_chat(
         cost_cny = estimate_cost_cny(tok_in, tok_out)
 
     final = list(current_stances.values())
-    initial = list(initial_stances.values())
+    list(initial_stances.values())
     consensus = float(np.mean(final))
     polarization = float(np.std(final))
     converged = rounds_summary[-1]["std_stance"] < rounds_summary[0]["std_stance"]
@@ -399,10 +399,8 @@ def simulate_group_chat(
         llm_reported * second_wave_calibrated > 0 or abs(llm_reported) < 0.05
     ):
         second_wave_final = float(np.clip((llm_reported + second_wave_calibrated) / 2, -0.3, 0.3))
-        coupling_source = "literature_avg_with_llm"
     else:
         second_wave_final = second_wave_calibrated
-        coupling_source = "literature_only_sunstein2017"
 
     return GroupChatReport(
         creative_caption=creative.caption,

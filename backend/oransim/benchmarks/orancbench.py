@@ -88,7 +88,7 @@ def _r2(y_true: list[float], y_pred: list[float]) -> float:
         return 0.0
     mean = sum(y_true) / len(y_true)
     ss_tot = sum((y - mean) ** 2 for y in y_true)
-    ss_res = sum((y - p) ** 2 for y, p in zip(y_true, y_pred))
+    ss_res = sum((y - p) ** 2 for y, p in zip(y_true, y_pred, strict=False))
     return 1.0 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
 
 
@@ -96,7 +96,7 @@ def _mape(y_true: list[float], y_pred: list[float]) -> float:
     if not y_true:
         return 0.0
     pct = []
-    for y, p in zip(y_true, y_pred):
+    for y, p in zip(y_true, y_pred, strict=False):
         if abs(y) < 1e-9:
             continue
         pct.append(abs((y - p) / y))

@@ -16,6 +16,7 @@ identical (persona, impression) collapse to one HTTP call.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import os
 import threading
@@ -270,18 +271,14 @@ def run_batch_sync(jobs: list[dict], concurrency: int | None = None) -> list[dic
         results = loop.run_until_complete(batch_infer_async(jobs, concurrency))
         sess = _session_holder.get("session")
         if sess is not None:
-            try:
+            with contextlib.suppress(Exception):
                 loop.run_until_complete(sess.close())
-            except Exception:
-                pass
             _session_holder["session"] = None
             _session_holder["loop"] = None
         return results
     finally:
-        try:
+        with contextlib.suppress(Exception):
             loop.close()
-        except Exception:
-            pass
 
 
 def pool_stats() -> dict:

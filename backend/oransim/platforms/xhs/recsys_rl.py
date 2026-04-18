@@ -219,6 +219,7 @@ def rl_report_to_dict(rep: RecSysRLReport) -> dict:
             for k, v in zip(
                 ["content", "platform_activity", "audience", "kol", "exploration"],
                 rep.final_weights,
+                strict=False,
             )
         },
         "per_round": [

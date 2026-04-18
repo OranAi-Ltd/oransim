@@ -73,6 +73,7 @@ def compute_cate(
         zip(
             ["age", "gender", "city_tier", "income_decile", "education"],
             rf.feature_importances_.tolist(),
+            strict=False,
         )
     )
     # Segment analysis: mean delta per age × gender cell

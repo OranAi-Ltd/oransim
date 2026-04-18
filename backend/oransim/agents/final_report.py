@@ -158,7 +158,9 @@ def _template_report(scenario: dict, kpis: dict, ps: dict | None, schema: dict) 
 
     if kol:
         kol_roi = kol.get("estimated_roi", 0) or 0
-        kol_roi_fmt = f"**{kol_roi:.2f}x**" if kol_roi else "— <sub>(未跑 KOL 组合优化或无有效解)</sub>"
+        kol_roi_fmt = (
+            f"**{kol_roi:.2f}x**" if kol_roi else "— <sub>(未跑 KOL 组合优化或无有效解)</sub>"
+        )
         md += f"""
 ## 5. KOL 组合策略
 - 入选达人：**{kol.get('total_selected',0)}** 位（KOL:KOC = {kol.get('kol_koc_ratio','?')}）

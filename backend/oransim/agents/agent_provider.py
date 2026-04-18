@@ -260,7 +260,7 @@ class SLOCProvider(AgentProvider):
             macro_cvr_lift=macro_cvr_lift,
         )
         click_prob_by_agent = {
-            int(a): float(p) for a, p in zip(outcome.agent_idx, outcome.click_prob)
+            int(a): float(p) for a, p in zip(outcome.agent_idx, outcome.click_prob, strict=False)
         }
 
         llm_calls = 0

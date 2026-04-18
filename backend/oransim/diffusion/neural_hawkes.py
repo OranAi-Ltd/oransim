@@ -265,10 +265,49 @@ class CausalNeuralHawkesProcess(DiffusionModel):
 
     # ------------------------------------------------------------- forecast
 
+    def _intensity_at_time(
+        self,
+        events: list[tuple[float, str]],
+        t_cand: float,
+        *,
+        mute_treatment: bool = False,
+    ):
+        """Compute per-type intensity λ(t_cand) conditioned on events history.
+
+        For Ogata thinning on a neural TPP, the acceptance probability requires
+        λ(τ) at the **candidate** time τ, not at the last observed event.
+        We append a virtual organic placeholder event at τ and read the
+        intensity at that position. Placeholder type defaults to event_types[0]
+        which gives a neutral "non-event query" at τ.
+
+        The extra forward pass is the price of correct thinning (vs the older
+        "reuse last intensity" approximation, which systematically biased
+        acceptance toward stale pre-jump intensity).
+        """
+        torch = self._torch
+        virtual = events + [(float(t_cand), self.config.event_types[0])]
+        type_ids, dt, treatment_ids, _ = self._prep_stream(virtual)
+        if mute_treatment:
+            treatment_ids = torch.zeros_like(treatment_ids)
+        with torch.no_grad():
+            h = self._net(type_ids, dt, treatment_ids)
+            lam = self._net.intensity(h)[:, -1].clone()  # [1, K] at the virtual τ
+        return lam
+
     def forecast(
         self, seed_events: Iterable[tuple[float, str]], **kwargs: Any
     ) -> DiffusionForecast:
-        """Sample a forecast via thinning (Ogata 1981) with the neural intensity."""
+        """Sample a forecast via Ogata (1981) thinning on the neural intensity.
+
+        Thinning steps (corrected from pre-v0.2-fix bias):
+          1. Compute λ̄ = 1.2 · Σ λ_k(t_last) — valid upper bound assuming
+             intensity doesn't spike between events.
+          2. Sample candidate gap dt_samp ~ Exp(λ̄) → candidate time τ = t + dt_samp.
+          3. **Re-compute** λ(τ) via `_intensity_at_time` (not reused from
+             t_last) — this is the corrected step.
+          4. Accept with probability Σ λ_k(τ) / λ̄; if accepted, pick event
+             type proportional to λ_k(τ).
+        """
         torch = self._torch
         self._net.eval()
         events = list(seed_events)
@@ -280,27 +319,25 @@ class CausalNeuralHawkesProcess(DiffusionModel):
         max_iters = 100_000
         while t < horizon_min and iters < max_iters:
             iters += 1
-            type_ids, dt, treatment_ids, _ = self._prep_stream(
-                events or [(0.0, self.config.event_types[0])]
-            )
+            stream = events or [(0.0, self.config.event_types[0])]
+            type_ids, dt, treatment_ids, _ = self._prep_stream(stream)
             with torch.no_grad():
                 h = self._net(type_ids, dt, treatment_ids)
-                lam = self._net.intensity(h)[:, -1]  # [1, K]
-            lambda_bar = float(lam.sum().item()) * 1.2 + 1e-6
+                lam_prev = self._net.intensity(h)[:, -1]  # λ(t_last), used as upper-bound basis
+            lambda_bar = float(lam_prev.sum().item()) * 1.2 + 1e-6
             u = self._rng.random()
             dt_samp = -math.log(max(1e-12, u)) / lambda_bar
             t = t + dt_samp
             if t >= horizon_min:
                 break
 
-            # Accept with probability sum_k lambda_k(t) / lambda_bar
-            # Approximation: reuse the last intensity (neural Hawkes is
-            # smooth between events — fine for bucketed forecasts).
-            total = float(lam.sum().item())
+            # Corrected thinning: accept/reject using λ(t_cand), not λ(t_last).
+            lam_cand = self._intensity_at_time(events or [(0.0, self.config.event_types[0])], t)
+            total = float(lam_cand.sum().item())
             if self._rng.random() * lambda_bar > total:
                 continue
-            # Pick event type proportional to intensity
-            p = (lam.squeeze(0) / max(1e-9, total)).cpu().tolist()
+            # Pick event type proportional to intensity AT τ (not at t_last).
+            p = (lam_cand.squeeze(0) / max(1e-9, total)).cpu().tolist()
             r = self._rng.random()
             cum = 0.0
             picked = K - 1
@@ -350,24 +387,31 @@ class CausalNeuralHawkesProcess(DiffusionModel):
                 treatment_ids = torch.zeros_like(treatment_ids)
             with torch.no_grad():
                 h = self._net(type_ids, dt, treatment_ids)
-                lam = self._net.intensity(h)[:, -1].clone()
+                lam_prev = self._net.intensity(h)[:, -1].clone()
             if boost != 1.0:
-                # Apply boost to "paid_*" event-type indices.
-                # We clone above so this in-place mul stays safe for future
-                # training-time counterfactual rollouts.
                 for k, name in enumerate(self.config.event_types):
                     if name.startswith("paid_"):
-                        lam[0, k] = lam[0, k] * boost
-            lambda_bar = float(lam.sum().item()) * 1.2 + 1e-6
+                        lam_prev[0, k] = lam_prev[0, k] * boost
+            lambda_bar = float(lam_prev.sum().item()) * 1.2 + 1e-6
             u = self._rng.random()
             dt_samp = -math.log(max(1e-12, u)) / lambda_bar
             t = t + dt_samp
             if t >= horizon_min:
                 break
-            total = float(lam.sum().item())
+            # Corrected thinning: evaluate intensity AT candidate τ.
+            lam_cand = self._intensity_at_time(
+                events or [(0.0, self.config.event_types[0])],
+                t,
+                mute_treatment=(t > mute_at),
+            )
+            if boost != 1.0:
+                for k, name in enumerate(self.config.event_types):
+                    if name.startswith("paid_"):
+                        lam_cand[0, k] = lam_cand[0, k] * boost
+            total = float(lam_cand.sum().item())
             if self._rng.random() * lambda_bar > total:
                 continue
-            p = (lam.squeeze(0) / max(1e-9, total)).cpu().tolist()
+            p = (lam_cand.squeeze(0) / max(1e-9, total)).cpu().tolist()
             r = self._rng.random()
             cum = 0.0
             picked = K - 1

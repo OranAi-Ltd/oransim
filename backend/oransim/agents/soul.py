@@ -386,7 +386,7 @@ class SoulAgentPool:
         Otherwise falls back to template mock.
         """
         rng = random.Random(seed)
-        candidates = [pid for pid in self.personas.keys() if pid in outcome_click_probs]
+        candidates = [pid for pid in self.personas if pid in outcome_click_probs]
         if len(candidates) < n_sample:
             candidates = list(self.personas.keys())
         chosen = rng.sample(candidates, min(n_sample, len(candidates)))
@@ -459,7 +459,7 @@ class SoulAgentPool:
                     raw = async_pool.run_batch_sync(jobs)
                     results_map = {}
                     total_in = total_out = 0
-                    for pid, r in zip(chosen, raw):
+                    for pid, r in zip(chosen, raw, strict=False):
                         pid, r = _post(pid, r)
                         results_map[pid] = r
                         total_in += r.get("_tokens_in", 0)

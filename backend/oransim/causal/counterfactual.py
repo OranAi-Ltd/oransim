@@ -116,12 +116,7 @@ class ScenarioRunner:
                 pre_u = fixed_u[plat]
                 prior_idx = (fixed_idx or {}).get(plat, imp.agent_idx)
                 # Align noise to current impression agents (intersection by agent idx)
-                pre_map = {
-                    int(ai): u
-                    for ai, u in zip(
-                        prior_idx, pre_u
-                    )
-                }
+                pre_map = {int(ai): u for ai, u in zip(prior_idx, pre_u, strict=False)}
                 fu = np.array([pre_map.get(int(a), 0.0) for a in imp.agent_idx], dtype=np.float32)
 
             # Monte Carlo (average over seeds)

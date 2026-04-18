@@ -21,10 +21,7 @@ import numpy as np
 
 
 def _build_features(population, indices: np.ndarray | None = None) -> np.ndarray:
-    if indices is None:
-        idx = np.arange(population.N)
-    else:
-        idx = np.asarray(indices)
+    idx = np.arange(population.N) if indices is None else np.asarray(indices)
     interest = population.interest[idx]  # (N, 64) L2-normed
     age = (population.age_idx[idx][:, None] / 5.0).astype(np.float32)
     gender = population.gender_idx[idx][:, None].astype(np.float32)

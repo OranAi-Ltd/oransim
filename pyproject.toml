@@ -87,6 +87,19 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+# Deliberately ignored:
+# - N803/N806/N814/N815/N817: ML / causal convention (K=classes, N=seq, B=batch,
+#   O/C/E/A/N for bigfive, and common short names in sampling code).
+# - B007: intentionally unused loop control variables (training epoch etc).
+# - E402: lazy imports inside functions are a documented pattern in this repo
+#   (avoid bootstrap-time imports of heavy deps like torch in non-ml mode).
+ignore = [
+  "N803", "N806", "N814", "N815", "N817",  # ML naming conventions
+  "B007",   # intentionally unused loop control (training epoch etc.)
+  "E402",   # lazy imports inside functions (documented pattern here)
+  "E501",   # line length — let black enforce
+  "E741",   # ambiguous names O/I/l — conventional for bigfive / index vars
+]
 
 [tool.black]
 line-length = 100

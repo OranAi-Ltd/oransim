@@ -289,7 +289,7 @@ class XHSPRS:
         if np.isscalar(log_pred):
             log_pred = np.array([log_pred])
         vals = np.expm1(log_pred)
-        return {name: float(max(0, v)) for name, v in zip(self.target_names, vals)}
+        return {name: float(max(0, v)) for name, v in zip(self.target_names, vals, strict=False)}
 
 
 # Singleton

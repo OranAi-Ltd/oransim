@@ -523,7 +523,10 @@ class CausalTransformerWorldModel(WorldModel):
 
             def forward_factual(self, features: dict, context: list[dict] | None = None) -> dict:
                 h = self.encode(features, context=context)
-                return {name: head(h) for name, head in zip(cfg.kpi_heads, self.factual_heads)}
+                return {
+                    name: head(h)
+                    for name, head in zip(cfg.kpi_heads, self.factual_heads, strict=False)
+                }
 
             def forward_counterfactual(
                 self,
@@ -537,7 +540,10 @@ class CausalTransformerWorldModel(WorldModel):
                         "counterfactual head disabled — set use_counterfactual_head=True"
                     )
                 h = self.encode(features, context=context)
-                return {name: head(h, arm_idx) for name, head in zip(cfg.kpi_heads, self.cf_heads)}
+                return {
+                    name: head(h, arm_idx)
+                    for name, head in zip(cfg.kpi_heads, self.cf_heads, strict=False)
+                }
 
             def treatment_logits(
                 self, features: dict, context: list[dict] | None = None
@@ -660,10 +666,7 @@ class CausalTransformerWorldModel(WorldModel):
             t = torch.as_tensor(v, device=self._device)
             if t.dim() == 0:
                 t = t.unsqueeze(0)
-            if k == "platform_id":
-                t = t.long()
-            else:
-                t = t.float()
+            t = t.long() if k == "platform_id" else t.float()
             out[k] = t.unsqueeze(0)  # prepend batch dim
         return out
 
@@ -671,7 +674,7 @@ class CausalTransformerWorldModel(WorldModel):
         out: dict[str, dict[float, float]] = {}
         for kpi_name, preds in raw.items():
             row = preds[0].cpu().tolist()
-            out[kpi_name] = {q: float(v) for q, v in zip(self.config.quantiles, row)}
+            out[kpi_name] = {q: float(v) for q, v in zip(self.config.quantiles, row, strict=False)}
         return WorldModelPrediction(kpi_quantiles=out, latent=latent)
 
     def _batch_one(self, features: dict[str, Any]) -> dict[str, Any]:
@@ -681,10 +684,7 @@ class CausalTransformerWorldModel(WorldModel):
             t = torch.as_tensor(v, device=self._device)
             if t.dim() == 0:
                 t = t.unsqueeze(0)
-            if k == "platform_id":
-                t = t.long()
-            else:
-                t = t.float()
+            t = t.long() if k == "platform_id" else t.float()
             out[k] = t.unsqueeze(0)
         return out
 

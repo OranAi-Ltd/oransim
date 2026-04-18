@@ -47,7 +47,7 @@ class Embedder(ABC):
     def embed_batch(self, items: list[Any]) -> np.ndarray:
         return np.stack([self.embed(it) for it in items])
 
-    def fit(self, samples: list[Any]) -> None:
+    def fit(self, samples: list[Any]) -> None:  # noqa: B027 — optional hook, not abstract
         """Override for online/continual learning embedders."""
         pass
 
@@ -367,7 +367,7 @@ class EmbeddingBus:
         ws_arr = ws_arr / ws_arr.sum()
         # Padding/truncation for mixed-dim embedders (project to EMB_DIM)
         unified = np.zeros(EMB_DIM, dtype=np.float32)
-        for v, w in zip(vecs, ws_arr):
+        for v, w in zip(vecs, ws_arr, strict=False):
             if len(v) < EMB_DIM:
                 v = np.concatenate([v, np.zeros(EMB_DIM - len(v), dtype=np.float32)])
             else:

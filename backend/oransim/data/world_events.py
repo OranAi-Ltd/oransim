@@ -13,6 +13,7 @@ For production: swap LLM curation for real news APIs (NewsAPI / GDELT /
 
 from __future__ import annotations
 
+import contextlib
 import json
 import time
 from datetime import datetime
@@ -35,10 +36,8 @@ def _read_cache(max_age_sec: int = CACHE_TTL) -> dict | None:
 
 
 def _write_cache(state: dict) -> None:
-    try:
+    with contextlib.suppress(Exception):
         CACHE.write_text(json.dumps(state, ensure_ascii=False, indent=2))
-    except Exception:
-        pass
 
 
 WORLD_PROMPT = """今天是 {today}（请基于你的常识猜测这一天前后全球的真实热度事件，不要捏造太离谱的）。

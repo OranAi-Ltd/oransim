@@ -8,13 +8,6 @@ import os
 import time
 from datetime import date
 
-logger = logging.getLogger("oransim.api")
-if not logger.handlers:
-    _h = logging.StreamHandler()
-    _h.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s · %(message)s", "%H:%M:%S"))
-    logger.addHandler(_h)
-    logger.setLevel(logging.INFO)
-
 import numpy as np
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -50,12 +43,23 @@ from .runtime.embedding_bus import BUS, bootstrap_default_sources
 from .runtime.graph import CausalGraph
 from .sandbox.engine import SandboxStore
 
+logger = logging.getLogger("oransim.api")
+if not logger.handlers:
+    _h = logging.StreamHandler()
+    _h.setFormatter(
+        logging.Formatter("%(asctime)s %(levelname)s %(name)s · %(message)s", "%H:%M:%S")
+    )
+    logger.addHandler(_h)
+    logger.setLevel(logging.INFO)
+
 # ---------------- Bootstrap ----------------
 logger.info("[Oransim] bootstrapping…")
 t0 = time.time()
 POP_SIZE = int(os.environ.get("POP_SIZE", "100000"))
 POP = generate_population(N=POP_SIZE, seed=42)
-logger.info(f"  population 100k ready  ({time.time()-t0:.1f}s)  marginal KL={marginal_fit_report(POP)}")
+logger.info(
+    f"  population 100k ready  ({time.time()-t0:.1f}s)  marginal KL={marginal_fit_report(POP)}"
+)
 WM = PlatformWorldModel(POP)
 AG = StatisticalAgents(POP)
 SOULS = SoulAgentPool(POP, n=int(os.environ.get("SOUL_POOL_N", "100")), seed=7)
@@ -784,7 +788,9 @@ def predict(req: PredictRequest):
         macro_ctr_lift=scenario.macro_ctr_lift,
         macro_cvr_lift=scenario.macro_cvr_lift,
     )
-    click_prob_by_agent = {int(a): float(p) for a, p in zip(oc.agent_idx, oc.click_prob)}
+    click_prob_by_agent = {
+        int(a): float(p) for a, p in zip(oc.agent_idx, oc.click_prob, strict=False)
+    }
 
     # Souls (LLM optional)
     souls = SOULS.infer_batch(
@@ -829,7 +835,7 @@ def predict(req: PredictRequest):
             macro_ctr_lift=scenario.macro_ctr_lift,
             macro_cvr_lift=scenario.macro_cvr_lift,
         )
-        stat_probs = {int(p): float(c) for p, c in zip(soul_pids, stat_oc.click_prob)}
+        stat_probs = {int(p): float(c) for p, c in zip(soul_pids, stat_oc.click_prob, strict=False)}
         cal = _voronoi_calibration(souls, stat_probs)
         if cal is not None:
             scenario.llm_calibration = cal["global_factor"]
@@ -1210,7 +1216,9 @@ def sb_counterfactual(sid: str, patch: PatchReq):
             kol=(sess.baseline.kol_per_platform or {}).get(plat),
             rng_seed=sess.baseline.seed,
         )
-        base_probs = {int(a): float(p) for a, p in zip(oc_b.agent_idx, oc_b.click_prob)}
+        base_probs = {
+            int(a): float(p) for a, p in zip(oc_b.agent_idx, oc_b.click_prob, strict=False)
+        }
         # CF budget reflects BOTH intervention.total_budget and intervention.platform_alloc.
         alloc_cf = intervention.get("platform_alloc", sess.baseline.platform_alloc)
         total_budget_cf = intervention.get("total_budget", sess.baseline.total_budget)
@@ -1232,7 +1240,9 @@ def sb_counterfactual(sid: str, patch: PatchReq):
                 kol=kol_map_cf.get(plat),
                 rng_seed=sess.baseline.seed,
             )
-            cf_probs = {int(a): float(p) for a, p in zip(oc_cf.agent_idx, oc_cf.click_prob)}
+            cf_probs = {
+                int(a): float(p) for a, p in zip(oc_cf.agent_idx, oc_cf.click_prob, strict=False)
+            }
             cate_info = compute_cate(POP, base_probs, cf_probs)
 
     return {
@@ -1269,7 +1279,9 @@ def sb_explain(sid: str, n: int = 6, use_llm: bool = False):
         kol=(sess.current.kol_per_platform or {}).get(plat),
         rng_seed=sess.current.seed,
     )
-    click_prob_by_agent = {int(a): float(p) for a, p in zip(oc.agent_idx, oc.click_prob)}
+    click_prob_by_agent = {
+        int(a): float(p) for a, p in zip(oc.agent_idx, oc.click_prob, strict=False)
+    }
     souls = SOULS.infer_batch(
         sess.current.creative,
         click_prob_by_agent,
@@ -1354,14 +1366,14 @@ def v2_wm_predict(req: V2WorldModelPredictRequest, model: str = "lightgbm_quanti
     try:
         from .world_model import get_world_model
     except ImportError as e:
-        raise HTTPException(501, f"world_model registry unavailable: {e}")
+        raise HTTPException(501, f"world_model registry unavailable: {e}") from e
     try:
         wm = get_world_model(model)
     except ImportError as e:
         # torch-dep model missing
-        raise HTTPException(501, f"model '{model}' requires optional deps: {e}")
+        raise HTTPException(501, f"model '{model}' requires optional deps: {e}") from e
     except KeyError:
-        raise HTTPException(400, f"unknown model '{model}'")
+        raise HTTPException(400, f"unknown model '{model}'") from None
 
     # LightGBM baseline needs booster loaded from the shipped pkl
     if model in ("lightgbm_quantile", "lightgbm", "lgbm"):
@@ -1423,7 +1435,7 @@ def v2_wm_predict(req: V2WorldModelPredictRequest, model: str = "lightgbm_quanti
         except HTTPException:
             raise
         except Exception as e:
-            raise HTTPException(500, f"lightgbm predict failed: {type(e).__name__}: {e}")
+            raise HTTPException(500, f"lightgbm predict failed: {type(e).__name__}: {e}") from e
 
     # Causal Transformer: delegate to its own predict()
     try:
@@ -1434,9 +1446,9 @@ def v2_wm_predict(req: V2WorldModelPredictRequest, model: str = "lightgbm_quanti
             "latent": pred.latent,
         }
     except FileNotFoundError as e:
-        raise HTTPException(501, str(e))
+        raise HTTPException(501, str(e)) from e
     except Exception as e:
-        raise HTTPException(500, f"{type(e).__name__}: {e}")
+        raise HTTPException(500, f"{type(e).__name__}: {e}") from e
 
 
 @app.post("/api/v2/diffusion/forecast")
@@ -1445,13 +1457,13 @@ def v2_diffusion_forecast(req: V2DiffusionForecastRequest, model: str = "paramet
     try:
         from .diffusion import get_diffusion_model
     except ImportError as e:
-        raise HTTPException(501, f"diffusion registry unavailable: {e}")
+        raise HTTPException(501, f"diffusion registry unavailable: {e}") from e
     try:
         diff = get_diffusion_model(model)
     except ImportError as e:
-        raise HTTPException(501, f"model '{model}' requires optional deps: {e}")
+        raise HTTPException(501, f"model '{model}' requires optional deps: {e}") from e
     except KeyError:
-        raise HTTPException(400, f"unknown model '{model}'")
+        raise HTTPException(400, f"unknown model '{model}'") from None
 
     seed_events = [(float(t), str(n)) for t, n in req.seed_events]
     try:
@@ -1460,9 +1472,9 @@ def v2_diffusion_forecast(req: V2DiffusionForecastRequest, model: str = "paramet
         else:
             out = diff.forecast(seed_events)
     except FileNotFoundError as e:
-        raise HTTPException(501, str(e))
+        raise HTTPException(501, str(e)) from e
     except Exception as e:
-        raise HTTPException(500, f"{type(e).__name__}: {e}")
+        raise HTTPException(500, f"{type(e).__name__}: {e}") from e
 
     return {
         "model": model,
@@ -1479,13 +1491,13 @@ def v2_synth_generate(req: V2SynthesizerRequest, model: str = "ipf"):
     try:
         from .data.synthesizers import get_synthesizer
     except ImportError as e:
-        raise HTTPException(501, f"synthesizer registry unavailable: {e}")
+        raise HTTPException(501, f"synthesizer registry unavailable: {e}") from e
     try:
         syn = get_synthesizer(model)
     except NotImplementedError as e:
-        raise HTTPException(501, str(e))
+        raise HTTPException(501, str(e)) from e
     except KeyError:
-        raise HTTPException(400, f"unknown synthesizer '{model}'")
+        raise HTTPException(400, f"unknown synthesizer '{model}'") from None
 
     pop = syn.generate(N=req.N, seed=req.seed)
     # Return summary stats, not the raw arrays (keep the response small).
@@ -1576,9 +1588,9 @@ def list_platform_adapters():
                 "platform_id": pid,
                 "adapter_class": type(adapter).__name__,
                 "status": "mvp",
-                "data_provider": type(adapter.data_provider).__name__
-                if adapter.data_provider
-                else None,
+                "data_provider": (
+                    type(adapter.data_provider).__name__ if adapter.data_provider else None
+                ),
                 "config": {
                     "cpm_usd": getattr(cfg, "cpm_usd", None),
                     "base_ctr": getattr(cfg, "base_ctr", None),
