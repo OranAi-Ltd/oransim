@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-CACHE = Path("/tmp/causaltwin_world.json")
+CACHE = Path("/tmp/oransim_world.json")
 CACHE_TTL = 6 * 3600  # 6 hours
 
 

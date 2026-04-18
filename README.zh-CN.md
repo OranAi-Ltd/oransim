@@ -25,21 +25,19 @@
 <img src="assets/screenshots/hero.png" alt="Oransim · 60 秒完成带反事实推理的广告预演" width="100%"/>
 </p>
 
-## 一句话介绍
+## 这是什么
 
-> **把 Oransim 当作广告预测界的 Figma。** 粘一段广告文案，拖个滑块，看预测**为什么**变了——以及换种做法会发生什么。反事实推理天生内建，不是外挂补丁。
+Oransim 是一个开源的**因果数字孪生**，专门预测社媒广告效果。给它一段素材、一个预算、一份 KOL 清单 —— ~60 秒拿到：
 
-**Oransim** 是一个开源的**因果数字孪生**框架，用于营销效果预测。上传素材、预算、KOL 清单 —— 60 秒内返回：
+- 📈 曝光 / 点击 / 转化 / ROI，带 P35/P50/P65 分位数区间
+- 🔄 反事实：`do(creative=B)` / `do(budget=x)` / `do(kol=…)` 一次 forward 出结果
+- 🗣️ 10 个 LLM 人格读完真实文案后给点/跳 + 情绪 + 评论
+- 📊 14 天 Hawkes 扩散曲线 + 中途干预 rollout，如 `do(mute_at_day=3)`
+- 🧭 排好序的后续动作建议
 
-- 📈 预测曝光 / 点击 / 转化 / ROI（带校准的不确定区间）
-- 🔄 **反事实分析** —— *「换个素材 / 多 50% 预算 / 换个 KOL 会怎样？」* —— 一次点击问完答完
-- 🗣️ 10 个 LLM 虚拟用户读完你的文案后给出自然语言反馈
-- 📊 14 天扩散曲线 + 干预 rollout（*「如果第 3 天停投会怎样？」*）
-- 🧭 下一步行动建议（按优先级排序）
+v0.2 自带合成 demo 数据集（2.3 MB · 200 KOL / 2k scenarios / 100 event streams）和预训 LightGBM baseline（合成数据 R² 0.69–0.89）。git clone、pip install、配好 LLM API key 即可运行。
 
-**开箱即跑** —— v0.2 仓库自带合成 demo 数据集（2.3 MB，200 KOL / 2k scenarios / 100 event streams）**和预训 LightGBM demo 模型**（合成数据 R² 0.69–0.89）。git clone、pip install、配好 LLM API key，完整预测链路立即能跑——无需先训练。
-
-研究级因果 Transformer 和因果神经 Hawkes 当前 ship **架构 + 训练 loop + 推理代码**（`pip install 'oransim[ml]'` 解锁）；**预训权重刻意延后** —— 要等 [OrancBench v0.5](ROADMAP.md#v05--mid-q4-2026--q1-2027) 的因果原生评测任务（confounded treatment · CATE heterogeneity · temporal intervention）就位，且这俩架构在这些任务上能展示对 LightGBM baseline 的实质性优势再发。优先诚实，不做表面工夫。
+因果 Transformer + 因果神经 Hawkes 目前只 ship 架构 + 训练 loop + 推理代码（`pip install 'oransim[ml]'`）。**预训权重延到 [OrancBench v0.5](ROADMAP.md#v05--mid-q4-2026--q1-2027) 再发** —— 当前合成数据对 LightGBM 来说是 in-hypothesis，CT/NH 在 factual R² 上压不住它；v0.5 的 causal-native 任务（confounded treatment · CATE heterogeneity · temporal intervention）才是这俩架构能真正拉开差距的场景。
 
 <details>
 <summary><b>🧠 因果栈</b> —— 每块组件的研究谱系（点开展开）</summary>
@@ -128,8 +126,6 @@ python -m http.server 8090 --directory frontend
 - *In-context 摊销*：CInA (Arik & Pfister NeurIPS 2023)
 
 </details>
-
-做这个项目的人不满两头 —— 学术模拟器不落地、企业工具不解释。我们想把两头好的一面拧在一起。
 
 ---
 

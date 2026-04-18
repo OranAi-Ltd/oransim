@@ -29,7 +29,7 @@ Themes:
 - World model retains LightGBM quantile (P35/P50/P65) as the baseline
 - Incremental PCA retraining pipeline with documented procedure
 - Hill saturation + frequency-fatigue curves formalized as public API
-- ⏸ **CT / NH pretrained weights deferred** — the current synthetic corpus is fully inside the LightGBM + ParametricHawkes baselines' hypothesis class, so training the research-grade models would produce factual R² at-or-below baselines. Weight release re-tied to the OrancBench v0.5 causal-native task suite (see v0.5 Data & Benchmarks). Honest positioning over overclaiming.
+- ⏸ **CT / NH pretrained weights deferred** — the current synthetic corpus is fully inside the LightGBM + ParametricHawkes baselines' hypothesis class, so training the research-grade models would produce factual R² at-or-below baselines. Weight release re-tied to the OrancBench v0.5 causal-native task suite (see v0.5 Data & Benchmarks).
 
 ### 🌐 Platforms
 - TikTok adapter MVP (notes + KOL endpoints at minimum)

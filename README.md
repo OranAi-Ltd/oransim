@@ -25,26 +25,24 @@
 <img src="assets/screenshots/hero.png" alt="Oransim hero · 60-second prediction with counterfactual reasoning over a 1M-agent society" width="100%"/>
 </p>
 
-## TL;DR
+## What it does
 
-> **Think of Oransim as Figma for ad prediction.** Paste your ad copy, move a slider, see *why* the prediction changes — and what would happen if you'd chosen differently. Counterfactual reasoning built in, not bolted on.
+Oransim is an open-source **causal digital twin** for social-media ad campaigns. Give it a creative, a budget, and a KOL list — in ~60 seconds you get:
 
-**Oransim** is an open-source **causal digital twin** for marketing performance prediction. Upload a creative, a budget, and a KOL list — in 60 seconds, get:
+- 📈 Predicted impressions / clicks / conversions / ROI with P35/P50/P65 bands
+- 🔄 Counterfactuals — `do(creative=B)` / `do(budget=x)` / `do(kol=…)` in one forward pass
+- 🗣️ 10 LLM personas reading the actual creative, returning click / skip / comment reactions
+- 📊 14-day Hawkes diffusion curve with mid-campaign intervention rollouts, e.g. `do(mute_at_day=3)`
+- 🧭 Ranked next actions
 
-- 📈 Predicted impressions, clicks, conversions, ROI (with calibrated uncertainty bands)
-- 🔄 **Counterfactuals** — *"what if I'd used a different creative / more budget / another KOL?"* — asked and answered in one click
-- 🗣️ Virtual-user feedback in natural language (10 LLM-powered personas reading your actual copy)
-- 📊 14-day diffusion curve with intervention rollouts (*"what if we'd stopped boosting on day 3?"*)
-- 🧭 Recommended next actions, ranked
+v0.2 ships a synthetic demo corpus (2.3 MB — 200 KOLs, 2k scenarios, 100 event streams) and a pretrained LightGBM baseline (R² 0.69–0.89 on synthetic eval). Clone, install, set an LLM API key, run.
 
-**Plug-and-play out of the box** — v0.2 ships the synthetic demo corpus (2.3 MB — 200 KOLs, 2k scenarios, 100 event streams) **and a pretrained LightGBM demo model** (R² 0.69–0.89 on synthetic eval). Clone, install, set an LLM API key, and the full prediction pipeline works immediately — no separate training step required.
-
-The research-grade Causal Transformer and Causal Neural Hawkes ship **architecture + training loop + inference code** today (`pip install 'oransim[ml]'`). **Pretrained weights are deliberately held back** until [OrancBench v0.5](ROADMAP.md#v05--mid-q4-2026--q1-2027) introduces causal-native evaluation tasks where these architectures can demonstrate real structural advantage over the LightGBM baseline. Honesty over optics.
+Causal Transformer + Causal Neural Hawkes ship architecture + training loop + inference code only (`pip install 'oransim[ml]'`). **Pretrained weights land with [OrancBench v0.5](ROADMAP.md#v05--mid-q4-2026--q1-2027)** — the current synthetic corpus sits inside the LightGBM baseline's hypothesis class, so CT/NH factual R² wouldn't beat it. The v0.5 causal-native tasks (confounded treatment · CATE heterogeneity · temporal intervention) are where CT/NH structurally win, and that's when weights go out.
 
 <details>
 <summary><b>🧠 The causal stack</b> — research lineage for each component (click to expand)</summary>
 
-Oransim is built **causal-first** — counterfactual reasoning is first-class, not an afterthought:
+Oransim's counterfactual path is native, not bolted on after a predictor:
 
 - 🧠 **Causal Transformer World Model** — 6-layer multi-head self-attention with explicit *treatment / covariate / outcome* factorization, DAG-aware attention bias, per-arm counterfactual heads, and a representation-balancing loss. Draws from recent work: **CaT** (Melnychuk et al. ICML 2022), **CausalDAG-Transformer**, **BCAUSS**, **CInA** (Arik & Pfister NeurIPS 2023), **TARNet / Dragonnet**. ([arch details](#causal-transformer-world-model))
 - ⚡ **Causal Neural Hawkes Process** — Transformer-parameterized temporal point process for 14-day diffusion with *treatment vs control* event typing and intervention-aware intensity. Follows **Mei & Eisner (NeurIPS 2017)**, **Zuo et al. (ICML 2020)**, **Geng et al. (NeurIPS 2022)** on counterfactual TPPs. ([arch details](#causal-neural-hawkes-process))
@@ -130,8 +128,6 @@ To use real LLMs, set `LLM_MODE=api` + `LLM_API_KEY` + `LLM_MODEL`. Select the n
 - *In-context amortization*: CInA (Arik & Pfister NeurIPS 2023)
 
 </details>
-
-Built by practitioners frustrated with both ends of the market — academic simulators that don't ship, and enterprise tools that don't explain.
 
 ---
 
