@@ -27,7 +27,7 @@
 
 ## What it does
 
-Oransim is an open-source **causal digital twin** for social-media ad campaigns. Give it a creative, a budget, and a KOL list — in ~60 seconds you get:
+Oransim is the **open-source reference implementation** of the OranAI causal digital-twin stack for social-media ad campaigns — same architecture as the production `OranAI Enterprise` models, shipped in full so researchers and engineers can read, extend, and pressure-test every layer. Give it a creative, a budget, and a KOL list — in ~60 seconds you get:
 
 - 📈 Predicted impressions / clicks / conversions / ROI with P35/P50/P65 bands
 - 🔄 Counterfactuals — `do(creative=B)` / `do(budget=x)` / `do(kol=…)` in one forward pass
@@ -52,7 +52,7 @@ Oransim's counterfactual path is native, not bolted on after a predictor:
 
 </details>
 
-> 🏢 **Enterprise edition** — OranAI trains the same architectures on **continuously-updated proprietary real-world data** (1M+ labeled campaigns), with **higher-performance vertical model variants** (beauty / fashion / 3C / F&B / luxury / auto) and **bespoke model customization** (on-premise, domain-specific DAGs, branded persona libraries). Contact `cto@orannai.com`.
+> 🏢 **OranAI Enterprise · production-validated** — 同一套架构在**持续更新的 1M+ 真实 campaign** 上训练，跨行业线下验证过；提供 SLA-backed hosted inference、on-premise 私有部署、垂类专属模型（美妆 / 服装 / 3C / 食饮 / 奢品 / 汽车）以及定制 DAG / 品牌专属 persona 库。OSS 版是 reference implementation，企业版是真正跑过商业验证的生产系统。联系 `cto@orannai.com`。
 
 ---
 

@@ -27,7 +27,7 @@
 
 ## 这是什么
 
-Oransim 是一个开源的**因果数字孪生**，专门预测社媒广告效果。给它一段素材、一个预算、一份 KOL 清单 —— ~60 秒拿到：
+Oransim 是 OranAI 因果数字孪生技术栈的**开源 reference implementation** —— 架构和 `OranAI Enterprise` 生产模型同源，完整 ship 出来让研究者和工程师能读、能改、能压测每一层。给它一段素材、一个预算、一份 KOL 清单 —— ~60 秒拿到：
 
 - 📈 曝光 / 点击 / 转化 / ROI，带 P35/P50/P65 分位数区间
 - 🔄 反事实：`do(creative=B)` / `do(budget=x)` / `do(kol=…)` 一次 forward 出结果
@@ -50,7 +50,7 @@ v0.2 自带合成 demo 数据集（2.3 MB · 200 KOL / 2k scenarios / 100 event 
 
 </details>
 
-> 🏢 **企业版** —— OranAI 在**持续更新的真实自有数据**（100 万+ 标注 campaign）上训练同一套架构，提供**效果更优的垂类模型**（美妆 / 服装 / 3C / 食饮 / 奢品 / 汽车）和**模型定制服务**（私有化部署、领域专属 DAG、品牌专属人格库）。联系：`cto@orannai.com`。
+> 🏢 **OranAI Enterprise · 生产验证版** —— 同一套架构在**持续更新的 1M+ 真实 campaign** 上训练，跨行业线下验证过；提供 SLA-backed 托管推理、on-premise 私有部署、垂类专属模型（美妆 / 服装 / 3C / 食饮 / 奢品 / 汽车）以及定制 DAG / 品牌专属 persona 库。OSS 版是 reference implementation，企业版是真正跑过商业验证的生产系统。联系：`cto@orannai.com`。
 
 ---
 
