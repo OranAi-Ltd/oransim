@@ -430,6 +430,63 @@ def test_example_notebooks_valid_json():
 # ----------------------------------------------------------- Phase J (v0.2 quick wins)
 
 
+def test_tiktok_adapter_mvp():
+    """TikTok adapter + synthetic provider must fulfill the canonical contract."""
+    from oransim.platforms.tiktok import TikTokAdapter, TikTokSyntheticProvider
+    from oransim.data.schema import CanonicalKOL, CanonicalNote
+
+    provider = TikTokSyntheticProvider(seed=42)
+    adapter = TikTokAdapter(data_provider=provider)
+    assert adapter.platform_id == "tiktok"
+
+    # get_kol returns a canonical type
+    kol = adapter.get_kol("TT_KOL_000042")
+    assert isinstance(kol, CanonicalKOL)
+    assert kol.platform == "tiktok"
+    assert kol.tier in ("nano", "micro", "mid", "macro", "mega")
+    assert kol.fan_profile is not None
+
+    # search_notes returns canonical list
+    notes = provider.search_notes("beauty", max_results=5)
+    assert len(notes) == 5
+    assert all(isinstance(n, CanonicalNote) for n in notes)
+    assert all(n.platform == "tiktok" for n in notes)
+
+    # Impressions grow non-linearly with budget (Hill saturation)
+    from types import SimpleNamespace
+    creative = SimpleNamespace(caption="ad copy", duration_sec=20.0)
+    pred_1x = adapter.simulate_impression(creative, budget=50_000)
+    pred_2x = adapter.simulate_impression(creative, budget=100_000)
+    # Hill: doubling budget should NOT double impressions
+    assert pred_2x["impressions"] > pred_1x["impressions"]
+    assert pred_2x["impressions"] < 2.0 * pred_1x["impressions"]
+
+
+def test_douyin_adapter_mvp():
+    """Douyin mirrors TikTok but with Greater-China priors + livestream boost."""
+    from oransim.platforms.douyin import DouyinAdapter, DouyinSyntheticProvider
+    from oransim.data.schema import CanonicalKOL
+
+    provider = DouyinSyntheticProvider(seed=42)
+    adapter = DouyinAdapter(data_provider=provider)
+    assert adapter.platform_id == "douyin"
+
+    kol = adapter.get_kol("DY_KOL_000042")
+    assert isinstance(kol, CanonicalKOL)
+    assert kol.platform == "douyin"
+    assert kol.region and kol.region.startswith("CN")
+
+    # Livestream boost
+    from types import SimpleNamespace
+    video = SimpleNamespace(caption="normal ad", duration_sec=18.0, visual_style="bright")
+    livestream = SimpleNamespace(caption="live commerce", duration_sec=18.0, visual_style="livestream")
+    pred_video = adapter.simulate_impression(video, budget=50_000)
+    pred_live = adapter.simulate_impression(livestream, budget=50_000)
+    # Livestream has same impressions but higher conversions
+    assert abs(pred_video["impressions"] - pred_live["impressions"]) < 1e-6
+    assert pred_live["conversions"] > pred_video["conversions"]
+
+
 def test_canonical_schemas():
     from oransim.data.schema import (
         CanonicalKOL, CanonicalNote, CanonicalFanProfile, CanonicalScenario, SCHEMA_VERSION

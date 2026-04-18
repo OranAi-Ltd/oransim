@@ -111,10 +111,10 @@ See [`docs/en/architecture.md`](docs/en/architecture.md) for the full design.
 | Platform             | Region   | Status  | Data Provider                       | World Model          | Milestone |
 |----------------------|----------|---------|-------------------------------------|----------------------|-----------|
 | 🔴 XHS / RedNote     | Greater China | ✅ v1   | Synthetic / CSV / JSON / OpenAPI | Causal Transformer + LightGBM baseline | — |
-| ⚫ TikTok            | Global   | 🟡 stub | —                                 | —                    | v0.5 (Q3 2026) |
+| ⚫ TikTok            | Global   | 🟢 MVP  | Synthetic                        | LightGBM baseline    | v0.5 (real panels) |
 | 🟣 Instagram Reels   | Global   | 🟡 stub | —                                 | —                    | v0.5 (Q4 2026) |
 | 🔴 YouTube Shorts    | Global   | 🟡 stub | —                                 | —                    | v0.7 (Q1 2027) |
-| 🔵 Douyin            | Greater China | 🟡 stub | —                                 | —                    | v0.5 (Q3 2026) |
+| 🔵 Douyin            | Greater China | 🟢 MVP | Synthetic                        | LightGBM baseline    | v0.5 (real panels) |
 | ⚪ Twitter / X       | Global   | 📋 planned | —                             | —                    | v0.5 |
 | 📺 Bilibili          | Greater China | 📋 planned | —                        | —                    | v1.0 |
 | ✒️ LinkedIn          | Global   | 📋 planned | —                             | —                    | v1.0 |
