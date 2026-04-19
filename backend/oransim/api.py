@@ -1,4 +1,10 @@
-"""FastAPI app exposing the full Oransim causal digital-twin stack."""
+"""FastAPI app exposing the full Oransim causal digital-twin stack.
+
+Historically this was a 1700-line god-file. Endpoints are being moved
+into ``oransim.api_routers`` packages while the heavy runtime state
+lives in ``oransim.api_state``. This module keeps the FastAPI app
+instance, CORS config, lifespan hook, and the root health check.
+"""
 
 from __future__ import annotations
 
@@ -14,9 +20,11 @@ from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from .agents.agent_provider import OASISProvider, SLOCProvider, compare_providers
-from .agents.brand_memory import BrandMemoryState, simulate_campaign_days
-from .agents.calibration import calibrate_per_territory, calibration_summary, voronoi_partition
+from . import api_state
+from .api_routers import adapters as adapters_router
+from .agents.agent_provider import compare_providers
+from .agents.brand_memory import simulate_campaign_days
+from .agents.calibration import calibrate_per_territory, calibration_summary
 from .agents.cross_platform import simulate_cross_platform
 from .agents.discourse import (
     discourse_to_dict,
@@ -24,148 +32,28 @@ from .agents.discourse import (
     simulate_discourse_mock,
 )
 from .agents.group_chat import simulate_group_chat
-from .agents.soul import SoulAgentPool
 from .agents.soul_llm import llm_available, llm_info
-from .agents.statistical import StatisticalAgents
 from .causal.cate import compute_cate
-from .causal.counterfactual import Scenario, ScenarioRunner
+from .causal.counterfactual import Scenario
 from .causal.scm import dag_dict
 from .data.creatives import make_creative
-from .data.kols import generate_kol_library, pick_kol_by_spec
+from .data.kols import pick_kol_by_spec
 from .data.macro import MacroContext
 from .data.platforms import PLATFORMS
-from .data.population import generate_population, marginal_fit_report
 from .data.world_events import category_lift, get_world_state, refresh_world_state
-from .diffusion.legacy_hawkes import HawkesSimulator, hawkes_result_to_dict
+from .diffusion.legacy_hawkes import hawkes_result_to_dict
 from .platforms.xhs.prs import PRS  # shared XHSPRS instance
-from .platforms.xhs.recsys_rl import RecSysRLSimulator, rl_report_to_dict
-from .platforms.xhs.world_model_legacy import AudienceFilter, PlatformWorldModel
-from .runtime.embedding_bus import BUS, bootstrap_default_sources
+from .platforms.xhs.recsys_rl import rl_report_to_dict
+from .platforms.xhs.world_model_legacy import AudienceFilter
+from .runtime.embedding_bus import BUS
 from .runtime.graph import CausalGraph
-from .sandbox.engine import SandboxStore
 
 logger = logging.getLogger("oransim.api")
-if not logger.handlers:
-    _h = logging.StreamHandler()
-    _h.setFormatter(
-        logging.Formatter("%(asctime)s %(levelname)s %(name)s · %(message)s", "%H:%M:%S")
-    )
-    logger.addHandler(_h)
-    logger.setLevel(logging.INFO)
-
-# ---------------- Runtime state (populated by _bootstrap via lifespan) ----------------
-POP = None
-WM = None
-AG = None
-SOULS = None
-KOLS = None
-RUNNER = None
-SANDBOX = None
-HAWKES = None
-RECSYS_RL = None
-BRAND_STORE = None
-SLOC_PROVIDER = None
-OASIS_PROVIDER = None
-VORONOI_PROVIDER = None
-PARTITION = None
-PERSONA_TO_SLOT: dict[int, int] = {}
-
-
-def _bootstrap() -> None:
-    """Idempotent heavy init: population → world model → agents → KOLs → Voronoi.
-
-    Called from lifespan on app startup. Safe to call multiple times — returns
-    early if already initialized. Previously ran at import-time, which forced
-    tests + lightweight scripts to pay the full ~10s init cost. Moving it to
-    lifespan defers the work to real startup and keeps ``import oransim.api``
-    cheap for metadata inspection.
-    """
-    global POP, WM, AG, SOULS, KOLS, RUNNER, SANDBOX, HAWKES, RECSYS_RL, BRAND_STORE
-    global SLOC_PROVIDER, OASIS_PROVIDER, VORONOI_PROVIDER, PARTITION, PERSONA_TO_SLOT
-    if POP is not None:
-        return
-    logger.info("[Oransim] bootstrapping…")
-    t0 = time.time()
-    pop_size = int(os.environ.get("POP_SIZE", "100000"))
-    POP = generate_population(N=pop_size, seed=42)
-    logger.info(
-        f"  population {pop_size} ready  ({time.time()-t0:.1f}s)"
-        f"  marginal KL={marginal_fit_report(POP)}"
-    )
-    WM = PlatformWorldModel(POP)
-    AG = StatisticalAgents(POP)
-    SOULS = SoulAgentPool(POP, n=int(os.environ.get("SOUL_POOL_N", "100")), seed=7)
-    KOLS = generate_kol_library(n_per_platform=30)
-    RUNNER = ScenarioRunner(WM, AG)
-    SANDBOX = SandboxStore(RUNNER)
-    HAWKES = HawkesSimulator(POP, beta=0.9, branching=0.35)
-    RECSYS_RL = RecSysRLSimulator(WM)
-    BRAND_STORE = BrandMemoryState.empty(POP.N)
-
-    SLOC_PROVIDER = SLOCProvider(AG, SOULS, None, None)
-    OASIS_PROVIDER = OASISProvider(SOULS, POP, n_total=10_000, activation_prob=0.05)
-    VORONOI_PROVIDER = SLOC_PROVIDER
-
-    bootstrap_default_sources()
-    _bootstrap_index()
-    logger.info(
-        f"  UEB ready: {len(BUS.list_sources())} sources, "
-        f"{sum(s['n_items'] for s in BUS.list_sources())} items pre-indexed"
-    )
-
-    logger.info(f"  building Voronoi partition ({len(SOULS.idx)} souls)...")
-    t1 = time.time()
-    PARTITION = voronoi_partition(POP, [int(i) for i in SOULS.idx])
-    PERSONA_TO_SLOT = {int(pid): slot for slot, pid in enumerate(SOULS.idx)}
-    SLOC_PROVIDER.partition = PARTITION
-    SLOC_PROVIDER.persona_to_slot = PERSONA_TO_SLOT
-    logger.info(
-        f"  done in {time.time()-t1:.1f}s · max territory {PARTITION.weights.max():.3f}"
-        f" mean {PARTITION.weights.mean():.4f}"
-    )
-    logger.info(f"[Oransim] ready in {time.time()-t0:.1f}s")
-    logger.info(f"[Oransim] LLM: {llm_info()}")
-
-
-def _bootstrap_index() -> None:
-    persona_texts = [p.full_card() for p in SOULS.personas.values()]
-    BUS.index("comment_text", persona_texts)
-    BUS.index("competitor_signal", [f"{k.niche}·{k.fan_count}fans·{k.platform}" for k in KOLS])
-    import numpy as _np
-
-    BUS.index("kol_audience", [_np.asarray(k.emb) for k in KOLS])
-    # Cap sample at POP.N — small test/CI pops (POP_SIZE < 5000) would otherwise
-    # crash with "Cannot take a larger sample than population when replace is False".
-    sample_n = min(5000, POP.N)
-    sample_idx = _np.random.default_rng(0).choice(POP.N, size=sample_n, replace=False)
-    BUS.index("user_interest", [POP.interest[i] for i in sample_idx])
-    user_demo = _np.stack(
-        [
-            _np.concatenate(
-                [
-                    _np.eye(6)[POP.age_idx[i]],
-                    _np.eye(2)[POP.gender_idx[i]],
-                    [POP.income[i] / 9.0],
-                    [POP.edu_idx[i] / 4.0],
-                    [POP.occ_idx[i] / 7.0],
-                    [POP.city_idx[i] / 4.0],
-                ]
-            )
-            for i in sample_idx[:1000]
-        ]
-    )
-    BUS.index("user_demo", list(user_demo))
-    try:
-        ws = get_world_state()
-        if ws and ws.get("events"):
-            BUS.index("world_event", ws["events"])
-    except Exception:
-        pass
 
 
 @asynccontextmanager
 async def _lifespan(app_: FastAPI):
-    _bootstrap()
+    api_state.bootstrap()
     yield
 
 
@@ -199,6 +87,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(adapters_router.router)
 
 
 @app.get("/")
@@ -280,7 +171,7 @@ def _build_scenario(req: PredictRequest) -> tuple[Scenario, dict]:
         )
     kol_per = {}
     for plat in req.platform_alloc:
-        kol = pick_kol_by_spec(KOLS, plat, niche=req.kol_niche)
+        kol = pick_kol_by_spec(api_state.KOLS, plat, niche=req.kol_niche)
         kol_per[plat] = kol
     if req.today:
         try:
@@ -356,7 +247,7 @@ def _voronoi_calibration(souls: list[dict], stats_click_probs: dict[int, float])
     if len(llm_souls) < 5:
         return None
     cal = calibrate_per_territory(
-        llm_souls, PARTITION, stats_click_probs, persona_id_to_slot=PERSONA_TO_SLOT
+        llm_souls, api_state.PARTITION, stats_click_probs, persona_id_to_slot=api_state.PERSONA_TO_SLOT
     )
     cal["summary"] = calibration_summary(cal)
     return cal
@@ -368,9 +259,9 @@ def health():
 
     return {
         "status": "ok",
-        "population": POP.N,
-        "souls": len(SOULS.personas),
-        "kols": len(KOLS),
+        "population": api_state.POP.N,
+        "souls": len(api_state.SOULS.personas),
+        "kols": len(api_state.KOLS),
         "llm": llm_info(),
         "optimizations": {
             "dedup": llm_dedup.dedup_stats(),
@@ -388,32 +279,32 @@ def society_sample(n: int = 10000):
     """
     import numpy as np
 
-    n = min(n, POP.N)
+    n = min(n, api_state.POP.N)
     rng = np.random.default_rng(0)
-    all_souls = np.asarray(list(SOULS.idx), dtype=np.int64)
+    all_souls = np.asarray(list(api_state.SOULS.idx), dtype=np.int64)
     # Force-include every LLM soul, fill remainder with random non-soul population.
     if len(all_souls) >= n:
         idx = rng.choice(all_souls, size=n, replace=False)
     else:
-        non_souls = np.setdiff1d(np.arange(POP.N, dtype=np.int64), all_souls, assume_unique=False)
+        non_souls = np.setdiff1d(np.arange(api_state.POP.N, dtype=np.int64), all_souls, assume_unique=False)
         remainder = rng.choice(non_souls, size=n - len(all_souls), replace=False)
         idx = np.concatenate([all_souls, remainder])
         rng.shuffle(idx)
     # Project interest to 2D via first 2 principal dims (approx via fixed proj)
-    interest = POP.interest[idx]
+    interest = api_state.POP.interest[idx]
     x = interest[:, 0]  # first dim
     y = interest[:, 1]
     # Normalize to [0, 1]
     x = (x - x.min()) / (x.max() - x.min() + 1e-8)
     y = (y - y.min()) / (y.max() - y.min() + 1e-8)
     # Colors: by city_tier
-    tier = POP.city_idx[idx].tolist()
-    gender = POP.gender_idx[idx].tolist()
-    age = POP.age_idx[idx].tolist()
-    soul_ids = set(int(i) for i in SOULS.idx)
+    tier = api_state.POP.city_idx[idx].tolist()
+    gender = api_state.POP.gender_idx[idx].tolist()
+    age = api_state.POP.age_idx[idx].tolist()
+    soul_ids = set(int(i) for i in api_state.SOULS.idx)
     is_soul = [int(int(i) in soul_ids) for i in idx]
     return {
-        "n_total": POP.N,
+        "n_total": api_state.POP.N,
         "n_sampled": n,
         "n_llm_souls_highlighted": sum(is_soul),
         "points": [
@@ -610,7 +501,7 @@ def compare_providers_api(req: PredictRequest):
     scenario, macro_summary = _build_scenario(req)
     first_plat = next(iter(scenario.platform_alloc.keys()))
     budget = scenario.total_budget * scenario.platform_alloc[first_plat]
-    imp = WM.simulate_impression(
+    imp = api_state.WM.simulate_impression(
         scenario.creative,
         first_plat,
         budget,
@@ -622,7 +513,7 @@ def compare_providers_api(req: PredictRequest):
     # Run both providers
     results = []
     # 1. Oransim SLOC (our default)
-    sloc = SLOC_PROVIDER.simulate(
+    sloc = api_state.SLOC_PROVIDER.simulate(
         imp,
         scenario.creative,
         scenario.kol_per_platform.get(first_plat),
@@ -636,7 +527,7 @@ def compare_providers_api(req: PredictRequest):
 
     # 2. OASIS (if LLM enabled — honest: needs LLM to be meaningful)
     if req.use_llm:
-        oasis = OASIS_PROVIDER.simulate(
+        oasis = api_state.OASIS_PROVIDER.simulate(
             imp,
             scenario.creative,
             scenario.kol_per_platform.get(first_plat),
@@ -671,7 +562,7 @@ def fan_profile_api(niche: str):
     """
     from .data.fan_profile import fan_profile_summary
 
-    return fan_profile_summary(POP, niche)
+    return fan_profile_summary(api_state.POP, niche)
 
 
 @app.get("/api/graph/inspect")
@@ -711,7 +602,7 @@ def build_prediction_graph() -> CausalGraph:
     )
     g.node(
         "impression",
-        lambda scenario: WM.simulate_impression(
+        lambda scenario: api_state.WM.simulate_impression(
             scenario.creative,
             next(iter(scenario.platform_alloc.keys())),
             scenario.total_budget
@@ -726,7 +617,7 @@ def build_prediction_graph() -> CausalGraph:
     )
     g.node(
         "outcome",
-        lambda scenario, impression: AG.simulate(
+        lambda scenario, impression: api_state.AG.simulate(
             impression,
             scenario.creative,
             kol=(scenario.kol_per_platform or {}).get(impression.platform),
@@ -740,7 +631,7 @@ def build_prediction_graph() -> CausalGraph:
     )
     g.node(
         "kpi",
-        lambda scenario, impression, outcome: AG.aggregate_kpis(
+        lambda scenario, impression, outcome: api_state.AG.aggregate_kpis(
             outcome,
             impression,
             scenario.total_budget * scenario.platform_alloc[impression.platform],
@@ -751,7 +642,7 @@ def build_prediction_graph() -> CausalGraph:
     g.node(
         "hawkes",
         lambda impression, outcome: hawkes_result_to_dict(
-            HAWKES.simulate(impression, outcome, days=14)
+            api_state.HAWKES.simulate(impression, outcome, days=14)
         ),
         deps=["impression", "outcome"],
         description="Hawkes 14d lifecycle",
@@ -835,7 +726,7 @@ def predict(req: PredictRequest):
 
     # First-pass run (no LLM calibration yet)
     first_plat = next(iter(scenario.platform_alloc.keys()))
-    imp = WM.simulate_impression(
+    imp = api_state.WM.simulate_impression(
         scenario.creative,
         first_plat,
         scenario.total_budget * scenario.platform_alloc[first_plat],
@@ -843,7 +734,7 @@ def predict(req: PredictRequest):
         kol=scenario.kol_per_platform.get(first_plat),
         rng_seed=scenario.seed,
     )
-    oc = AG.simulate(
+    oc = api_state.AG.simulate(
         imp,
         scenario.creative,
         kol=scenario.kol_per_platform.get(first_plat),
@@ -856,12 +747,12 @@ def predict(req: PredictRequest):
     }
 
     # Souls (LLM optional)
-    souls = SOULS.infer_batch(
+    souls = api_state.SOULS.infer_batch(
         scenario.creative,
         click_prob_by_agent,
         kol=scenario.kol_per_platform.get(first_plat),
         platform=first_plat,
-        n_sample=min(req.n_souls, len(SOULS.personas)),
+        n_sample=min(req.n_souls, len(api_state.SOULS.personas)),
         use_llm=req.use_llm,
     )
 
@@ -882,15 +773,15 @@ def predict(req: PredictRequest):
             total_impressions=float(len(soul_pids)),
             platform=first_plat,
             score_breakdown={
-                "content": (POP.interest[soul_pids] @ scenario.creative.content_emb + 1) / 2,
-                "platform_activity": POP.platform_activity[
-                    soul_pids, WM.platform_idx.get(first_plat, 0)
+                "content": (api_state.POP.interest[soul_pids] @ scenario.creative.content_emb + 1) / 2,
+                "platform_activity": api_state.POP.platform_activity[
+                    soul_pids, api_state.WM.platform_idx.get(first_plat, 0)
                 ],
                 "audience_filter": np.ones(len(soul_pids), dtype=np.float32),
                 "kol_boost": np.ones(len(soul_pids), dtype=np.float32),
             },
         )
-        stat_oc = AG.simulate(
+        stat_oc = api_state.AG.simulate(
             ir,
             scenario.creative,
             kol=scenario.kol_per_platform.get(first_plat),
@@ -904,10 +795,10 @@ def predict(req: PredictRequest):
             scenario.llm_calibration = cal["global_factor"]
             macro_summary["llm_calibration"] = cal["summary"]
 
-    result = RUNNER.run(scenario, n_monte_carlo=10)
+    result = api_state.RUNNER.run(scenario, n_monte_carlo=10)
 
     # Hawkes lifecycle curve (organic reach over time)
-    hr = HAWKES.simulate(imp, oc, days=req.lifecycle_days)
+    hr = api_state.HAWKES.simulate(imp, oc, days=req.lifecycle_days)
     lifecycle = hawkes_result_to_dict(hr)
 
     extras = {}
@@ -915,11 +806,11 @@ def predict(req: PredictRequest):
     # D — cross-platform unique reach / cannibalization
     if req.enable_crossplat and len(scenario.platform_alloc) > 1:
         _, cp = simulate_cross_platform(
-            WM,
+            api_state.WM,
             scenario.creative,
             scenario.platform_alloc,
             scenario.total_budget,
-            POP.N,
+            api_state.POP.N,
             audience_filter=scenario.audience_filter,
             kol_per_platform=scenario.kol_per_platform,
             seed=scenario.seed,
@@ -937,7 +828,7 @@ def predict(req: PredictRequest):
 
     # C — RecSys RL: simulate platform 冷启/破圈 dynamics
     if req.enable_recsys_rl:
-        rl_rep = RECSYS_RL.simulate(
+        rl_rep = api_state.RECSYS_RL.simulate(
             scenario.creative,
             first_plat,
             scenario.total_budget * scenario.platform_alloc[first_plat],
@@ -954,7 +845,7 @@ def predict(req: PredictRequest):
             scenario.creative,
             scenario.kol_per_platform.get(first_plat),
             first_plat,
-            SOULS,
+            api_state.SOULS,
             n_commenters=req.discourse_n_comments,
             seed=scenario.seed,
         )
@@ -969,7 +860,7 @@ def predict(req: PredictRequest):
             scenario.creative,
             scenario.kol_per_platform.get(first_plat),
             first_plat,
-            SOULS,
+            api_state.SOULS,
             n_agents=req.groupchat_n_agents,
             n_rounds=req.groupchat_n_rounds,
             use_llm=req.use_llm,
@@ -1025,10 +916,10 @@ def predict(req: PredictRequest):
 
     # B — 90-day brand lift longitudinal
     if req.enable_brand_memory:
-        fresh_state = BrandMemoryState.empty(POP.N)
+        fresh_state = BrandMemoryState.empty(api_state.POP.N)
         daily_metrics = simulate_campaign_days(
-            WM,
-            AG,
+            api_state.WM,
+            api_state.AG,
             fresh_state,
             scenario,
             n_days=req.brand_memory_days,
@@ -1216,13 +1107,13 @@ class SessionCreateRequest(BaseModel):
 @app.post("/api/sandbox/session")
 def sb_create(req: SessionCreateRequest):
     scenario, _ = _build_scenario(PredictRequest(**req.dict()))
-    sess = SANDBOX.create(scenario)
+    sess = api_state.SANDBOX.create(scenario)
     return sess.snapshot()
 
 
 @app.get("/api/sandbox/session/{sid}")
 def sb_get(sid: str):
-    sess = SANDBOX.get(sid)
+    sess = api_state.SANDBOX.get(sid)
     if not sess:
         raise HTTPException(404, "session not found")
     return sess.snapshot()
@@ -1235,18 +1126,18 @@ class PatchReq(BaseModel):
 
 @app.patch("/api/sandbox/session/{sid}")
 def sb_patch(sid: str, patch: PatchReq):
-    sess = SANDBOX.get(sid)
+    sess = api_state.SANDBOX.get(sid)
     if not sess:
         raise HTTPException(404, "session not found")
     p = {k: v for k, v in patch.dict().items() if v is not None}
-    sess = SANDBOX.update(sid, p)
+    sess = api_state.SANDBOX.update(sid, p)
     return sess.snapshot()
 
 
 @app.post("/api/sandbox/session/{sid}/counterfactual")
 def sb_counterfactual(sid: str, patch: PatchReq):
     """Explicit counterfactual: compare against baseline, not current."""
-    sess = SANDBOX.get(sid)
+    sess = api_state.SANDBOX.get(sid)
     if not sess:
         raise HTTPException(404, "session not found")
     intervention = {k: v for k, v in patch.dict().items() if v is not None}
@@ -1256,7 +1147,7 @@ def sb_counterfactual(sid: str, patch: PatchReq):
         intervention["platform_alloc"] = {k: v / s for k, v in a.items() if v > 0}
 
     # CATE from baseline vs counterfactual
-    cf_result = RUNNER.counterfactual(sess.baseline, sess.baseline_result, intervention)
+    cf_result = api_state.RUNNER.counterfactual(sess.baseline, sess.baseline_result, intervention)
 
     # per-agent click_prob for CATE — use first common platform
     plats = list(set(sess.baseline_result.per_platform.keys()) & set(cf_result.per_platform.keys()))
@@ -1265,7 +1156,7 @@ def sb_counterfactual(sid: str, patch: PatchReq):
         plat = plats[0]
         # rerun to get per-agent probs
         budget_base = sess.baseline.total_budget * sess.baseline.platform_alloc[plat]
-        imp_b = WM.simulate_impression(
+        imp_b = api_state.WM.simulate_impression(
             sess.baseline.creative,
             plat,
             budget_base,
@@ -1273,7 +1164,7 @@ def sb_counterfactual(sid: str, patch: PatchReq):
             kol=(sess.baseline.kol_per_platform or {}).get(plat),
             rng_seed=sess.baseline.seed,
         )
-        oc_b = AG.simulate(
+        oc_b = api_state.AG.simulate(
             imp_b,
             sess.baseline.creative,
             kol=(sess.baseline.kol_per_platform or {}).get(plat),
@@ -1289,7 +1180,7 @@ def sb_counterfactual(sid: str, patch: PatchReq):
         kol_map_cf = intervention.get("kol_per_platform", sess.baseline.kol_per_platform) or {}
         if plat in alloc_cf:
             budget_cf = total_budget_cf * alloc_cf[plat]
-            imp_cf = WM.simulate_impression(
+            imp_cf = api_state.WM.simulate_impression(
                 sess.baseline.creative,
                 plat,
                 budget_cf,
@@ -1297,7 +1188,7 @@ def sb_counterfactual(sid: str, patch: PatchReq):
                 kol=kol_map_cf.get(plat),
                 rng_seed=sess.baseline.seed,
             )
-            oc_cf = AG.simulate(
+            oc_cf = api_state.AG.simulate(
                 imp_cf,
                 sess.baseline.creative,
                 kol=kol_map_cf.get(plat),
@@ -1306,7 +1197,7 @@ def sb_counterfactual(sid: str, patch: PatchReq):
             cf_probs = {
                 int(a): float(p) for a, p in zip(oc_cf.agent_idx, oc_cf.click_prob, strict=False)
             }
-            cate_info = compute_cate(POP, base_probs, cf_probs)
+            cate_info = compute_cate(api_state.POP, base_probs, cf_probs)
 
     return {
         "baseline_kpis": {
@@ -1323,12 +1214,12 @@ def sb_counterfactual(sid: str, patch: PatchReq):
 
 @app.post("/api/sandbox/session/{sid}/explain")
 def sb_explain(sid: str, n: int = 6, use_llm: bool = False):
-    sess = SANDBOX.get(sid)
+    sess = api_state.SANDBOX.get(sid)
     if not sess:
         raise HTTPException(404, "session not found")
     plat = next(iter(sess.current.platform_alloc.keys()))
     budget = sess.current.total_budget * sess.current.platform_alloc[plat]
-    imp = WM.simulate_impression(
+    imp = api_state.WM.simulate_impression(
         sess.current.creative,
         plat,
         budget,
@@ -1336,7 +1227,7 @@ def sb_explain(sid: str, n: int = 6, use_llm: bool = False):
         kol=(sess.current.kol_per_platform or {}).get(plat),
         rng_seed=sess.current.seed,
     )
-    oc = AG.simulate(
+    oc = api_state.AG.simulate(
         imp,
         sess.current.creative,
         kol=(sess.current.kol_per_platform or {}).get(plat),
@@ -1345,7 +1236,7 @@ def sb_explain(sid: str, n: int = 6, use_llm: bool = False):
     click_prob_by_agent = {
         int(a): float(p) for a, p in zip(oc.agent_idx, oc.click_prob, strict=False)
     }
-    souls = SOULS.infer_batch(
+    souls = api_state.SOULS.infer_batch(
         sess.current.creative,
         click_prob_by_agent,
         kol=(sess.current.kol_per_platform or {}).get(plat),
@@ -1358,12 +1249,12 @@ def sb_explain(sid: str, n: int = 6, use_llm: bool = False):
 
 @app.get("/api/sandbox/session/{sid}/lifecycle")
 def sb_lifecycle(sid: str, days: int = 14):
-    sess = SANDBOX.get(sid)
+    sess = api_state.SANDBOX.get(sid)
     if not sess:
         raise HTTPException(404, "session not found")
     plat = next(iter(sess.current.platform_alloc.keys()))
     budget = sess.current.total_budget * sess.current.platform_alloc[plat]
-    imp = WM.simulate_impression(
+    imp = api_state.WM.simulate_impression(
         sess.current.creative,
         plat,
         budget,
@@ -1371,21 +1262,21 @@ def sb_lifecycle(sid: str, days: int = 14):
         kol=(sess.current.kol_per_platform or {}).get(plat),
         rng_seed=sess.current.seed,
     )
-    oc = AG.simulate(
+    oc = api_state.AG.simulate(
         imp,
         sess.current.creative,
         kol=(sess.current.kol_per_platform or {}).get(plat),
         rng_seed=sess.current.seed,
     )
-    hr = HAWKES.simulate(imp, oc, days=days)
+    hr = api_state.HAWKES.simulate(imp, oc, days=days)
     return hawkes_result_to_dict(hr)
 
 
 @app.post("/api/sandbox/session/{sid}/undo")
 def sb_undo(sid: str):
-    if SANDBOX.get(sid) is None:
+    if api_state.SANDBOX.get(sid) is None:
         raise HTTPException(404, "session not found")
-    sess = SANDBOX.undo(sid)
+    sess = api_state.SANDBOX.undo(sid)
     return sess.snapshot()
 
 
@@ -1615,97 +1506,7 @@ def v2_registry():
     }
 
 
-# ----------------- Platform adapters (v0.2 MVP) -----------------
-# Lazy-built registry of the 4 new PlatformAdapter implementations. The
-# legacy XHS pipeline inside `/api/predict` still uses `PlatformWorldModel`
-# — these endpoints expose the new adapter surface so users can call
-# platform-specific simulations directly.
-
-
-def _build_adapter_registry():
-    from .platforms.douyin.adapter import DouyinAdapter
-    from .platforms.instagram.adapter import InstagramAdapter
-    from .platforms.tiktok.adapter import TikTokAdapter
-    from .platforms.youtube_shorts.adapter import YouTubeShortsAdapter
-
-    return {
-        "tiktok": TikTokAdapter(),
-        "douyin": DouyinAdapter(),
-        "instagram": InstagramAdapter(),
-        "youtube_shorts": YouTubeShortsAdapter(),
-    }
-
-
-_ADAPTER_CACHE: dict = {}
-
-
-def _get_adapter(platform_id: str):
-    if not _ADAPTER_CACHE:
-        _ADAPTER_CACHE.update(_build_adapter_registry())
-    if platform_id not in _ADAPTER_CACHE:
-        raise HTTPException(
-            404,
-            f"unknown platform_id {platform_id!r}; "
-            f"available: {sorted(_ADAPTER_CACHE)} + 'xhs' (legacy)",
-        )
-    return _ADAPTER_CACHE[platform_id]
-
-
-@app.get("/api/adapters")
-def list_platform_adapters():
-    """List PlatformAdapter instances (status + config)."""
-    if not _ADAPTER_CACHE:
-        _ADAPTER_CACHE.update(_build_adapter_registry())
-    out = []
-    for pid, adapter in _ADAPTER_CACHE.items():
-        cfg = adapter.config
-        out.append(
-            {
-                "platform_id": pid,
-                "adapter_class": type(adapter).__name__,
-                "status": "mvp",
-                "data_provider": (
-                    type(adapter.data_provider).__name__ if adapter.data_provider else None
-                ),
-                "config": {
-                    "cpm_usd": getattr(cfg, "cpm_usd", None),
-                    "base_ctr": getattr(cfg, "base_ctr", None),
-                    "base_cvr": getattr(cfg, "base_cvr", None),
-                    "duration_half_sec": getattr(cfg, "duration_half_sec", None),
-                },
-            }
-        )
-    # Legacy XHS entry (runs through PlatformWorldModel inside /api/predict)
-    out.append(
-        {
-            "platform_id": "xhs",
-            "adapter_class": "PlatformWorldModel (legacy)",
-            "status": "v1",
-            "data_provider": "synthetic / CSV / JSON / OpenAPI",
-            "config": {"note": "legacy pipeline · runs inside /api/predict"},
-        }
-    )
-    return {"platforms": out, "total": len(out)}
-
-
-class AdapterImpressionRequest(BaseModel):
-    caption: str = "demo creative"
-    duration_sec: float = 15.0
-    budget: float = 50_000.0
-    reference_budget: float = 50_000.0
-
-
-@app.post("/api/adapters/{platform_id}/simulate_impression")
-def adapter_simulate_impression(platform_id: str, req: AdapterImpressionRequest):
-    """Run a single adapter.simulate_impression call (no agent-level draw)."""
-    adapter = _get_adapter(platform_id)
-    creative = type("Creative", (), {"caption": req.caption, "duration_sec": req.duration_sec})()
-    result = adapter.simulate_impression(
-        creative=creative,
-        budget=float(req.budget),
-        reference_budget=float(req.reference_budget),
-    )
-    return {"platform_id": platform_id, **result}
+# Platform adapter endpoints live in oransim.api_routers.adapters.
 
 
 # -------- WebSocket --------
@@ -1720,11 +1521,11 @@ async def ws(ws: WebSocket, sid: str):
             except Exception:
                 await ws.send_json({"error": "bad json"})
                 continue
-            sess = SANDBOX.get(sid)
+            sess = api_state.SANDBOX.get(sid)
             if not sess:
                 await ws.send_json({"error": "session not found"})
                 continue
-            sess = SANDBOX.update(sid, patch)
+            sess = api_state.SANDBOX.update(sid, patch)
             await ws.send_json(sess.snapshot())
     except WebSocketDisconnect:
         return
