@@ -954,6 +954,46 @@ def test_tiktok_adapter_agent_path_errors_without_population():
         _ = adapter.world_model
 
 
+def test_build_prediction_graph_accepts_fake_deps():
+    """build_prediction_graph(deps=...) lets tests exercise node wiring
+    without spinning up the full api_state bootstrap.
+
+    Regression: previously every node lambda closed over ``api_state.WM``
+    etc., so even a trivial graph-structure test required ~10 s of
+    Population / SoulAgentPool / UEB init.
+    """
+    from types import SimpleNamespace
+
+    from oransim.api_helpers import PredictionGraphDeps, build_prediction_graph
+
+    class _FakeWM:
+        def simulate_impression(self, *a, **kw):
+            return SimpleNamespace(agent_idx=[], platform=next(iter(a[2:3] or ["x"])))
+
+    class _FakeAG:
+        def simulate(self, *a, **kw):
+            return SimpleNamespace(click_prob=[], agent_idx=[])
+
+        def aggregate_kpis(self, *a, **kw):
+            return {"impressions": 0.0, "clicks": 0.0}
+
+    class _FakeHawkes:
+        def simulate(self, *a, **kw):
+            return SimpleNamespace(timeline=[], per_type_totals={}, daily_buckets=[], latent={})
+
+    class _FakeBus:
+        def fuse_to_unified(self, *a, **kw):
+            return {"vec": [0.0]}
+
+    deps = PredictionGraphDeps(wm=_FakeWM(), ag=_FakeAG(), hawkes=_FakeHawkes(), bus=_FakeBus())
+    g = build_prediction_graph(deps=deps)
+    # Graph structure is fixed regardless of deps — 6 nodes, 8 edges.
+    d = g.to_dict()
+    assert len(d["nodes"]) == 6
+    names = {n["name"] for n in d["nodes"]}
+    assert names == {"scenario_in", "creative_emb", "impression", "outcome", "kpi", "hawkes"}
+
+
 def test_brand_memory_short_campaign_no_broadcast_error():
     """Regression: simulate_campaign_days(n_days < 14) must not crash.
 

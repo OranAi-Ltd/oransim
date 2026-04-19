@@ -8,7 +8,9 @@ them here avoids circular imports between router modules.
 from __future__ import annotations
 
 import time
+from dataclasses import dataclass
 from datetime import date
+from typing import Any
 
 from fastapi import HTTPException
 
@@ -128,11 +130,38 @@ def voronoi_calibration(souls: list[dict], stats_click_probs: dict[int, float]) 
     return cal
 
 
-def build_prediction_graph() -> CausalGraph:
+@dataclass
+class PredictionGraphDeps:
+    """Explicit dependency bundle for :func:`build_prediction_graph`.
+
+    Replaces the previous pattern where node lambdas closed over
+    ``api_state.WM`` / ``api_state.AG`` / etc. via module-attribute
+    lookup. Making the deps explicit means tests can pass fakes
+    without bootstrapping the full runtime (``Population`` +
+    ``StatisticalAgents`` + ``HawkesSimulator`` + UEB).
+    """
+
+    wm: Any  # PlatformWorldModel-shaped: .simulate_impression(...)
+    ag: Any  # StatisticalAgents-shaped: .simulate(...) + .aggregate_kpis(...)
+    hawkes: Any  # HawkesSimulator-shaped: .simulate(imp, oc, days=N)
+    bus: Any  # UEB-shaped: .fuse_to_unified({...})
+
+    @classmethod
+    def from_api_state(cls) -> PredictionGraphDeps:
+        """Pull the current runtime singletons. Assumes bootstrap has run."""
+        return cls(wm=api_state.WM, ag=api_state.AG, hawkes=api_state.HAWKES, bus=BUS)
+
+
+def build_prediction_graph(deps: PredictionGraphDeps | None = None) -> CausalGraph:
     """Build the canonical V1 prediction graph.
 
-    All future modules plug in as new nodes here without changing predict() shape.
+    ``deps`` defaults to the runtime singletons (``api_state.WM`` etc.),
+    but tests can inject fakes to exercise node wiring without the
+    ~10 s bootstrap.
     """
+    if deps is None:
+        deps = PredictionGraphDeps.from_api_state()
+
     g = CausalGraph(name="ad_prediction_v1")
     g.node(
         "scenario_in",
@@ -143,7 +172,7 @@ def build_prediction_graph() -> CausalGraph:
     )
     g.node(
         "creative_emb",
-        lambda scenario: BUS.fuse_to_unified(
+        lambda scenario: deps.bus.fuse_to_unified(
             {
                 "creative_caption": scenario.creative.caption,
                 "creative_visual": scenario.creative.visual_style,
@@ -155,7 +184,7 @@ def build_prediction_graph() -> CausalGraph:
     )
     g.node(
         "impression",
-        lambda scenario: api_state.WM.simulate_impression(
+        lambda scenario: deps.wm.simulate_impression(
             scenario.creative,
             next(iter(scenario.platform_alloc.keys())),
             scenario.total_budget
@@ -170,7 +199,7 @@ def build_prediction_graph() -> CausalGraph:
     )
     g.node(
         "outcome",
-        lambda scenario, impression: api_state.AG.simulate(
+        lambda scenario, impression: deps.ag.simulate(
             impression,
             scenario.creative,
             kol=(scenario.kol_per_platform or {}).get(impression.platform),
@@ -184,7 +213,7 @@ def build_prediction_graph() -> CausalGraph:
     )
     g.node(
         "kpi",
-        lambda scenario, impression, outcome: api_state.AG.aggregate_kpis(
+        lambda scenario, impression, outcome: deps.ag.aggregate_kpis(
             outcome,
             impression,
             scenario.total_budget * scenario.platform_alloc[impression.platform],
@@ -195,7 +224,7 @@ def build_prediction_graph() -> CausalGraph:
     g.node(
         "hawkes",
         lambda impression, outcome: hawkes_result_to_dict(
-            api_state.HAWKES.simulate(impression, outcome, days=14)
+            deps.hawkes.simulate(impression, outcome, days=14)
         ),
         deps=["impression", "outcome"],
         description="Hawkes 14d lifecycle",
