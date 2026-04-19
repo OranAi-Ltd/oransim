@@ -954,6 +954,33 @@ def test_tiktok_adapter_agent_path_errors_without_population():
         _ = adapter.world_model
 
 
+def test_multimodal_embedder_stubs_raise_with_roadmap_pointer():
+    """Image / video / audio embedder stubs must raise NotImplementedError
+    with a ROADMAP.md#v05 pointer when anyone calls ``embed()``.
+
+    Stubs are part of the public embedding_bus surface, so regressing to a
+    silent hash fallback would make image inputs "just work" with
+    meaningless vectors. Pin the error contract.
+    """
+    import pytest
+    from oransim.runtime.embedding_bus import (
+        AudioEmbedderStub,
+        ImageEmbedderStub,
+        VideoEmbedderStub,
+    )
+
+    for cls, modality in [
+        (ImageEmbedderStub, "image"),
+        (VideoEmbedderStub, "video"),
+        (AudioEmbedderStub, "audio"),
+    ]:
+        stub = cls()
+        assert stub.modality == modality
+        assert stub.output_dim > 0
+        with pytest.raises(NotImplementedError, match=r"ROADMAP\.md#v05"):
+            stub.embed(b"any input")
+
+
 def test_build_prediction_graph_accepts_fake_deps():
     """build_prediction_graph(deps=...) lets tests exercise node wiring
     without spinning up the full api_state bootstrap.
