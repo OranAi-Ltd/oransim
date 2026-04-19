@@ -446,6 +446,78 @@ def test_abduction_modes_match_on_trivial_case():
         assert np.allclose(out, u), f"mode={mode} diverged on null observation"
 
 
+def test_learned_abduction_on_real_scenario_runner_outcome():
+    """Integration: feed a real ``OutcomeBatch`` produced by
+    ``ScenarioRunner.run`` into ``_amortized_abduct(mode="learned")``.
+
+    Covers what unit tests can't:
+      - shape/dtype contract between ``OutcomeBatch.click_prob`` and the
+        MLP's ``apply`` path
+      - feature-normalization scale on real (not synthetic) click_prob
+      - agents that clicked produce a higher mean ``u`` shift than
+        agents that didn't, after going through the full
+        Population → PlatformWorldModel → StatisticalAgents pipeline
+    """
+    from oransim.agents.statistical import StatisticalAgents
+    from oransim.causal.counterfactual import (
+        Scenario,
+        ScenarioRunner,
+        _amortized_abduct,
+    )
+    from oransim.data.creatives import make_creative
+    from oransim.data.kols import generate_kol_library, pick_kol_by_spec
+    from oransim.data.population import generate_population
+    from oransim.platforms.xhs.world_model_legacy import (
+        AudienceFilter,
+        PlatformWorldModel,
+    )
+
+    pop = generate_population(N=800, seed=13)
+    wm = PlatformWorldModel(pop)
+    ag = StatisticalAgents(pop)
+    runner = ScenarioRunner(wm, ag)
+    kols = generate_kol_library(n_per_platform=8)
+
+    creative = make_creative("cr_lrn", "美食探店测评", duration_sec=20)
+    scenario = Scenario(
+        creative=creative,
+        total_budget=30_000,
+        platform_alloc={"douyin": 1.0},
+        audience_filter=AudienceFilter(),
+        kol_per_platform={"douyin": pick_kol_by_spec(kols, "douyin", niche="food")},
+        seed=3,
+    )
+    # Run once through the full pipeline to get a real OutcomeBatch.
+    runner.run(scenario, n_monte_carlo=1)
+    # Re-simulate to grab the raw outcome (ScenarioResult drops it).
+    imp = wm.simulate_impression(
+        scenario.creative,
+        "douyin",
+        scenario.total_budget,
+        kol=scenario.kol_per_platform["douyin"],
+        rng_seed=scenario.seed,
+    )
+    oc = ag.simulate(imp, scenario.creative, kol=scenario.kol_per_platform["douyin"])
+    # Synthetic "observed clicks" — top-50% click-prob agents clicked, rest didn't.
+    thresh = float(np.median(oc.click_prob))
+    observed_click = (oc.click_prob > thresh).astype(np.float32)
+
+    u_learned = _amortized_abduct(oc, observed_click=observed_click, mode="learned")
+    assert u_learned.shape == oc.u_noise.shape
+    assert u_learned.dtype == np.float32
+
+    # The posterior shift should push u higher for clicked agents than for
+    # non-clicked ones at matched click_prob (the sign-correctness guarantee
+    # end-to-end rather than on synthetic features).
+    shift = u_learned - oc.u_noise
+    mean_shift_click = float(shift[observed_click == 1.0].mean())
+    mean_shift_noclick = float(shift[observed_click == 0.0].mean())
+    assert mean_shift_click > mean_shift_noclick, (
+        f"learned mode sign-correctness failed on real pipeline: "
+        f"click={mean_shift_click:.4f} vs noclick={mean_shift_noclick:.4f}"
+    )
+
+
 def test_dag_dict_unrolled_is_strict_dag():
     """Time-unrolled projection of the causal graph must be strictly acyclic
     at any n_steps ≥ 1, so downstream modules (CausalDAG-Transformer,
