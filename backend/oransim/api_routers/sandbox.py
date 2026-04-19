@@ -32,7 +32,7 @@ class SessionCreateRequest(BaseModel):
 
 @router.post("/api/sandbox/session")
 def sb_create(req: SessionCreateRequest):
-    scenario, _ = build_scenario(PredictRequest(**req.dict()))
+    scenario, _ = build_scenario(PredictRequest(**req.model_dump()))
     sess = api_state.SANDBOX.create(scenario)
     return sess.snapshot()
 
@@ -55,7 +55,7 @@ def sb_patch(sid: str, patch: PatchReq):
     sess = api_state.SANDBOX.get(sid)
     if not sess:
         raise HTTPException(404, "session not found")
-    p = {k: v for k, v in patch.dict().items() if v is not None}
+    p = {k: v for k, v in patch.model_dump().items() if v is not None}
     sess = api_state.SANDBOX.update(sid, p)
     return sess.snapshot()
 
@@ -66,7 +66,7 @@ def sb_counterfactual(sid: str, patch: PatchReq):
     sess = api_state.SANDBOX.get(sid)
     if not sess:
         raise HTTPException(404, "session not found")
-    intervention = {k: v for k, v in patch.dict().items() if v is not None}
+    intervention = {k: v for k, v in patch.model_dump().items() if v is not None}
     if "platform_alloc" in intervention:
         a = intervention["platform_alloc"]
         s = sum(a.values()) or 1
