@@ -84,73 +84,77 @@ def test_quickstart_e2e():
         "--log-level",
         "warning",
     ]
-    proc = subprocess.Popen(
+    # Context manager closes stdout/stderr PIPEs on exit so pytest's
+    # unraisable-exception hook doesn't flag a leaked _io.FileIO.
+    with subprocess.Popen(
         cmd,
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-    )
-    try:
-        # Poll up to 30s for /api/health to come up. If the subprocess dies
-        # (port bind denied by sandbox, import error, etc.) skip — not fail —
-        # because the harness isn't what we're testing.
-        deadline = time.time() + 30
-        ready = False
-        while time.time() < deadline:
-            rc = proc.poll()
-            if rc is not None:
-                out = proc.stdout.read().decode("utf-8", errors="replace") if proc.stdout else ""
-                # Sandbox-style bind failure: skip so dev environments without
-                # network capabilities don't get a red test.
-                if "permission" in out.lower() or "address" in out.lower() or rc in (1, 144):
-                    pytest.skip(f"uvicorn subprocess exited early (rc={rc}): {out[:200]}")
-                pytest.fail(f"uvicorn exited early (rc={rc}): {out[:500]}")
-            try:
-                status, _ = _get_json(base, "/api/health", timeout=1.0)
-                if status == 200:
-                    ready = True
-                    break
-            except (urllib.error.URLError, ConnectionError, OSError):
-                pass
-            time.sleep(0.3)
-
-        assert ready, "backend did not answer /api/health within 30s"
-
-        # 1. Version baked into the root handler matches the package
-        status, j = _get_json(base, "/")
-        assert status == 200
-        assert (
-            j["version"] == oransim.__version__
-        ), f"root handler version ({j['version']}) != package version ({oransim.__version__})"
-        assert j["name"] == "Oransim"
-
-        # 2. /api/health is well-formed
-        status, h = _get_json(base, "/api/health")
-        assert status == 200
-        assert h.get("status") == "ok", f"health status not ok: {h}"
-
-        # 3. The predict pipeline actually produces non-zero KPIs
-        status, p = _post_json(
-            base,
-            "/api/predict",
-            {
-                "creative": {"caption": "test", "duration_sec": 15.0},
-                "total_budget": 10_000,
-                "platform_alloc": {"douyin": 0.5, "xhs": 0.5},
-                "use_llm": False,
-                "n_souls": 3,
-            },
-            timeout=60.0,
-        )
-        assert status == 200
-        kpis = p.get("kpis", {})
-        assert kpis.get("impressions", 0) > 0, f"impressions zero: {kpis}"
-        assert kpis.get("clicks", 0) >= 0
-        assert "roi" in kpis
-    finally:
-        proc.terminate()
+    ) as proc:
         try:
-            proc.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            proc.wait(timeout=2)
+            # Poll up to 30s for /api/health to come up. If the subprocess dies
+            # (port bind denied by sandbox, import error, etc.) skip — not fail —
+            # because the harness isn't what we're testing.
+            deadline = time.time() + 30
+            ready = False
+            while time.time() < deadline:
+                rc = proc.poll()
+                if rc is not None:
+                    out = (
+                        proc.stdout.read().decode("utf-8", errors="replace") if proc.stdout else ""
+                    )
+                    # Sandbox-style bind failure: skip so dev environments without
+                    # network capabilities don't get a red test.
+                    if "permission" in out.lower() or "address" in out.lower() or rc in (1, 144):
+                        pytest.skip(f"uvicorn subprocess exited early (rc={rc}): {out[:200]}")
+                    pytest.fail(f"uvicorn exited early (rc={rc}): {out[:500]}")
+                try:
+                    status, _ = _get_json(base, "/api/health", timeout=1.0)
+                    if status == 200:
+                        ready = True
+                        break
+                except (urllib.error.URLError, ConnectionError, OSError):
+                    pass
+                time.sleep(0.3)
+
+            assert ready, "backend did not answer /api/health within 30s"
+
+            # 1. Version baked into the root handler matches the package
+            status, j = _get_json(base, "/")
+            assert status == 200
+            assert (
+                j["version"] == oransim.__version__
+            ), f"root handler version ({j['version']}) != package version ({oransim.__version__})"
+            assert j["name"] == "Oransim"
+
+            # 2. /api/health is well-formed
+            status, h = _get_json(base, "/api/health")
+            assert status == 200
+            assert h.get("status") == "ok", f"health status not ok: {h}"
+
+            # 3. The predict pipeline actually produces non-zero KPIs
+            status, p = _post_json(
+                base,
+                "/api/predict",
+                {
+                    "creative": {"caption": "test", "duration_sec": 15.0},
+                    "total_budget": 10_000,
+                    "platform_alloc": {"douyin": 0.5, "xhs": 0.5},
+                    "use_llm": False,
+                    "n_souls": 3,
+                },
+                timeout=60.0,
+            )
+            assert status == 200
+            kpis = p.get("kpis", {})
+            assert kpis.get("impressions", 0) > 0, f"impressions zero: {kpis}"
+            assert kpis.get("clicks", 0) >= 0
+            assert "roi" in kpis
+        finally:
+            proc.terminate()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait(timeout=2)
