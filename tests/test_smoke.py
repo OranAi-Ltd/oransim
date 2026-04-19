@@ -954,6 +954,48 @@ def test_tiktok_adapter_agent_path_errors_without_population():
         _ = adapter.world_model
 
 
+def test_brand_memory_short_campaign_no_broadcast_error():
+    """Regression: simulate_campaign_days(n_days < 14) must not crash.
+
+    Previously hardcoded a 14-element exponential spend curve and wrote it
+    into a (n_days,) buffer, raising ValueError when n_days < 14. The fix
+    compresses the spend window to min(14, n_days).
+    """
+    from types import SimpleNamespace
+
+    import numpy as np
+    from oransim.agents.brand_memory import BrandMemoryState, simulate_campaign_days
+    from oransim.agents.statistical import StatisticalAgents
+    from oransim.data.creatives import make_creative
+    from oransim.data.population import generate_population
+    from oransim.platforms.xhs.world_model_legacy import PlatformWorldModel
+
+    pop = generate_population(N=400, seed=2)
+    wm = PlatformWorldModel(pop)
+    ag = StatisticalAgents(pop)
+    creative = make_creative("cr_bm", "短促销活动", duration_sec=15)
+    scenario = SimpleNamespace(
+        creative=creative,
+        total_budget=5_000.0,
+        platform_alloc={"douyin": 1.0},
+        audience_filter=None,
+        kol_per_platform=None,
+        seed=0,
+        macro_ctr_lift=1.0,
+        macro_cvr_lift=1.0,
+    )
+    state = BrandMemoryState.empty(pop.N)
+
+    # n_days < 14 used to crash with "could not broadcast (14,) into (5,)".
+    metrics = simulate_campaign_days(wm, ag, state, scenario, n_days=5)
+    assert len(metrics) == 5
+    # Front-loaded: day 0 spends more than day 4 (exponential decay inside
+    # the compressed window).
+    assert metrics[0]["budget_today"] >= metrics[-1]["budget_today"]
+    total_spent = sum(m["budget_today"] for m in metrics)
+    assert np.isclose(total_spent, scenario.total_budget, rtol=1e-3)
+
+
 def test_instagram_adapter_mvp():
     """Instagram Reels adapter + synthetic provider must fulfill the canonical contract."""
     from oransim.data.schema import CanonicalKOL

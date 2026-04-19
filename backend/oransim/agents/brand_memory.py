@@ -115,12 +115,15 @@ def simulate_campaign_days(
         state.exposures[:] = 0
         state.last_seen_day[:] = -999
 
-    # Default: spend over first 14 days with front-loaded exponential decay
+    # Default: front-loaded exponential spend over the first 14 days of the
+    # campaign (or fewer if n_days < 14 — short campaigns compress the full
+    # budget into whatever window they have).
     if daily_budget_curve is None:
-        fr = np.exp(-0.35 * np.arange(14))
+        spend_window = min(14, n_days)
+        fr = np.exp(-0.35 * np.arange(spend_window))
         fr = fr / fr.sum()
         curve = np.zeros(n_days, dtype=np.float32)
-        curve[:14] = fr * scenario.total_budget
+        curve[:spend_window] = fr * scenario.total_budget
         daily_budget_curve = curve
 
     all_metrics = []
