@@ -102,11 +102,9 @@ def platforms():
     }
 
 
-@router.post("/api/predict")
-def predict(req: PredictRequest):
-    scenario, macro_summary = build_scenario(req)
-
-    first_plat = next(iter(scenario.platform_alloc.keys()))
+def _run_first_pass(scenario, first_plat):
+    """First pass through L1 world model + L2a statistical agents on the
+    primary platform. Returns (impression, outcome, {agent_id: click_prob})."""
     imp = api_state.WM.simulate_impression(
         scenario.creative,
         first_plat,
@@ -126,73 +124,71 @@ def predict(req: PredictRequest):
     click_prob_by_agent = {
         int(a): float(p) for a, p in zip(oc.agent_idx, oc.click_prob, strict=False)
     }
+    return imp, oc, click_prob_by_agent
 
-    souls = api_state.SOULS.infer_batch(
-        scenario.creative,
-        click_prob_by_agent,
-        kol=scenario.kol_per_platform.get(first_plat),
+
+def _maybe_voronoi_calibrate(scenario, req, souls, first_plat, macro_summary):
+    """Territory-weighted LLM→statistical calibration.
+
+    Mutates ``scenario`` (sets ``llm_calibration``) and ``macro_summary`` in
+    place when enough LLM-backed souls are available. No-op otherwise.
+    """
+    if not (req.use_llm and req.llm_calibrate):
+        return
+    soul_pids = [
+        int(s.get("persona_id"))
+        for s in souls
+        if s.get("source") == "llm" and s.get("persona_id") is not None
+    ]
+    if not soul_pids:
+        return
+
+    from ..platforms.xhs.world_model_legacy import ImpressionResult as IR
+
+    ir = IR(
+        agent_idx=np.array(soul_pids, dtype=np.int64),
+        weight=np.ones(len(soul_pids), dtype=np.float32),
+        total_impressions=float(len(soul_pids)),
         platform=first_plat,
-        n_sample=min(req.n_souls, len(api_state.SOULS.personas)),
-        use_llm=req.use_llm,
+        score_breakdown={
+            "content": (api_state.POP.interest[soul_pids] @ scenario.creative.content_emb + 1) / 2,
+            "platform_activity": api_state.POP.platform_activity[
+                soul_pids, api_state.WM.platform_idx.get(first_plat, 0)
+            ],
+            "audience_filter": np.ones(len(soul_pids), dtype=np.float32),
+            "kol_boost": np.ones(len(soul_pids), dtype=np.float32),
+        },
     )
+    stat_oc = api_state.AG.simulate(
+        ir,
+        scenario.creative,
+        kol=scenario.kol_per_platform.get(first_plat),
+        rng_seed=scenario.seed,
+        macro_ctr_lift=scenario.macro_ctr_lift,
+        macro_cvr_lift=scenario.macro_cvr_lift,
+    )
+    stat_probs = {int(p): float(c) for p, c in zip(soul_pids, stat_oc.click_prob, strict=False)}
+    cal = voronoi_calibration(souls, stat_probs)
+    if cal is not None:
+        scenario.llm_calibration = cal["global_factor"]
+        macro_summary["llm_calibration"] = cal["summary"]
 
-    if req.use_llm and req.llm_calibrate:
-        soul_pids = [
-            int(s.get("persona_id"))
-            for s in souls
-            if s.get("source") == "llm" and s.get("persona_id") is not None
-        ]
-        from ..platforms.xhs.world_model_legacy import ImpressionResult as IR
 
-        ir = IR(
-            agent_idx=np.array(soul_pids, dtype=np.int64),
-            weight=np.ones(len(soul_pids), dtype=np.float32),
-            total_impressions=float(len(soul_pids)),
-            platform=first_plat,
-            score_breakdown={
-                "content": (api_state.POP.interest[soul_pids] @ scenario.creative.content_emb + 1)
-                / 2,
-                "platform_activity": api_state.POP.platform_activity[
-                    soul_pids, api_state.WM.platform_idx.get(first_plat, 0)
-                ],
-                "audience_filter": np.ones(len(soul_pids), dtype=np.float32),
-                "kol_boost": np.ones(len(soul_pids), dtype=np.float32),
-            },
-        )
-        stat_oc = api_state.AG.simulate(
-            ir,
-            scenario.creative,
-            kol=scenario.kol_per_platform.get(first_plat),
-            rng_seed=scenario.seed,
-            macro_ctr_lift=scenario.macro_ctr_lift,
-            macro_cvr_lift=scenario.macro_cvr_lift,
-        )
-        stat_probs = {int(p): float(c) for p, c in zip(soul_pids, stat_oc.click_prob, strict=False)}
-        cal = voronoi_calibration(souls, stat_probs)
-        if cal is not None:
-            scenario.llm_calibration = cal["global_factor"]
-            macro_summary["llm_calibration"] = cal["summary"]
-
-    result = api_state.RUNNER.run(scenario, n_monte_carlo=10)
-
-    hr = api_state.HAWKES.simulate(imp, oc, days=req.lifecycle_days)
-    lifecycle = hawkes_result_to_dict(hr)
-
-    extras = {}
-
-    # cross-platform unique reach / cannibalization
-    if req.enable_crossplat and len(scenario.platform_alloc) > 1:
-        _, cp = simulate_cross_platform(
-            api_state.WM,
-            scenario.creative,
-            scenario.platform_alloc,
-            scenario.total_budget,
-            api_state.POP.N,
-            audience_filter=scenario.audience_filter,
-            kol_per_platform=scenario.kol_per_platform,
-            seed=scenario.seed,
-        )
-        extras["cross_platform"] = {
+def _extras_crossplat(scenario, req):
+    if not (req.enable_crossplat and len(scenario.platform_alloc) > 1):
+        return {}
+    _, cp = simulate_cross_platform(
+        api_state.WM,
+        scenario.creative,
+        scenario.platform_alloc,
+        scenario.total_budget,
+        api_state.POP.N,
+        audience_filter=scenario.audience_filter,
+        kol_per_platform=scenario.kol_per_platform,
+        seed=scenario.seed,
+    )
+    return {
+        "cross_platform": {
             "total_impressions": int(cp.total_impressions),
             "unique_reach": cp.unique_reach,
             "cannibalization": cp.cannibalization,
@@ -202,108 +198,125 @@ def predict(req: PredictRequest):
             "per_platform_incremental": cp.per_platform_incremental,
             "per_platform_duplicate": cp.per_platform_duplicate,
         }
+    }
 
-    # RecSys RL cold-start / breakout dynamics
-    if req.enable_recsys_rl:
-        rl_rep = api_state.RECSYS_RL.simulate(
-            scenario.creative,
-            first_plat,
-            scenario.total_budget * scenario.platform_alloc[first_plat],
-            audience_filter=scenario.audience_filter,
-            kol=scenario.kol_per_platform.get(first_plat),
-            n_rounds=5,
-            seed=scenario.seed,
-        )
-        extras["recsys_rl"] = rl_report_to_dict(rl_rep)
 
-    # Discourse comment simulation + second-wave impact
-    if req.enable_discourse:
-        disc = (simulate_discourse_llm if req.use_llm else simulate_discourse_mock)(
-            scenario.creative,
-            scenario.kol_per_platform.get(first_plat),
-            first_plat,
-            api_state.SOULS,
-            n_commenters=req.discourse_n_comments,
-            seed=scenario.seed,
-        )
-        extras["discourse"] = discourse_to_dict(disc)
-        second_wave_mult = 1.0 + disc.second_wave_impact
-        extras["discourse"]["applied_ctr_multiplier"] = round(second_wave_mult, 3)
+def _extras_recsys_rl(scenario, req, first_plat):
+    if not req.enable_recsys_rl:
+        return {}
+    rl_rep = api_state.RECSYS_RL.simulate(
+        scenario.creative,
+        first_plat,
+        scenario.total_budget * scenario.platform_alloc[first_plat],
+        audience_filter=scenario.audience_filter,
+        kol=scenario.kol_per_platform.get(first_plat),
+        n_rounds=5,
+        seed=scenario.seed,
+    )
+    return {"recsys_rl": rl_report_to_dict(rl_rep)}
 
-    # Multi-turn LLM group chat (peer-to-peer message passing)
-    if req.enable_groupchat:
-        gc = simulate_group_chat(
-            scenario.creative,
-            scenario.kol_per_platform.get(first_plat),
-            first_plat,
-            api_state.SOULS,
-            n_agents=req.groupchat_n_agents,
-            n_rounds=req.groupchat_n_rounds,
-            use_llm=req.use_llm,
-            seed=scenario.seed,
-        )
-        extras["group_chat"] = gc.to_dict()
 
-    # World model PI + LLM verdict
+def _extras_discourse(scenario, req, first_plat):
+    if not req.enable_discourse:
+        return {}
+    disc = (simulate_discourse_llm if req.use_llm else simulate_discourse_mock)(
+        scenario.creative,
+        scenario.kol_per_platform.get(first_plat),
+        first_plat,
+        api_state.SOULS,
+        n_commenters=req.discourse_n_comments,
+        seed=scenario.seed,
+    )
+    out = discourse_to_dict(disc)
+    out["applied_ctr_multiplier"] = round(1.0 + disc.second_wave_impact, 3)
+    return {"discourse": out}
+
+
+def _extras_groupchat(scenario, req, first_plat):
+    if not req.enable_groupchat:
+        return {}
+    gc = simulate_group_chat(
+        scenario.creative,
+        scenario.kol_per_platform.get(first_plat),
+        first_plat,
+        api_state.SOULS,
+        n_agents=req.groupchat_n_agents,
+        n_rounds=req.groupchat_n_rounds,
+        use_llm=req.use_llm,
+        seed=scenario.seed,
+    )
+    return {"group_chat": gc.to_dict()}
+
+
+_NICHE_ZH_MAP = {
+    "food": "美食",
+    "beauty": "美妆",
+    "mom": "母婴",
+    "tech": "数码",
+    "fashion": "穿搭",
+    "fitness": "健身",
+    "finance": "理财",
+    "travel": "旅行",
+}
+
+
+def _extras_world_model(scenario, req, first_plat):
+    """XHS PRS prediction intervals + optional LLM verdict.
+
+    Runs unconditionally (no feature flag) because callers rely on it for
+    the v1 prediction-interval panel. Surfaces errors as
+    ``world_model_error`` instead of raising — keeps /api/predict alive
+    even when the embedder or booster is misconfigured.
+    """
+    if not PRS.is_ready():
+        return {}
     try:
         from ..runtime.real_embedder import RealTextEmbedder
 
-        if PRS.is_ready():
-            _emb = RealTextEmbedder()
-            caption_vec = _emb.embed(scenario.creative.caption)
-            first_kol = (
-                scenario.kol_per_platform.get(first_plat) if scenario.kol_per_platform else None
-            )
-            _niche_map = {
-                "food": "美食",
-                "beauty": "美妆",
-                "mom": "母婴",
-                "tech": "数码",
-                "fashion": "穿搭",
-                "fitness": "健身",
-                "finance": "理财",
-                "travel": "旅行",
-            }
-            _niche = _niche_map.get(first_kol.niche, "美食") if first_kol else "美食"
-            wm_pred = PRS.predict(
-                caption_emb=caption_vec,
-                author_fans=first_kol.fan_count if first_kol else 100_000,
-                niche=_niche,
-                duration_sec=scenario.creative.duration_sec,
-                desc_emb=caption_vec,
-            )
-            if wm_pred and wm_pred.get("exp_p50"):
-                exp_p50 = max(wm_pred["exp_p50"], 1)
-                wm_pred["_like_rate_p10"] = round(wm_pred["like_p10"] / exp_p50 * 100, 2)
-                wm_pred["_like_rate_p50"] = round(wm_pred["like_p50"] / exp_p50 * 100, 2)
-                wm_pred["_like_rate_p90"] = round(wm_pred["like_p90"] / exp_p50 * 100, 2)
-                wm_pred["_read_rate_p50"] = round(wm_pred["read_p50"] / exp_p50 * 100, 2)
-                wm_pred["_read_rate_p10"] = round(wm_pred["read_p10"] / exp_p50 * 100, 2)
-                wm_pred["_read_rate_p90"] = round(wm_pred["read_p90"] / exp_p50 * 100, 2)
-            extras["world_model_prediction"] = wm_pred
-            if req.use_llm:
-                from ..agents.verdict import generate_verdict
-
-                scene = (
-                    f"{_niche}类 {first_kol.fan_count if first_kol else 100_000:,}粉 / "
-                    f"{scenario.creative.caption[:40]}"
-                )
-                extras["verdict"] = generate_verdict(wm_pred, scenario_desc=scene)
-    except Exception as e:
-        extras["world_model_error"] = str(e)[:200]
-
-    # 90-day brand lift longitudinal
-    if req.enable_brand_memory:
-        fresh_state = BrandMemoryState.empty(api_state.POP.N)
-        daily_metrics = simulate_campaign_days(
-            api_state.WM,
-            api_state.AG,
-            fresh_state,
-            scenario,
-            n_days=req.brand_memory_days,
-            reset_attitudes=True,
+        _emb = RealTextEmbedder()
+        caption_vec = _emb.embed(scenario.creative.caption)
+        first_kol = scenario.kol_per_platform.get(first_plat) if scenario.kol_per_platform else None
+        niche_zh = _NICHE_ZH_MAP.get(first_kol.niche, "美食") if first_kol else "美食"
+        wm_pred = PRS.predict(
+            caption_emb=caption_vec,
+            author_fans=first_kol.fan_count if first_kol else 100_000,
+            niche=niche_zh,
+            duration_sec=scenario.creative.duration_sec,
+            desc_emb=caption_vec,
         )
-        extras["brand_memory"] = {
+        if wm_pred and wm_pred.get("exp_p50"):
+            exp_p50 = max(wm_pred["exp_p50"], 1)
+            for kpi in ("like", "read"):
+                for q in ("p10", "p50", "p90"):
+                    wm_pred[f"_{kpi}_rate_{q}"] = round(wm_pred[f"{kpi}_{q}"] / exp_p50 * 100, 2)
+        out = {"world_model_prediction": wm_pred}
+        if req.use_llm:
+            from ..agents.verdict import generate_verdict
+
+            scene = (
+                f"{niche_zh}类 {first_kol.fan_count if first_kol else 100_000:,}粉 / "
+                f"{scenario.creative.caption[:40]}"
+            )
+            out["verdict"] = generate_verdict(wm_pred, scenario_desc=scene)
+        return out
+    except Exception as e:
+        return {"world_model_error": str(e)[:200]}
+
+
+def _extras_brand_memory(scenario, req):
+    if not req.enable_brand_memory:
+        return {}
+    fresh_state = BrandMemoryState.empty(api_state.POP.N)
+    daily_metrics = simulate_campaign_days(
+        api_state.WM,
+        api_state.AG,
+        fresh_state,
+        scenario,
+        n_days=req.brand_memory_days,
+        reset_attitudes=True,
+    )
+    return {
+        "brand_memory": {
             "days": req.brand_memory_days,
             "final": daily_metrics[-1],
             "timeline": [
@@ -311,26 +324,31 @@ def predict(req: PredictRequest):
                 for m in daily_metrics
             ],
         }
+    }
 
-    predicted_sentiment = _aggregate_sentiment_from_souls(souls)
 
-    # SCM mediator 回写：discourse + group_chat 影响 CTR/CVR/revenue。
-    # SCM edges: group_consensus→click / comment_sentiment→click, 各 50%。
-    discourse_delta = 0.0
-    if "discourse" in extras:
-        discourse_delta = float(extras["discourse"].get("second_wave_click_delta") or 0)
-    group_delta = 0.0
-    if "group_chat" in extras:
-        group_delta = float(extras["group_chat"].get("second_wave_impact") or 0)
+def _apply_scm_mediator(result, extras):
+    """SCM edges L6→L7: discourse + group_chat consensus feed back into
+    CTR/CVR on the aggregate KPIs.
 
-    ctr_multiplier = 1.0 + 0.5 * discourse_delta + 0.5 * group_delta
-    cvr_multiplier = 1.0 + 0.3 * discourse_delta + 0.3 * group_delta
-    ctr_multiplier = max(0.5, min(1.5, ctr_multiplier))
-    cvr_multiplier = max(0.6, min(1.4, cvr_multiplier))
+    Discourse's ``second_wave_click_delta`` and group_chat's
+    ``second_wave_impact`` each contribute 50 % of the CTR multiplier and
+    30 % of the CVR multiplier. Multipliers are clamped to keep the
+    feedback loop bounded even when both mediators swing extreme.
 
-    def _apply_mediator(kpi_dict):
-        if ctr_multiplier == 1.0 and cvr_multiplier == 1.0:
-            return
+    Mutates ``result.total_kpis`` + per-platform KPIs in place and stamps
+    ``extras["mediator_impact"]`` so the frontend can show the effect.
+    """
+    discourse_delta = float(extras.get("discourse", {}).get("second_wave_click_delta") or 0)
+    group_delta = float(extras.get("group_chat", {}).get("second_wave_impact") or 0)
+
+    ctr_multiplier = max(0.5, min(1.5, 1.0 + 0.5 * discourse_delta + 0.5 * group_delta))
+    cvr_multiplier = max(0.6, min(1.4, 1.0 + 0.3 * discourse_delta + 0.3 * group_delta))
+
+    if ctr_multiplier == 1.0 and cvr_multiplier == 1.0:
+        return
+
+    def _mutate(kpi_dict):
         if "clicks" in kpi_dict:
             kpi_dict["clicks"] = float(kpi_dict["clicks"]) * ctr_multiplier
         if "conversions" in kpi_dict:
@@ -339,42 +357,44 @@ def predict(req: PredictRequest):
             )
         if "revenue" in kpi_dict:
             kpi_dict["revenue"] = float(kpi_dict["revenue"]) * ctr_multiplier * cvr_multiplier
-        if "impressions" in kpi_dict and kpi_dict["impressions"]:
+        if kpi_dict.get("impressions"):
             kpi_dict["ctr"] = kpi_dict.get("clicks", 0) / kpi_dict["impressions"]
-        if "clicks" in kpi_dict and kpi_dict["clicks"]:
+        if kpi_dict.get("clicks"):
             kpi_dict["cvr"] = kpi_dict.get("conversions", 0) / kpi_dict["clicks"]
-        if "cost" in kpi_dict and kpi_dict["cost"]:
+        if kpi_dict.get("cost"):
             kpi_dict["roi"] = (kpi_dict.get("revenue", 0) - kpi_dict["cost"]) / kpi_dict["cost"]
 
-    _apply_mediator(result.total_kpis)
-    for _plat, d in result.per_platform.items():
+    _mutate(result.total_kpis)
+    for d in result.per_platform.values():
         if "kpi" in d:
-            _apply_mediator(d["kpi"])
+            _mutate(d["kpi"])
 
-    if ctr_multiplier != 1.0 or cvr_multiplier != 1.0:
-        extras.setdefault("mediator_impact", {})
-        extras["mediator_impact"].update(
-            {
-                "applied_ctr_multiplier": round(ctr_multiplier, 4),
-                "applied_cvr_multiplier": round(cvr_multiplier, 4),
-                "discourse_contribution": round(discourse_delta, 4),
-                "groupchat_contribution": round(group_delta, 4),
-                "source": "scm_mediator_L6_to_L7",
-            }
-        )
+    extras.setdefault("mediator_impact", {}).update(
+        {
+            "applied_ctr_multiplier": round(ctr_multiplier, 4),
+            "applied_cvr_multiplier": round(cvr_multiplier, 4),
+            "discourse_contribution": round(discourse_delta, 4),
+            "groupchat_contribution": round(group_delta, 4),
+            "source": "scm_mediator_L6_to_L7",
+        }
+    )
 
-    scenario_summary_out = {
-        "creative_id": scenario.creative.id,
-        "caption": scenario.creative.caption,
-        "total_budget": scenario.total_budget,
-        "platform_alloc": scenario.platform_alloc,
-    }
-    kpis_out = {k: round(float(v), 4) for k, v in result.total_kpis.items()}
-    per_platform_out = {
-        p: {k: round(float(v), 4) for k, v in d["kpi"].items()}
-        for p, d in result.per_platform.items()
-    }
+
+def _build_schema_outputs(
+    req,
+    scenario_summary_out,
+    kpis_out,
+    per_platform_out,
+    predicted_sentiment,
+    extras,
+    lifecycle,
+    souls,
+):
+    """Wrap the schema-aligned output + final report builders so a failure
+    inside them can't take down /api/predict — frontend still gets kpis +
+    lifecycle + souls even if the schema layer blows up."""
     try:
+        from ..agents.final_report import build_final_report
         from ..agents.schema_outputs import build_schema_outputs
 
         schema_outputs = build_schema_outputs(
@@ -393,8 +413,6 @@ def predict(req: PredictRequest):
             enable_kol_ilp=req.enable_kol_ilp,
             enable_search_elasticity=req.enable_search_elasticity,
         )
-        from ..agents.final_report import build_final_report
-
         schema_outputs["report_strategy_case"] = build_final_report(
             scenario=scenario_summary_out,
             kpis=kpis_out,
@@ -402,8 +420,64 @@ def predict(req: PredictRequest):
             schema_outputs=schema_outputs,
             use_llm=bool(req.use_llm),
         )
+        return schema_outputs
     except Exception as e:
-        schema_outputs = {"_error": str(e)}
+        return {"_error": str(e)}
+
+
+@router.post("/api/predict")
+def predict(req: PredictRequest):
+    scenario, macro_summary = build_scenario(req)
+    first_plat = next(iter(scenario.platform_alloc.keys()))
+
+    imp, oc, click_prob_by_agent = _run_first_pass(scenario, first_plat)
+
+    souls = api_state.SOULS.infer_batch(
+        scenario.creative,
+        click_prob_by_agent,
+        kol=scenario.kol_per_platform.get(first_plat),
+        platform=first_plat,
+        n_sample=min(req.n_souls, len(api_state.SOULS.personas)),
+        use_llm=req.use_llm,
+    )
+    _maybe_voronoi_calibrate(scenario, req, souls, first_plat, macro_summary)
+
+    result = api_state.RUNNER.run(scenario, n_monte_carlo=10)
+    lifecycle = hawkes_result_to_dict(api_state.HAWKES.simulate(imp, oc, days=req.lifecycle_days))
+
+    extras: dict = {}
+    extras.update(_extras_crossplat(scenario, req))
+    extras.update(_extras_recsys_rl(scenario, req, first_plat))
+    extras.update(_extras_discourse(scenario, req, first_plat))
+    extras.update(_extras_groupchat(scenario, req, first_plat))
+    extras.update(_extras_world_model(scenario, req, first_plat))
+    extras.update(_extras_brand_memory(scenario, req))
+
+    predicted_sentiment = _aggregate_sentiment_from_souls(souls)
+
+    _apply_scm_mediator(result, extras)
+
+    scenario_summary_out = {
+        "creative_id": scenario.creative.id,
+        "caption": scenario.creative.caption,
+        "total_budget": scenario.total_budget,
+        "platform_alloc": scenario.platform_alloc,
+    }
+    kpis_out = {k: round(float(v), 4) for k, v in result.total_kpis.items()}
+    per_platform_out = {
+        p: {k: round(float(v), 4) for k, v in d["kpi"].items()}
+        for p, d in result.per_platform.items()
+    }
+    schema_outputs = _build_schema_outputs(
+        req,
+        scenario_summary_out,
+        kpis_out,
+        per_platform_out,
+        predicted_sentiment,
+        extras,
+        lifecycle,
+        souls,
+    )
 
     return {
         "scenario_summary": scenario_summary_out,
