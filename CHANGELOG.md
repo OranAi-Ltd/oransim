@@ -29,12 +29,29 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   `api.py` itself shrinks to 88 lines: FastAPI instance, CORS, lifespan,
   root health, and `include_router` wiring. No endpoint-level behavior
   changes; full e2e + pytest verified.
+- **`/api/predict` body factored into private helpers** — the 320-line
+  linear pipeline is split into `_run_first_pass`, `_maybe_voronoi_calibrate`,
+  six `_extras_*` per-feature-flag helpers, `_apply_scm_mediator`, and
+  `_build_schema_outputs`. The main `predict()` body is now 76 lines of
+  orchestration, making each feature independently readable + testable.
+- **`PredictionGraphDeps` dataclass** (`oransim.api_helpers`) — explicit
+  dependency bundle for `build_prediction_graph`. Node lambdas now close
+  over injected `deps` instead of `api_state.WM` / `.AG` / `.HAWKES` /
+  `BUS`, so tests can build the graph with fakes and skip the ~10 s
+  runtime bootstrap. `build_prediction_graph()` defaults to
+  `PredictionGraphDeps.from_api_state()` so production callers are
+  unchanged.
 
 ### Fixed
 - `SoulAgentPool` docstring now matches the two decision modes: template
   mode (Bernoulli from `click_prob`) and LLM-decider mode (LLM returns
   `will_click` in JSON, not overridden by Bernoulli). Regression test
   added.
+- `brand_memory.simulate_campaign_days(n_days<14)` no longer crashes with
+  `ValueError: could not broadcast (14,) into (n,)`. The default spend
+  curve now uses `spend_window = min(14, n_days)` so short campaigns
+  compress the full budget into their actual window. Regression test +
+  real e2e on `/api/predict` with `brand_memory_days=5` both pass.
 
 ## [0.2.0-alpha] — 2026-04-18
 
