@@ -53,41 +53,46 @@ def _amortized_abduct(
     outcome: OutcomeBatch,
     observed_click: np.ndarray | None = None,
     observed_convert: np.ndarray | None = None,
+    mode: str = "reuse",
 ) -> np.ndarray:
     """Abduct per-agent latent noise u from baseline outcome.
 
-    Two modes:
+    Three modes, selectable by caller:
 
-    1. **Sample-reuse** (default, no observed data passed): return the
-       sampled ``outcome.u_noise`` as-is. This implements ``u_i^{cf} = u_i^{fact}``
-       — the same residual is threaded through both baseline and the
-       counterfactual world. It is NOT a posterior over U given an
-       observation; it is the standard "fix U, change do(T), resample
-       descendants" reading of Pearl's three-step evaluation when we have
-       no external observed realization to condition on. Most callers (incl.
-       ``ScenarioRunner.counterfactual``) hit this branch.
+    1. ``"reuse"`` (default) — return the sampled ``outcome.u_noise`` as-is.
+       This is Pearl's "fix U, change do(T), resample descendants" reading
+       when no external realization is available; sample-reuse, not a
+       posterior over U. Default path of ``ScenarioRunner.counterfactual``.
 
-    2. **Observation-conditioned Bayesian shrink** (when ``observed_click``
-       passed): a closed-form soft inversion of the logit, pulling u toward
-       the value that best explains the observed click rate. Used when the
-       caller has per-agent historical click labels. This is a heuristic
-       amortizer, not a learned q(U|O).
+    2. ``"shrink"`` — closed-form Bayesian shrink: pull u toward the value
+       that best explains ``observed_click`` under the simulator's logit
+       model. Requires ``observed_click``.
 
-    Future work: replace branch 2 with a learned amortizer (e.g. ``sbi``
-    NPE / SNPE). Tracked on the Enterprise Edition roadmap; the OSS
-    sample-reuse branch is sufficient for scenario-level CATE.
+    3. ``"learned"`` — a pre-trained amortizer MLP ``q(U | observed_click,
+       click_prob)`` fit on simulator rollouts. Uses the same forward model
+       as the simulator's generative process. Requires ``observed_click``.
+       MLP weights lazily trained once per process (~100 ms, zero external
+       deps); see :mod:`oransim.causal.abduction`. The ``sbi`` library's
+       proper normalizing-flow NPE / SNPE is an Enterprise Edition upgrade.
     """
     u = outcome.u_noise.copy()
-    if observed_click is None:
+    if observed_click is None or mode == "reuse":
         return u
-    # Bayesian shrink: if we observed click=1 but prob was low → u should have been higher
-    prob = outcome.click_prob
-    # residual in probability space → convert to logit shift → scale
-    eps = 1e-5
-    obs_logit = np.log((observed_click + eps) / (1 - observed_click + eps))
-    pred_logit = np.log((prob + eps) / (1 - prob + eps))
-    u_shift = 0.3 * (obs_logit - pred_logit) / 0.7
-    return u + u_shift
+    if mode == "learned":
+        from .abduction import get_pretrained_abductor
+
+        amortizer = get_pretrained_abductor()
+        u_shift = amortizer.apply(outcome.click_prob, observed_click)
+        return u + u_shift
+    if mode == "shrink":
+        # Bayesian shrink: if we observed click=1 but prob was low → u should have been higher
+        prob = outcome.click_prob
+        eps = 1e-5
+        obs_logit = np.log((observed_click + eps) / (1 - observed_click + eps))
+        pred_logit = np.log((prob + eps) / (1 - prob + eps))
+        u_shift = 0.3 * (obs_logit - pred_logit) / 0.7
+        return u + u_shift
+    raise ValueError(f"unknown abduction mode: {mode!r}. Use 'reuse', 'shrink', or 'learned'.")
 
 
 class ScenarioRunner:

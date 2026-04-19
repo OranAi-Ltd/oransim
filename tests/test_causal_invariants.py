@@ -333,6 +333,119 @@ def test_scm_shape_is_intentional_cyclic_graph():
         assert expected in scc, f"{expected} missing from feedback SCC — graph refactor?"
 
 
+def test_learned_abduction_mlp_sign_correctness():
+    """The learned amortizer q(U | observed_click, click_prob) must predict
+    higher u when an agent clicked than when they didn't (at fixed
+    click_prob), since the click is monotone in u under the simulator's
+    forward model ``click ~ Bernoulli(σ(logit(click_prob) + 0.7·u))``.
+    """
+    from oransim.causal.abduction import fit_abduction_mlp
+
+    w = fit_abduction_mlp(n_samples=10_000, epochs=25, seed=17)
+
+    cp = np.array([0.3, 0.3, 0.5, 0.5, 0.7, 0.7])
+    ck = np.array([0.0, 1.0, 0.0, 1.0, 0.0, 1.0])
+    u_hat = w.apply(cp, ck)
+
+    # Click=1 rows must be strictly higher than click=0 rows at matching cp
+    for i in (0, 2, 4):  # click=0 rows
+        assert u_hat[i] < u_hat[i + 1], (
+            f"click=0 gave higher u than click=1 at cp={cp[i]}: "
+            f"{u_hat[i]:.3f} vs {u_hat[i+1]:.3f}"
+        )
+
+    # Correlation between observed_click and predicted u must be positive
+    cor = float(np.corrcoef(ck, u_hat)[0, 1])
+    assert cor > 0.5, f"learned amortizer failed monotonicity: corr={cor:.3f}"
+
+
+def test_llm_decider_will_click_not_overridden_by_bernoulli():
+    """LLM-decider path must preserve the LLM's ``will_click`` field — the
+    statistical ``click_prob`` is a prior in the prompt, not a post-hoc
+    override. Regression would collapse this path back to template mode.
+    """
+    from unittest.mock import patch
+
+    from oransim.agents.soul import SoulAgentPool
+    from oransim.data.creatives import make_creative
+
+    pop = _small_pop(n=200)
+    pool = SoulAgentPool(pop, n=5, seed=7)
+    creative = make_creative(creative_id="ld-01", caption="test", duration_sec=15.0)
+    # Force statistical click_prob very LOW so Bernoulli almost never clicks —
+    # if anything overrides LLM's decision, we'll see 0 clicks.
+    low_prob = {pid: 0.01 for pid in pool.personas}
+
+    # Mock soul_infer_llm to always return will_click=True so we can detect
+    # if any downstream code silently overrides it.
+    def fake_llm(persona, **kw):
+        return {
+            "will_click": True,
+            "reason": "[stub] loved it",
+            "comment": "nice",
+            "feel": "购买冲动",
+            "purchase_intent_7d": 0.8,
+        }
+
+    with (
+        patch(
+            (
+                "oransim.agents.soul.llm_available"
+                if False
+                else "oransim.agents.soul_llm.llm_available"
+            ),
+            return_value=True,
+        ),
+        patch("oransim.agents.soul_llm.soul_infer_llm", side_effect=fake_llm),
+    ):
+        out = pool.infer_batch(
+            creative=creative,
+            outcome_click_probs=low_prob,
+            kol=None,
+            platform="xhs",
+            n_sample=5,
+            seed=11,
+            use_llm=True,
+        )
+
+    # Every returned soul with source=llm must report will_click=True (LLM's decision)
+    llm_souls = [s for s in out if s.get("source") == "llm"]
+    assert (
+        llm_souls
+    ), f"no llm-sourced souls returned; got sources: {[s.get('source') for s in out]}"
+    for s in llm_souls:
+        assert s["will_click"] is True, (
+            f"LLM said will_click=True but got {s['will_click']} — "
+            "something is overriding the LLM decision with Bernoulli"
+        )
+
+
+def test_abduction_modes_match_on_trivial_case():
+    """All three abduction modes (reuse / shrink / learned) must agree when
+    there's no observation to condition on — they all reduce to the
+    sample-reuse identity path."""
+    from oransim.agents.statistical import OutcomeBatch
+    from oransim.causal.counterfactual import _amortized_abduct
+
+    N = 50
+    u = np.random.default_rng(0).standard_normal(N).astype(np.float32)
+    zeros = np.zeros(N, dtype=np.float32)
+    z_bool = np.zeros(N, dtype=np.bool_)
+    outcome = OutcomeBatch(
+        agent_idx=np.arange(N, dtype=np.int64),
+        click=z_bool,
+        engage=z_bool,
+        convert=z_bool,
+        click_prob=np.full(N, 0.2, dtype=np.float32),
+        engage_prob=zeros,
+        convert_prob=zeros,
+        u_noise=u.copy(),
+    )
+    for mode in ("reuse", "shrink", "learned"):
+        out = _amortized_abduct(outcome, observed_click=None, mode=mode)
+        assert np.allclose(out, u), f"mode={mode} diverged on null observation"
+
+
 def test_dag_dict_unrolled_is_strict_dag():
     """Time-unrolled projection of the causal graph must be strictly acyclic
     at any n_steps ≥ 1, so downstream modules (CausalDAG-Transformer,

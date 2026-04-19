@@ -298,7 +298,10 @@ The top-K most salient agents for a scenario are upgraded to LLM-backed personas
 - Optionally participates in simulated group chats (Sunstein 2017 group polarization)
 - Feeds second-wave mediators back into the causal graph
 
-**Honest positioning** — this layer is **qualitative commentary** on top of the quantitative simulator, not an independent causal channel. The click / skip decision is a Bernoulli draw against the statistical `click_prob` (+40% niche-match lift); the LLM's job is to generate a natural-language rationalization that is consistent with that decision. This keeps CATE / ROI numerics reproducible and LLM cost bounded. An "LLM as primary decider" variant (agent agency over the click event, Park et al. 2023 Generative Agents style) is separately tracked on the roadmap for v0.5+.
+**Two modes, explicit trade-off**:
+
+- **Template mode** (`use_llm=False`, default) — click decision is a Bernoulli draw against the statistical `click_prob` (+40% niche-match lift); the persona picks a consistent template ``reason`` / ``comment`` / ``feel``. Zero LLM cost, deterministic given seed, used for CATE / ROI numerical reproducibility.
+- **LLM-decider mode** (`use_llm=True`, Park et al. 2023 Generative Agents style) — a real LLM gets the full persona card + creative + KOL context and returns a structured JSON (`will_click`, `reason`, `comment`, `feel`, `purchase_intent_7d`). **The LLM's ``will_click`` is the agent's decision** (not overridden by Bernoulli); the statistical `click_prob` is available as a prior in the prompt. Response tagged `source: "llm"`. Trade-off: adds non-determinism per persona; for strict reproducibility stay in template mode or pin `LLM_TEMPERATURE=0`.
 
 Cost controlled via:
 - In-flight request coalescing (leader/follower dedup pattern)

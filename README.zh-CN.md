@@ -301,7 +301,10 @@ JSON schema 定义见 [`docs/zh/schemas/`](docs/zh/schemas/)。
 - 可选加入群聊模拟（Sunstein 2017 群体极化）
 - 二次传播信号反哺因果图
 
-**定位诚实说明** —— 这一层是叠在量化仿真上的**质性评论**，不是独立因果通道。点击/跳过的决策是统计层 `click_prob` 的 Bernoulli 抽样（垂类匹配时 +40%）；LLM 的职责是为该决策生成一段与其一致的自然语言解释。这样 CATE / ROI 的数值可复现，LLM 成本可控。"LLM 做决策主体"的 Park et al. 2023 Generative Agents 式变体单独放在 v0.5+ 路线图。
+**两种模式，权衡讲清楚**：
+
+- **模板模式**（`use_llm=False`，默认）—— 点击决策是统计层 `click_prob` 的 Bernoulli 抽样（垂类匹配时 +40%）；persona 配上与决策一致的模板 ``reason`` / ``comment`` / ``feel``。零 LLM 成本，给定 seed 可复现，用于 CATE / ROI 数值可复现场景。
+- **LLM 决策模式**（`use_llm=True`，Park et al. 2023 Generative Agents 风格）—— 真实 LLM 拿到完整 persona card + 素材 + KOL 上下文，返回结构化 JSON（`will_click` / `reason` / `comment` / `feel` / `purchase_intent_7d`）。**LLM 的 ``will_click`` 就是 agent 的决策**（不被 Bernoulli 覆盖）；统计层 `click_prob` 作为 prompt 里的先验供 LLM 参考。响应打 `source: "llm"` 标签。权衡：每个 persona 带非确定性；需要严格复现时留模板模式或设 `LLM_TEMPERATURE=0`。
 
 成本控制：
 - 请求去重（leader/follower 合并同 key 请求）

@@ -305,25 +305,33 @@ def build_persona(pop: Population, idx: int, rng: np.random.Generator) -> Person
 
 
 class SoulAgentPool:
-    """Persona-backed qualitative feedback layer on top of the statistical model.
+    """Persona-backed agent layer with two modes: template and LLM-decider.
 
-    Architectural honesty note — this is not a Park-et-al.-style Generative
-    Agents decider. In the default path (``infer_one``), the click decision is
-    a Bernoulli draw against the per-agent ``click_prob`` from the statistical
-    model, optionally +40% if the persona's interests match the KOL niche. The
-    persona then picks a template-based reason / comment / feeling from the
-    decision outcome. Template mode runs with zero LLM calls.
+    **Template mode** (``infer_one`` — the cheap default, zero LLM cost).
+    Click decision is a Bernoulli draw against the per-agent ``click_prob``
+    from :class:`StatisticalAgents`, with +40% niche-match boost if the
+    persona's interests align with the KOL. The persona then picks a
+    template ``reason`` / ``comment`` / ``feel`` consistent with that
+    decision. Decision and reasoning are both synthetic. Used when
+    ``infer_batch(use_llm=False)``.
 
-    When ``infer_batch(use_llm=True)`` is called, a real LLM is invoked, but
-    the click decision STILL comes from the click_prob Bernoulli — the LLM's
-    job is to generate a natural-language rationalization for a decision that
-    is already made by the statistical layer. This is intentional: it keeps
-    the CATE / ROI numerics reproducible and the LLM cost bounded. A full
-    LLM-decides variant (agent agency over the click event) is a separate
-    roadmap item (see ROADMAP.md → "LLM as primary decider" for v0.5+).
+    **LLM-decider mode** (``infer_batch(use_llm=True)`` — Park et al. 2023
+    Generative Agents style). A real LLM (OpenAI / Anthropic / Gemini / Qwen
+    via :mod:`oransim.agents.llm_providers`) receives the full persona card
+    + creative caption + KOL + platform context, and returns a structured
+    JSON with fields ``will_click``, ``reason``, ``comment``, ``feel``,
+    ``purchase_intent_7d``. **The LLM's ``will_click`` is the agent's
+    decision — it is NOT overridden by the statistical click_prob.** The
+    statistical ``click_prob`` is available as a prior the LLM can weigh,
+    but the final agent choice is the LLM's. Response is tagged
+    ``source: "llm"`` for downstream audit.
 
-    Think of this layer as structured qualitative commentary overlaid on the
-    quantitative simulator, not as an independent causal channel.
+    CATE / ROI with LLM-decider caveat: the LLM call adds non-determinism
+    per persona, so repeat runs of the same scenario produce click-rate
+    variance on the order of 1/√n_souls. Bound this either by caching
+    responses (the in-flight dedup pool in ``llm_dedup`` does this within
+    a request) or by pinning ``temperature=0`` in ``LLM_TEMPERATURE`` env.
+    For strict numerical reproducibility, stay in template mode.
     """
 
     def __init__(self, population: Population, n: int = 30, seed: int = 123):
