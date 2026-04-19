@@ -176,16 +176,31 @@ def test_demo_lightgbm_pkl_loads_and_predicts():
         blob = pickle.load(f)
     assert "config" in blob
     assert "boosters" in blob
-    assert blob["config"]["feature_version"] == "demo_v1"
+    # demo_v2+: tabular + PCA-reduced text embedding. Older demo_v1 pkls
+    # (tabular-only, 7 features) still load but don't carry a "pca" block.
+    assert blob["config"]["feature_version"] in ("demo_v1", "demo_v2")
     assert set(blob["boosters"].keys()) == {"impressions", "clicks", "conversions", "revenue"}
 
-    # Load a booster + predict on a plausible feature vector
     import lightgbm as lgb
     import numpy as np
 
     b = lgb.Booster(model_str=blob["boosters"]["impressions"]["0.5"])
-    # [platform_id, niche_idx, budget, budget_bucket, kol_tier_idx, kol_fan_count, kol_engagement_rate]
-    x = np.asarray([[0.0, 0.0, 50000.0, 1.0, 2.0, 100000.0, 0.035]], dtype=np.float32)
+    feat_dim = b.num_feature()
+    assert feat_dim in (7, 23), f"unexpected booster feature dim {feat_dim}"
+
+    # Build a feature vector matching whichever version this pkl was trained at
+    x_scalar = np.asarray([0.0, 0.0, 50000.0, 1.0, 2.0, 100000.0, 0.035], dtype=np.float32)
+    if feat_dim == 23:
+        # demo_v2: concat the same PCA-projected embedding the trainer used
+        assert "pca" in blob, "demo_v2 pkl must carry PCA components"
+        comps = np.asarray(blob["pca"]["components"], dtype=np.float32)
+        mean = np.asarray(blob["pca"]["mean"], dtype=np.float32)
+        emb_dim = int(blob["config"]["embedding_dim_raw"])
+        assert comps.shape == (16, emb_dim)
+        emb_pca = (np.zeros(emb_dim, dtype=np.float32) - mean) @ comps.T
+        x = np.concatenate([x_scalar, emb_pca]).reshape(1, -1)
+    else:
+        x = x_scalar.reshape(1, -1)
     pred = b.predict(x)[0]
     assert pred > 0, f"impressions P50 prediction should be > 0, got {pred}"
 

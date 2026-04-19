@@ -5,15 +5,23 @@ three P35/P50/P65 quantile regressors per KPI (impressions, clicks,
 conversions, revenue), producing a compact pkl that ships with the OSS
 release and powers the "clone → set LLM key → run" plug-and-play experience.
 
-Feature vector (7-dim scalar, by design — keeps the pkl small and the
-inference path CPU-only, zero-GPU):
+Feature vector (23-dim = 7 scalar + 16 text-embedding-PCA):
 
-    [platform_id, niche_idx, budget, budget_bucket, kol_tier_idx,
-     kol_fan_count, kol_engagement_rate]
+    scalar (7):       [platform_id, niche_idx, budget, budget_bucket,
+                       kol_tier_idx, kol_fan_count, kol_engagement_rate]
+    embedding (16):   PCA-reduced RealTextEmbedder output on a synthesized
+                      creative brief caption ("春季 {niche} {tier} KOL ·
+                      预算 {budget_bucket_label}"). Uses the fallback
+                      hash-embedder when OPENAI_API_KEY is not set, so the
+                      pipeline is reproducible + offline. The PCA components
+                      ship inside the pkl and are applied at inference time
+                      to the same caption template.
 
-For the full 1600-dim feature pipeline with creative embeddings + KOL
-audience + demographic + time-of-day tokens, see the Causal Transformer
-training script ``train_transformer_wm.py`` (v0.2).
+The embedding path is the same RealTextEmbedder / UEB that the rest of the
+OSS stack uses — soul-agent persona matching, kol_content_match (T2-A2),
+search_elasticity (T3-A6). Keeping the demo pkl consistent with that
+pipeline was the point of upgrading feature_version from demo_v1 (tabular
+only) to demo_v2 (tabular + PCA embedding).
 
 Usage:
 
@@ -32,6 +40,20 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+
+# Allow running as either a script or an installed package entry-point
+_THIS_DIR = Path(__file__).resolve().parent
+_BACKEND = _THIS_DIR.parent
+if str(_BACKEND) not in sys.path:
+    sys.path.insert(0, str(_BACKEND))
+
+# Single source of truth for caption logic — shared with the API's inference
+# path so the pkl's PCA projection is applied to the same text it was
+# trained on.
+from oransim.scripts_helpers import _BUDGET_BUCKETS_ZH  # noqa: E402
+from oransim.scripts_helpers import caption_for_demo_pkl as _caption_for
+
+_BUDGET_BUCKETS = _BUDGET_BUCKETS_ZH
 
 NICHES = [
     "beauty",
@@ -102,11 +124,37 @@ def main(argv: list[str] | None = None) -> int:
                 rows.append(json.loads(line))
     print(f"[train]   loaded {len(rows)} scenarios")
 
-    X = np.stack([_vectorize(r) for r in rows])
+    X_scalar = np.stack([_vectorize(r) for r in rows])
+
+    # Embed each scenario's synthetic caption via RealTextEmbedder (falls back
+    # to deterministic hash embedder when OPENAI_API_KEY is not set). Then
+    # PCA-reduce to EMB_PCA_DIM so the pkl stays small.
+    print("[train] embedding synthetic captions …")
+    from oransim.runtime.real_embedder import RealTextEmbedder
+
+    embedder = RealTextEmbedder()
+    captions = [_caption_for(r) for r in rows]
+    emb_full = embedder.embed_batch(captions)  # [N, 1536]
+    print(
+        f"[train]   captions={len(captions)}  embed_shape={emb_full.shape}  "
+        f"api_hits={embedder._api_hits}  fallback_hits={embedder._fallback_hits}"
+    )
+
+    from sklearn.decomposition import PCA
+
+    EMB_PCA_DIM = 16
+    pca = PCA(n_components=EMB_PCA_DIM, random_state=args.seed)
+    emb_pca = pca.fit_transform(emb_full).astype(np.float32)
+    print(
+        f"[train]   PCA({EMB_PCA_DIM}) explained var = "
+        f"{pca.explained_variance_ratio_.sum():.3f}"
+    )
+
+    X = np.concatenate([X_scalar, emb_pca], axis=1)
     y_all = {
         kpi: np.asarray([float(r["targets"][kpi]) for r in rows], dtype=np.float32) for kpi in KPIS
     }
-    print(f"[train]   feature shape: {X.shape}")
+    print(f"[train]   final feature shape: {X.shape}  (7 scalar + {EMB_PCA_DIM} embed-PCA)")
 
     rng = np.random.default_rng(args.seed)
     n_val = max(1, int(len(rows) * args.val_frac))
@@ -172,13 +220,26 @@ def main(argv: list[str] | None = None) -> int:
                 "kol_tier_idx",
                 "kol_fan_count",
                 "kol_engagement_rate",
+                *[f"caption_emb_pca_{i}" for i in range(EMB_PCA_DIM)],
             ],
             "niches": NICHES,
             "kol_tiers": KOL_TIERS,
-            "feature_version": "demo_v1",
-            "training_version": "0.1.1-alpha",
+            "budget_buckets_zh": _BUDGET_BUCKETS,
+            "feature_version": "demo_v2",
+            "training_version": "0.2.0-alpha",
+            "embedding_model": embedder.model,
+            "embedding_dim_raw": int(emb_full.shape[1]),
+            "embedding_pca_dim": EMB_PCA_DIM,
+            "embedding_pca_explained_var": float(pca.explained_variance_ratio_.sum()),
+            "embedding_api_hits": embedder._api_hits,
+            "embedding_fallback_hits": embedder._fallback_hits,
             "n_train": len(train_idx),
             "n_val": len(val_idx),
+        },
+        "pca": {
+            "components": pca.components_.astype(np.float32),  # [EMB_PCA_DIM, 1536]
+            "mean": pca.mean_.astype(np.float32),  # [1536]
+            "explained_variance_ratio": pca.explained_variance_ratio_.astype(np.float32),
         },
         "boosters": {
             kpi: {str(q): bst.model_to_string() for q, bst in per_q.items()}

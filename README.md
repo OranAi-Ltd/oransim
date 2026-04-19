@@ -355,12 +355,9 @@ Dropping a real implementation in is a ~50-line `Embedder` subclass with no down
 
 Three quantile regressors (P35, P50, P65) per KPI. Sub-millisecond inference, zero GPU requirement. Refs: Ke et al. 2017 (LightGBM), Koenker 2005 (Quantile Regression).
 
-**Two configurations to be explicit about:**
+**Shipped pkl** (`data/models/world_model_demo.pkl`, `feature_version: demo_v2`, ~3 MB) consumes **23 features**: 7 tabular (`platform_id`, `niche_idx`, `budget`, `budget_bucket`, `kol_tier_idx`, `kol_fan_count`, `kol_engagement_rate`) + 16 PCA-reduced text-embedding dimensions. The embedding input is a deterministic caption per scenario (`"春季 {niche} 新品种草 · {tier} KOL · {budget_bucket}"`) passed through `RealTextEmbedder` — same embedder the rest of the stack uses (UEB, soul-agent persona matching, `kol_content_match`, `search_elasticity`). When `OPENAI_API_KEY` is set, it hits `text-embedding-3-small`; without a key, it falls back to the deterministic SHA-256 hash embedder so training / inference is still reproducible offline. PCA components ship inside the pkl and are applied at inference time via `POST /api/v2/world_model/predict?model=lightgbm_quantile`. R² on the 200 held-out from 2,000 synthetic scenarios: impressions 0.88 · clicks 0.79 · conversions 0.71 · revenue 0.75.
 
-- **What the `LightGBMQuantileWorldModel` class can consume** — the full feature pipeline including creative embeddings (OpenAI `text-embedding-3-small` via `RealTextEmbedder` / UEB), KOL embeddings, demographic + temporal signals, and PCA-reduced behavioral features. Swap in by training your own pkl with richer features.
-- **What the shipped `data/models/world_model_demo.pkl` contains** — a **tabular-only ablation baseline** with 7 scalar features (`platform_id`, `niche_idx`, `budget`, `budget_bucket`, `kol_tier_idx`, `kol_fan_count`, `kol_engagement_rate`), trained on the 2,000 shipped synthetic scenarios (1,800 train / 200 held-out), no text embedding. The no-embedding choice is deliberate: it keeps the demo pkl ~2 MB, runs offline without an OpenAI key, and serves as a clean ablation against the embedding-aware paths. R² on the 200 held-out: impressions 0.89 · clicks 0.78 · conversions 0.73 · revenue 0.69 (`data/models/model_card.md` has full details).
-
-Where embeddings DO flow in the shipped stack: UEB → soul-agent persona matching + `kol_content_match` (T2-A2) + `search_elasticity` (T3-A6). The Causal Transformer path consumes the 1536-d creative embedding natively once weights land with OrancBench v0.5.
+The Causal Transformer path consumes the full-dim creative embedding natively (without PCA) once weights land with OrancBench v0.5; the demo LightGBM pkl is the CPU-only fallback until then.
 
 ```python
 wm = get_world_model("lightgbm_quantile")

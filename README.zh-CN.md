@@ -358,12 +358,9 @@ cf = wm.counterfactual(features, arm_idx=2)         # do(T = arm 2) 反事实
 
 每个 KPI 3 个分位数回归器（P35 / P50 / P65）。亚毫秒推理、无 GPU 需求。参考：Ke et al. 2017（LightGBM）、Koenker 2005（分位数回归）。
 
-**两种配置分开讲清楚**：
+**shipped pkl**（`data/models/world_model_demo.pkl` · `feature_version: demo_v2` · ~3 MB）吃 **23 维特征**：7 标量（`platform_id` / `niche_idx` / `budget` / `budget_bucket` / `kol_tier_idx` / `kol_fan_count` / `kol_engagement_rate`）+ 16 维 PCA 降维的 text embedding。Embedding 输入是每个场景一条确定性 caption（`"春季 {niche} 新品种草 · {tier} KOL · {budget_bucket}"`），过 `RealTextEmbedder` 拿到 embedding —— 和 UEB / soul agent persona 匹配 / `kol_content_match` / `search_elasticity` 用的是同一个 embedder。设了 `OPENAI_API_KEY` 就打 `text-embedding-3-small`；没 key 就落到 SHA-256 哈希 fallback embedder（确定性），训练/推理都能 offline 复现。PCA 分量存在 pkl 里，推理时走 `POST /api/v2/world_model/predict?model=lightgbm_quantile` 自动应用。2000 条合成场景里 200 条留出集 R²：impressions 0.88 · clicks 0.79 · conversions 0.71 · revenue 0.75。
 
-- **`LightGBMQuantileWorldModel` 类能吃什么特征** —— 完整 pipeline：素材 embedding（OpenAI `text-embedding-3-small` via `RealTextEmbedder` / UEB）+ KOL embedding + 人口学 + 时序信号 + PCA 降维行为特征。自己训带 embedding 的 pkl 切进去就行。
-- **shipped `data/models/world_model_demo.pkl` 实际含什么** —— 是**纯表格特征的消融基线**：7 个标量（`platform_id` / `niche_idx` / `budget` / `budget_bucket` / `kol_tier_idx` / `kol_fan_count` / `kol_engagement_rate`），在 2000 条合成场景上训练（1800 训 / 200 留出），**不含 text embedding**。不带 embedding 是故意的：pkl ~2MB 可以 offline 跑（不需要 OpenAI key），同时作为 embedding 路径的干净消融对比。200 条留出集上 R²：impressions 0.89 · clicks 0.78 · conversions 0.73 · revenue 0.69（完整看 `data/models/model_card.md`）。
-
-embedding 在 shipped 栈实际流动的路径：UEB → soul agent persona 匹配 + `kol_content_match` (T2-A2) + `search_elasticity` (T3-A6)。Causal Transformer 路径原生消费 1536 维 creative embedding，等 OrancBench v0.5 权重到位就直接能跑。
+Causal Transformer 路径原生吃完整维度的 creative embedding（不 PCA），等 OrancBench v0.5 权重发布就直接能用；当前这个 demo LightGBM pkl 是 CPU-only fallback。
 
 ```python
 wm = get_world_model("lightgbm_quantile")

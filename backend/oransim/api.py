@@ -1470,20 +1470,33 @@ def v2_wm_predict(req: V2WorldModelPredictRequest, model: str = "lightgbm_quanti
                 if f.get("kol_tier", "micro") in tiers
                 else 0
             )
-            x = _np.asarray(
+            scalar = _np.asarray(
                 [
-                    [
-                        float(f.get("platform_id", 0)),
-                        float(niche_idx),
-                        float(f.get("budget", 10000)),
-                        float(f.get("budget_bucket", 1)),
-                        float(tier_idx),
-                        float(f.get("kol_fan_count", 50000)),
-                        float(f.get("kol_engagement_rate", 0.03)),
-                    ]
+                    float(f.get("platform_id", 0)),
+                    float(niche_idx),
+                    float(f.get("budget", 10000)),
+                    float(f.get("budget_bucket", 1)),
+                    float(tier_idx),
+                    float(f.get("kol_fan_count", 50000)),
+                    float(f.get("kol_engagement_rate", 0.03)),
                 ],
                 dtype=_np.float32,
             )
+            # demo_v2+: apply the same caption→embed→PCA transform the trainer
+            # used, so the booster sees the feature layout it was trained on.
+            # demo_v1 pkls didn't ship PCA components and stay tabular-only.
+            if blob.get("pca") is not None:
+                from .runtime.real_embedder import RealTextEmbedder
+                from .scripts_helpers import caption_for_demo_pkl  # type: ignore
+
+                embedder = RealTextEmbedder()
+                caption = caption_for_demo_pkl(f, blob["config"])
+                emb = embedder.embed(caption).astype(_np.float32)  # [1536]
+                comps = _np.asarray(blob["pca"]["components"], dtype=_np.float32)
+                mean = _np.asarray(blob["pca"]["mean"], dtype=_np.float32)
+                emb_pca = (emb - mean) @ comps.T  # [EMB_PCA_DIM]
+                scalar = _np.concatenate([scalar, emb_pca.astype(_np.float32)])
+            x = scalar.reshape(1, -1)
             out = {
                 "model": model,
                 "kpi_quantiles": {},
