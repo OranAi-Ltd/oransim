@@ -29,10 +29,12 @@ Themes:
 - World model retains LightGBM quantile (P35/P50/P65) as the baseline
 - Incremental PCA retraining pipeline with documented procedure
 - Hill saturation + frequency-fatigue curves formalized as public API
+- ✅ **Learned amortized abduction** (shipped post-0.2) — pure-numpy MLP `q(U | O)` in `oransim.causal.abduction`; `counterfactual._amortized_abduct(mode="learned")` uses it. sbi-based NPE normalizing-flow remains Enterprise-only.
 - ⏸ **CT / NH pretrained weights deferred** — the current synthetic corpus is fully inside the LightGBM + ParametricHawkes baselines' hypothesis class, so training the research-grade models would produce factual R² at-or-below baselines. Weight release re-tied to the OrancBench v0.5 causal-native task suite (see v0.5 Data & Benchmarks).
 
 ### 🌐 Platforms
 - ✅ TikTok adapter MVP (shipped — `backend/oransim/platforms/tiktok/`, wired via `POST /api/adapters/tiktok/simulate_impression`)
+- ✅ **TikTok agent-level simulation** (shipped post-0.2) — `TikTokWorldModel` + `TikTokRecSysRLSimulator` + `TikTokPRS` stub; `TikTokAdapter.simulate_impression_agents` / `.simulate_fyp_rl`
 - ✅ Douyin adapter MVP (shipped — `backend/oransim/platforms/douyin/`, same adapter surface)
 - ✅ Instagram Reels + YouTube Shorts adapter MVP (shipped — 4 short-video adapters total)
 - XHS adapter docs hardened (`docs/en/platforms/xhs.md`)

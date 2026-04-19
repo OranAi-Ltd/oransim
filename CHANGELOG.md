@@ -6,6 +6,36 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+- **Learned amortized abduction** (`oransim.causal.abduction`) — pure-numpy
+  MLP `q(U | O)` trained on the simulator's own generative process; lets
+  `counterfactual._amortized_abduct(..., mode="learned")` use a proper
+  per-agent posterior-mean shift instead of sample-reuse or the closed-form
+  Bayesian shrink. No extra deps; trains in ~0.2 s, sign-correctness
+  correlation ≈ 0.97. sbi-based NPE normalizing-flow remains an Enterprise
+  upgrade path.
+- **TikTok agent-level simulation** — new `TikTokWorldModel` (FYP-aware
+  scoring with duration retention and a dampened audience-filter lever),
+  `TikTokRecSysRLSimulator` (geometric cold-start → breakout across 6 rounds
+  with a 2.8 % breakout threshold), and `TikTokPRS` stub (falls through to
+  structural predictions until a TikTok-specific pkl ships). `TikTokAdapter`
+  gains `attach_population`, `simulate_impression_agents`, and
+  `simulate_fyp_rl`; the aggregate `simulate_impression` path is unchanged.
+- **api_routers/** package — the historic 1730-line `api.py` god-file is
+  split into an `api_state` module (runtime singletons + bootstrap), an
+  `api_helpers` module (cross-router scenario / prediction-graph helpers),
+  an `api_schemas` module (shared Pydantic models), and eight routers
+  (adapters / analysis / health / predict / sandbox / ueb / v2 / ws).
+  `api.py` itself shrinks to 88 lines: FastAPI instance, CORS, lifespan,
+  root health, and `include_router` wiring. No endpoint-level behavior
+  changes; full e2e + pytest verified.
+
+### Fixed
+- `SoulAgentPool` docstring now matches the two decision modes: template
+  mode (Bernoulli from `click_prob`) and LLM-decider mode (LLM returns
+  `will_click` in JSON, not overridden by Bernoulli). Regression test
+  added.
+
 ## [0.2.0-alpha] — 2026-04-18
 
 The v0.2 release. Ships the platform-adapter axis (TikTok + Douyin MVPs),

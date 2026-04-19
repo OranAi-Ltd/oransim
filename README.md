@@ -127,7 +127,7 @@ Full reference in [`.env.example`](.env.example); extended retry / fallback-chai
 The frontend shows a yellow banner at the top whenever the backend is still in mock (or has no key set) — click ✕ to dismiss for the session.
 
 > **Running right now · what's real vs aspirational**
-> - ✅ **Working today** — full backend (`POST /api/predict` · `/api/adapters` · `/api/sandbox/*`) · full frontend (hero · 9 tabs · cascade animation · modular `js/*.js`) · LightGBM quantile baseline pkl shipped · 5 platform adapters (XHS v1 legacy + TikTok / IG / YouTube Shorts / Douyin MVP) · multi-LLM providers (OpenAI-compat · Anthropic · Gemini · Qwen).
+> - ✅ **Working today** — full backend (`POST /api/predict` · `/api/adapters` · `/api/sandbox/*`, split across `api_routers/` since api.py 1730-line god-file refactor) · full frontend (hero · 9 tabs · cascade animation · modular `js/*.js`) · LightGBM quantile baseline pkl shipped · 5 platform adapters (XHS v1 legacy + TikTok agent-level w/ FYP RL + IG / YouTube Shorts / Douyin MVP) · learned amortized abduction (pure-numpy MLP q(U|O)) · multi-LLM providers (OpenAI-compat · Anthropic · Gemini · Qwen).
 > - 🟡 **Code-complete, weights pending** — Causal Transformer world model + Causal Neural Hawkes diffusion — architecture + training loop + inference + thinning sampler all shipped; pretrained weights land with OrancBench v0.5.
 > - 📋 **Roadmap-only** — Twitter / Bilibili / LinkedIn adapters · multi-modal embedders (image/video/audio stubs only today) · Ray cluster · hosted demo.
 

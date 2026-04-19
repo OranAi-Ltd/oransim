@@ -132,7 +132,7 @@ python -m uvicorn oransim.api:app --port 8001 &
 前端检测到后端还是 mock / 没 key 时，顶部会弹一条黄色 banner 贴启动命令 · 点 ✕ 本会话不再显示。
 
 > **现在能跑到什么程度 · 真实 vs aspirational**
-> - ✅ **今天就能跑** —— 完整后端（`POST /api/predict` · `/api/adapters` · `/api/sandbox/*`）· 完整前端（hero · 9 tab · 级联动画 · 模块化 `js/*.js`）· 预训 LightGBM quantile baseline pkl · 5 个 platform adapter（XHS v1 legacy + TikTok / IG / YouTube Shorts / Douyin MVP）· 多 LLM provider（OpenAI-compat · Anthropic · Gemini · Qwen）
+> - ✅ **今天就能跑** —— 完整后端（`POST /api/predict` · `/api/adapters` · `/api/sandbox/*`，api.py 已从 1730 行拆成 `api_routers/` 8 个子 router）· 完整前端（hero · 9 tab · 级联动画 · 模块化 `js/*.js`）· 预训 LightGBM quantile baseline pkl · 5 个 platform adapter（XHS v1 legacy + TikTok agent-level 带 FYP 冷启 RL + IG / YouTube Shorts / Douyin MVP）· learned amortized abduction（纯 numpy MLP q(U|O)）· 多 LLM provider（OpenAI-compat · Anthropic · Gemini · Qwen）
 > - 🟡 **代码已 ship，权重待发** —— 因果 Transformer 世界模型 + 因果神经 Hawkes 扩散模型 —— 架构 + 训练 loop + 推理 + thinning 采样全部 ship；预训权重随 OrancBench v0.5 发布
 > - 📋 **仅路线图** —— Twitter / Bilibili / LinkedIn adapter · 多模态 embedder（当前只 image/video/audio stub）· Ray 集群 · hosted demo
 
