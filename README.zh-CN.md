@@ -31,7 +31,7 @@ Oransim 是 OranAI 因果数字孪生技术栈的**开源 reference implementati
 
 - 📈 曝光 / 点击 / 转化 / ROI，带 P35/P50/P65 分位数区间
 - 🔄 反事实：`do(creative=B)` / `do(budget=x)` / `do(kol=…)` 一次 forward 出结果
-- 🗣️ 10 个 LLM 人格读完真实文案后给点/跳 + 情绪 + 评论
+- 🗣️ 10 万个 LLM 人格读完真实文案后给点/跳 + 情绪 + 评论
 - 📊 14 天 Hawkes 扩散曲线 + 中途干预 rollout，如 `do(mute_at_day=3)`
 - 🧭 排好序的后续动作建议
 
