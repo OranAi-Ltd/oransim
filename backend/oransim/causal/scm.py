@@ -366,3 +366,139 @@ def dag_dict() -> dict:
             "computed_count": sum(1 for n in NODES if n.computed_by),
         },
     }
+
+
+# ============================================================================
+# Time-unrolled DAG (acyclic projection of the cyclic causal graph)
+# ============================================================================
+#
+# The shipped graph encodes long-term marketing feedback loops (repeat purchase
+# → brand equity → CPM bid → next-cycle impression distribution, etc.). These
+# loops make the graph strictly cyclic — see README §Causal Graph + Bongers
+# et al. 2021 for the cyclic-SCM framing. For downstream modules that require
+# a strict DAG (e.g. the CausalDAG-Transformer attention bias, or any classic
+# Pearl abduction), we expose a time-unrolled projection:
+#
+#   - Node N becomes copies N_t0, N_t1, ..., N_t{K-1}
+#   - Non-feedback edges are replicated inside each time slice
+#   - Feedback edges cross time: ``src_t{i} → dst_t{i+1}`` (at the last slice
+#     the feedback edge is dropped — its effect would land outside the horizon)
+#
+# The result is a proper DAG regardless of the cycle structure of the original.
+
+
+def _find_feedback_edges() -> set[tuple[str, str]]:
+    """Return the set of back-edges in a DFS traversal of the causal graph.
+
+    An edge ``(u, v)`` is a "back edge" if, during DFS, we encounter ``v`` as
+    a GRAY (on-stack) ancestor of ``u``. Back-edges are exactly the edges
+    that participate in cycles; removing them produces an acyclic subgraph.
+    The specific set returned depends on DFS start order but always satisfies:
+    edges ∖ feedback-set is acyclic.
+    """
+    adj: dict[str, list[str]] = {n.name: [] for n in NODES}
+    for s, t in EDGES:
+        adj[s].append(t)
+
+    WHITE, GRAY, BLACK = 0, 1, 2
+    color: dict[str, int] = {n.name: WHITE for n in NODES}
+    feedback: set[tuple[str, str]] = set()
+
+    # Iterative DFS — avoids recursion-limit on dense graphs.
+    for start in NODES:
+        if color[start.name] != WHITE:
+            continue
+        stack: list[tuple[str, int]] = [(start.name, 0)]
+        while stack:
+            u, child_idx = stack[-1]
+            if child_idx == 0:
+                color[u] = GRAY
+            children = adj[u]
+            if child_idx < len(children):
+                stack[-1] = (u, child_idx + 1)
+                v = children[child_idx]
+                c = color[v]
+                if c == WHITE:
+                    stack.append((v, 0))
+                elif c == GRAY:
+                    feedback.add((u, v))
+                # BLACK → forward/cross edge, not feedback
+            else:
+                color[u] = BLACK
+                stack.pop()
+    return feedback
+
+
+def dag_dict_unrolled(n_steps: int = 2) -> dict:
+    """Acyclic time-unrolled projection of the causal graph.
+
+    Each original node becomes ``n_steps`` time-indexed copies (``N_t0``..
+    ``N_t{K-1}``). Non-feedback edges are replicated within each time slice;
+    feedback edges cross to the next time slice. Resulting graph is a strict
+    DAG (verified by :func:`tests.test_causal_invariants.test_dag_dict_unrolled
+    _is_strict_dag`).
+
+    Parameters
+    ----------
+    n_steps
+        How many time slices. 2 is the minimum to acyclically represent all
+        current feedback edges. 3+ lets downstream models reason about multi-
+        horizon feedback (e.g. brand equity at t influences bid at t+1 which
+        influences impression distribution at t+2).
+
+    Returns
+    -------
+    A dict with the same shape as :func:`dag_dict` but with the time-unrolled
+    graph, plus a ``feedback_edges`` list listing which original edges were
+    treated as feedback (for debugging / visualization).
+    """
+    if n_steps < 1:
+        raise ValueError("n_steps must be >= 1")
+    feedback = _find_feedback_edges()
+
+    unrolled_nodes: list[dict] = []
+    for t in range(n_steps):
+        for n in NODES:
+            unrolled_nodes.append(
+                {
+                    "name": f"{n.name}_t{t}",
+                    "original_name": n.name,
+                    "time_step": t,
+                    "label_zh": f"{n.label_zh}@t{t}",
+                    "layer": n.layer,
+                    "layer_label": LAYER_LABELS[n.layer],
+                    "category": n.category,
+                    "intervenable": n.intervenable and t == 0,  # interventions at t=0 only
+                    "time_varying": n.time_varying,
+                    "computed_by": n.computed_by,
+                    "color": LAYER_COLOR[n.layer],
+                }
+            )
+
+    unrolled_edges: list[list[str]] = []
+    for s, d in EDGES:
+        if (s, d) in feedback:
+            # Cross-time edge: src at t, dst at t+1. Drop at the last slice
+            # (no t+1 exists there).
+            for t in range(n_steps - 1):
+                unrolled_edges.append([f"{s}_t{t}", f"{d}_t{t+1}"])
+        else:
+            # Within-slice edge: replicate in every time step
+            for t in range(n_steps):
+                unrolled_edges.append([f"{s}_t{t}", f"{d}_t{t}"])
+
+    return {
+        "n_nodes": len(unrolled_nodes),
+        "n_edges": len(unrolled_edges),
+        "n_steps": n_steps,
+        "nodes": unrolled_nodes,
+        "edges": unrolled_edges,
+        "feedback_edges": [list(e) for e in sorted(feedback)],
+        "intervenable": [n["name"] for n in unrolled_nodes if n["intervenable"]],
+        "stats": {
+            "n_original_nodes": len(NODES),
+            "n_original_edges": len(EDGES),
+            "n_feedback_edges": len(feedback),
+            "n_within_slice_edges": len(EDGES) - len(feedback),
+        },
+    }

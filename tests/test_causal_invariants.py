@@ -333,6 +333,68 @@ def test_scm_shape_is_intentional_cyclic_graph():
         assert expected in scc, f"{expected} missing from feedback SCC — graph refactor?"
 
 
+def test_dag_dict_unrolled_is_strict_dag():
+    """Time-unrolled projection of the causal graph must be strictly acyclic
+    at any n_steps ≥ 1, so downstream modules (CausalDAG-Transformer,
+    Pearl-abduction paths) get a proper DAG to operate on.
+    """
+    try:
+        import networkx as nx
+    except ImportError:
+        import pytest
+
+        pytest.skip("networkx not installed")
+    from oransim.causal.scm import dag_dict, dag_dict_unrolled
+
+    orig = dag_dict()
+    for n_steps in (1, 2, 3):
+        g = dag_dict_unrolled(n_steps=n_steps)
+        assert g["n_nodes"] == orig["n_nodes"] * n_steps
+        assert g["n_steps"] == n_steps
+        # Edge count arithmetic:
+        #   within_slice * n_steps + feedback * (n_steps - 1)
+        n_fb = g["stats"]["n_feedback_edges"]
+        n_within = g["stats"]["n_within_slice_edges"]
+        expected_edges = n_within * n_steps + n_fb * max(0, n_steps - 1)
+        assert g["n_edges"] == expected_edges
+
+        G = nx.DiGraph()
+        for node in g["nodes"]:
+            G.add_node(node["name"])
+        for s, d in g["edges"]:
+            G.add_edge(s, d)
+        assert nx.is_directed_acyclic_graph(
+            G
+        ), f"unrolled graph at n_steps={n_steps} still has cycles"
+
+
+def test_dag_dict_unrolled_feedback_edges_cross_time():
+    """Feedback edges in the unrolled graph must go from t→t+1, never t→t."""
+    from oransim.causal.scm import dag_dict_unrolled
+
+    g = dag_dict_unrolled(n_steps=2)
+    fb_originals = {tuple(e) for e in g["feedback_edges"]}
+    assert len(fb_originals) >= 5, "expected >=5 feedback edges in the shipped graph"
+
+    # Count edges that cross time vs stay within
+    cross = 0
+    within = 0
+    for s, d in g["edges"]:
+        s_t = int(s.rsplit("_t", 1)[1])
+        d_t = int(d.rsplit("_t", 1)[1])
+        if s_t == d_t:
+            within += 1
+        elif d_t == s_t + 1:
+            cross += 1
+        else:
+            raise AssertionError(f"edge {s}→{d} spans >1 time step")
+
+    # Every feedback edge from the original graph contributes 1 cross-time
+    # edge per (n_steps - 1) transitions. At n_steps=2, that's |feedback| × 1.
+    assert cross == len(fb_originals)
+    assert within == (g["stats"]["n_within_slice_edges"]) * 2  # 2 slices
+
+
 def test_scm_edges_reference_defined_nodes():
     """Every edge endpoint must exist in the node list. Catches placeholder
     typos like a dead 'if False else' branch referencing a missing node."""

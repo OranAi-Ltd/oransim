@@ -273,7 +273,9 @@ The 3-step evaluation in code:
 2. **Action** — apply `do()` intervention (supported nodes listed in `/api/dag`'s `intervenable: true` set)
 3. **Prediction** — topologically sort the acyclic condensation, solve each SCC by numerical iteration (2–3 passes empirically converge on the shipped graph)
 
-A time-unrolled DAG formulation (explicit `t`/`t+1` variables) + equilibrium-solver with fixed-point guarantees is an Enterprise Edition upgrade; the cyclic approximation is what ships here.
+A time-unrolled DAG projection IS available in the OSS release via `oransim.causal.scm.dag_dict_unrolled(n_steps=K)` — each original node becomes `N_t0, N_t1, ..., N_t{K-1}`; feedback edges cross time (`src_ti → dst_t{i+1}`), non-feedback edges replicate within each slice. At `n_steps=2` the shipped graph's 64 nodes + 117 edges (cyclic) unroll to 128 nodes + 220 edges (strict DAG, 14 feedback edges detected automatically via DFS back-edge analysis). Downstream modules that need strict acyclicity (CausalDAG-Transformer attention on a true DAG, textbook Pearl three-step abduction) can consume the unrolled view. The cyclic native graph + SCC condensation remains the default because it keeps the node count small and matches the shipped Transformer's 7-token input layout.
+
+A full equilibrium-solver with fixed-point guarantees for the cyclic native graph is an Enterprise Edition upgrade; the OSS release offers the unrolled-DAG path as the acyclic alternative.
 </details>
 
 <details>

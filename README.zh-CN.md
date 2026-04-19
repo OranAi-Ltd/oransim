@@ -276,7 +276,9 @@ JSON schema 定义见 [`docs/zh/schemas/`](docs/zh/schemas/)。
 2. **干预** —— 应用 `do()`（可干预节点集见 `/api/dag` 响应里的 `intervenable: true`）
 3. **预测** —— 对无环 condensation 拓扑排序，每个 SCC 用数值迭代（shipped 图上实测 2–3 遍收敛）
 
-时间展开（t / t+1 显式分离）+ 保证不动点存在的 equilibrium solver 是企业版升级项；OSS 这里 ship 的是 cyclic 近似。
+时间展开的 DAG 投影 OSS 版已 ship — `oransim.causal.scm.dag_dict_unrolled(n_steps=K)`：原图每个节点变成 `N_t0, N_t1, ..., N_t{K-1}`，反馈边跨时间（`src_ti → dst_t{i+1}`），非反馈边在每个切片内复制。`n_steps=2` 时 shipped 图的 64 节点 + 117 边（cyclic）展开成 128 节点 + 220 边（严格 DAG · 14 条反馈边通过 DFS 回边分析自动检测）。需要严格无环的下游（真 DAG 上的 CausalDAG-Transformer attention、教科书 Pearl 三步 abduction）可以用这个展开视图。cyclic 原图 + SCC 凝缩仍是默认路径，因为节点数小、和 Transformer 7-token 输入对齐。
+
+针对 cyclic 原图的完整 equilibrium solver 是企业版升级项；OSS 用时间展开路径提供无环替代。
 </details>
 
 <details>
