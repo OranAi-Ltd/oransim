@@ -887,6 +887,73 @@ def test_tiktok_adapter_mvp():
     assert pred_2x["impressions"] < 2.0 * pred_1x["impressions"]
 
 
+def test_tiktok_agent_level_impression():
+    """TikTok agent-level simulate_impression_agents must select real agent indices."""
+    from oransim.data.creatives import make_creative
+    from oransim.data.population import generate_population
+    from oransim.platforms.tiktok import TikTokAdapter
+
+    pop = generate_population(N=800, seed=7)
+    adapter = TikTokAdapter(population=pop)
+    creative = make_creative("CR_TT_01", "新品开箱 小众设计师", duration_sec=18.0)
+
+    result = adapter.simulate_impression_agents(creative, budget_cny=30_000, rng_seed=0)
+    # Non-empty selection
+    assert len(result.agent_idx) > 0
+    # Indices within population range
+    assert int(result.agent_idx.max()) < pop.N
+    # Weights in [0, 1]
+    assert float(result.weight.max()) <= 1.0 + 1e-6
+    # TikTok-specific score channel is present
+    assert "duration_retention" in result.score_breakdown
+
+
+def test_tiktok_fyp_rl_breakout_shape():
+    """FYP RL loop produces a RecSysRLReport with the expected round layout."""
+    from oransim.data.creatives import make_creative
+    from oransim.data.population import generate_population
+    from oransim.platforms.tiktok import TikTokAdapter
+    from oransim.platforms.xhs.recsys_rl import rl_report_to_dict
+
+    pop = generate_population(N=1200, seed=11)
+    adapter = TikTokAdapter(population=pop)
+    creative = make_creative("CR_TT_02", "夏日清单 好物分享", duration_sec=22.0)
+
+    report = adapter.simulate_fyp_rl(creative, total_budget=60_000, seed=3)
+    assert len(report.rounds) > 0 and len(report.rounds) <= 6
+    # Platform-agnostic serializer accepts the TikTok report unchanged.
+    serialized = rl_report_to_dict(report)
+    assert serialized["n_rounds"] == len(report.rounds)
+    # TikTok fractions grow geometrically; later rounds reach more agents.
+    sizes = [len(r.impression_idx) for r in report.rounds]
+    assert sizes[-1] >= sizes[0]
+
+
+def test_tiktok_prs_stub_not_ready_in_oss():
+    """TikTok PRS is a deliberate stub in OSS — is_ready must be False."""
+    from oransim.platforms.tiktok import TikTokPRS
+
+    prs = TikTokPRS()
+    assert prs.is_ready() is False
+    info = prs.info()
+    assert info["loaded"] is False
+    # predict() must fall through (empty dict) rather than raise when stubbed.
+    import numpy as np
+
+    assert prs.predict(caption_emb=np.zeros(64, np.float32), author_fans=1000, niche="beauty") == {}
+
+
+def test_tiktok_adapter_agent_path_errors_without_population():
+    """Accessing world_model / rl without a Population must raise clearly."""
+    from oransim.platforms.tiktok import TikTokAdapter
+
+    adapter = TikTokAdapter()
+    import pytest
+
+    with pytest.raises(RuntimeError, match="needs a Population"):
+        _ = adapter.world_model
+
+
 def test_instagram_adapter_mvp():
     """Instagram Reels adapter + synthetic provider must fulfill the canonical contract."""
     from oransim.data.schema import CanonicalKOL

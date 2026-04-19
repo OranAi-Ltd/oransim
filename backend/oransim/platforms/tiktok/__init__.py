@@ -8,5 +8,16 @@ third-party panel (roadmap v0.5).
 
 from .adapter import TikTokAdapter, TikTokAdapterConfig
 from .providers.synthetic import TikTokSyntheticProvider
+from .prs import PRS, TikTokPRS
+from .recsys_rl import TikTokRecSysRLSimulator
+from .world_model_legacy import TikTokWorldModel
 
-__all__ = ["TikTokAdapter", "TikTokAdapterConfig", "TikTokSyntheticProvider"]
+__all__ = [
+    "PRS",
+    "TikTokAdapter",
+    "TikTokAdapterConfig",
+    "TikTokPRS",
+    "TikTokRecSysRLSimulator",
+    "TikTokSyntheticProvider",
+    "TikTokWorldModel",
+]

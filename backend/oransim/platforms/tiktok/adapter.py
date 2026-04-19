@@ -5,6 +5,15 @@ attention budget, auction-priced impressions with higher CPM variance
 than content-focused platforms like XHS. The adapter's feature profile
 reflects these characteristics.
 
+Two simulation paths are exposed:
+
+  - **Aggregate** (:meth:`simulate_impression`): point-estimate delivery
+    numbers given a creative + budget. Used by the MVP v1 predict API.
+  - **Agent-level** (:meth:`simulate_impression_agents` and
+    :meth:`simulate_fyp_rl`): per-agent impression selection + FYP
+    cold-start → breakout dynamics. Needed for counterfactual evaluation
+    and the sandbox incremental recompute path.
+
 See ``docs/en/platforms/writing-an-adapter.md`` for the design pattern;
 the XHS reference implementation in ``oransim.platforms.xhs`` is the
 canonical example to compare against.
@@ -15,9 +24,16 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from ...data.population import Population
 from ...data.schema import CanonicalKOL
 from ...world_model.budget import BudgetCurveConfig, apply_budget_curves
 from ..base import PlatformAdapter
+from .recsys_rl import TikTokRecSysRLSimulator
+from .world_model_legacy import (
+    AudienceFilter,
+    ImpressionResult,
+    TikTokWorldModel,
+)
 
 
 @dataclass
@@ -52,7 +68,7 @@ class TikTokAdapterConfig:
 
 
 class TikTokAdapter(PlatformAdapter):
-    """TikTok platform adapter — v0.2 MVP."""
+    """TikTok platform adapter — v0.2 MVP + v0.3 agent-level path."""
 
     platform_id: str = "tiktok"
 
@@ -60,9 +76,88 @@ class TikTokAdapter(PlatformAdapter):
         self,
         data_provider: Any = None,
         config: TikTokAdapterConfig | None = None,
+        population: Population | None = None,
     ):
         self.config = config or TikTokAdapterConfig()
         self.data_provider = data_provider
+        # Agent-level components are built lazily so that MVP usage
+        # (aggregate simulate_impression only) doesn't force callers to
+        # supply a Population.
+        self._population = population
+        self._world_model: TikTokWorldModel | None = None
+        self._rl: TikTokRecSysRLSimulator | None = None
+
+    # -------------------------------------------------------------- agent path
+
+    def attach_population(self, population: Population) -> None:
+        """Attach / replace the Population used by the agent-level path."""
+        self._population = population
+        self._world_model = None
+        self._rl = None
+
+    @property
+    def world_model(self) -> TikTokWorldModel:
+        if self._population is None:
+            raise RuntimeError(
+                "TikTokAdapter agent-level path needs a Population. "
+                "Call adapter.attach_population(...) first or pass "
+                "population=... to the constructor."
+            )
+        if self._world_model is None:
+            self._world_model = TikTokWorldModel(self._population)
+        return self._world_model
+
+    @property
+    def rl(self) -> TikTokRecSysRLSimulator:
+        if self._rl is None:
+            self._rl = TikTokRecSysRLSimulator(self.world_model)
+        return self._rl
+
+    def simulate_impression_agents(
+        self,
+        creative: Any,
+        budget_cny: float,
+        *,
+        audience_filter: AudienceFilter | None = None,
+        kol: Any = None,
+        rng_seed: int = 0,
+    ) -> ImpressionResult:
+        """Per-agent impression delivery under FYP scoring."""
+        return self.world_model.simulate_impression(
+            creative=creative,
+            platform="tiktok",
+            budget_cny=budget_cny,
+            audience_filter=audience_filter,
+            kol=kol,
+            rng_seed=rng_seed,
+        )
+
+    def simulate_fyp_rl(
+        self,
+        creative: Any,
+        total_budget: float,
+        *,
+        audience_filter: AudienceFilter | None = None,
+        kol: Any = None,
+        n_rounds: int = 6,
+        breakout_threshold: float = 0.028,
+        seed: int = 0,
+    ):
+        """Run the FYP cold-start → breakout loop.
+
+        Returns a ``RecSysRLReport`` — same shape as the XHS RL path, so
+        ``rl_report_to_dict`` can serialize it platform-agnostically.
+        """
+        return self.rl.simulate(
+            creative=creative,
+            platform="tiktok",
+            total_budget=total_budget,
+            audience_filter=audience_filter,
+            kol=kol,
+            n_rounds=n_rounds,
+            breakout_threshold=breakout_threshold,
+            seed=seed,
+        )
 
     # ----------------------------------------------------------- impressions
 

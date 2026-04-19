@@ -32,6 +32,18 @@ PLATFORMS: dict[str, PlatformConfig] = {
         algo_diversity=0.65,
         audience_skew={"female_boost": 1.3, "tier1_boost": 1.15},
     ),
+    # TikTok ≈ global Douyin on ByteDance's FYP stack. CPM is quoted in USD
+    # upstream but we normalize to CNY here (1 USD ≈ 7.2 CNY) so the generic
+    # budget_to_impressions helper works uniformly across adapters. The
+    # TikTokAdapterConfig keeps the USD figure for USD-denominated ad budgets.
+    "tiktok": PlatformConfig(
+        name="tiktok",
+        cpm_cny=42.0,
+        conversion_cost=3.8,
+        cold_start_days=0.4,
+        algo_diversity=0.92,
+        audience_skew={},
+    ),
 }
 
 
