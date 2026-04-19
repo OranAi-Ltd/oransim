@@ -31,7 +31,7 @@ Oransim is the **open-source reference implementation** of the OranAI causal dig
 
 - 📈 Predicted impressions / clicks / conversions / ROI with P35/P50/P65 bands
 - 🔄 Counterfactuals — `do(creative=B)` / `do(budget=x)` / `do(kol=…)` in one forward pass
-- 🗣️ 10 LLM personas reading the actual creative, returning click / skip / comment reactions
+- 🗣️ 100k LLM personas reading the actual creative, returning click / skip / comment reactions
 - 📊 14-day Hawkes diffusion curve with mid-campaign intervention rollouts, e.g. `do(mute_at_day=3)`
 - 🧭 Ranked next actions
 
