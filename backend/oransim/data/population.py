@@ -37,6 +37,24 @@ EDU_PROBS = np.array([0.42, 0.21, 0.16, 0.18, 0.03])
 OCCUPATION = ["学生", "白领", "蓝领", "个体", "公务员/教师", "自由职业", "退休", "无业"]
 OCC_PROBS = np.array([0.11, 0.25, 0.22, 0.14, 0.08, 0.06, 0.09, 0.05])
 
+# P(occupation | age_bucket) — rows align with AGE_BUCKETS, columns with
+# OCCUPATION. Replaces the previous marginal-only sampling, which let
+# 72 岁学生 / 48 岁退休 appear. 学生 concentrates in 15-24, 退休 in 55+,
+# 公务员/教师 needs 25+, etc. Rows sum to 1; marginals still approximate
+# OCC_PROBS when weighted by AGE_PROBS.
+OCC_BY_AGE = np.array(
+    [
+        # 学生  白领  蓝领  个体  公务员 自由 退休  无业
+        [0.45, 0.14, 0.16, 0.06, 0.03, 0.05, 0.00, 0.11],  # 15-24
+        [0.04, 0.40, 0.24, 0.12, 0.07, 0.06, 0.00, 0.07],  # 25-34
+        [0.01, 0.34, 0.24, 0.16, 0.10, 0.08, 0.00, 0.07],  # 35-44
+        [0.00, 0.28, 0.23, 0.18, 0.12, 0.07, 0.04, 0.08],  # 45-54
+        [0.00, 0.16, 0.15, 0.14, 0.08, 0.05, 0.36, 0.06],  # 55-64
+        [0.00, 0.04, 0.04, 0.06, 0.02, 0.03, 0.76, 0.05],  # 65+
+    ],
+    dtype=np.float64,
+)
+
 # Platform MAU penetration (QuestMobile 2024 approximate)
 # Probability of being an active user of each platform given adult population
 PLATFORM_NAMES = ["douyin", "xhs", "wechat_video", "bilibili", "kuaishou"]
@@ -112,7 +130,14 @@ def generate_population(N: int = 100_000, seed: int = 42) -> Population:
     gender_idx = _categorical(rng, GENDER_PROBS, N)
     city_idx = _categorical(rng, CITY_PROBS, N)
     edu_idx = _categorical(rng, EDU_PROBS, N)
-    occ_idx = _categorical(rng, OCC_PROBS, N)
+    # Sample occupation conditional on age bucket — prevents 72 岁学生 /
+    # 48 岁退休 artifacts that a marginal-only draw would produce.
+    occ_idx = np.empty(N, dtype=np.int8)
+    for _a in range(len(AGE_BUCKETS)):
+        _mask = age_idx == _a
+        _n = int(_mask.sum())
+        if _n:
+            occ_idx[_mask] = _categorical(rng, OCC_BY_AGE[_a], _n)
 
     # Income: correlated with city tier + education (not fully independent)
     base_income = rng.uniform(0, 1, N)

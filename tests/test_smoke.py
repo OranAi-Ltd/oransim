@@ -384,6 +384,32 @@ def test_population_generates_determistic():
     assert np.array_equal(pop_a.gender_idx, pop_b.gender_idx)
 
 
+def test_population_age_occupation_jointly_plausible():
+    """Regression: occupation is sampled conditional on age_idx so
+    implausible (age, occ) combos (72 岁学生, 48 岁退休) never occur.
+
+    Previously both were drawn from marginal distributions independently,
+    which produced ~10% biologically implausible profiles. ``OCC_BY_AGE``
+    enforces a zero in exactly the cells that shouldn't exist:
+
+      - 学生 (occ 0) must be in age bucket 0-2 (15-44)
+      - 退休 (occ 6) must be in age bucket 3-5 (45+)
+    """
+    import numpy as np
+
+    from oransim.data.population import generate_population
+
+    pop = generate_population(N=5000, seed=99)
+
+    # 学生 with age 45+ (buckets 3, 4, 5) — must be zero
+    students_old = int(np.sum((pop.occ_idx == 0) & (pop.age_idx >= 3)))
+    assert students_old == 0, f"found {students_old} 学生 aged 45+"
+
+    # 退休 with age <45 (buckets 0, 1, 2) — must be zero
+    retirees_young = int(np.sum((pop.occ_idx == 6) & (pop.age_idx < 3)))
+    assert retirees_young == 0, f"found {retirees_young} 退休 aged <45"
+
+
 def test_creative_generator():
     from oransim.data.creatives import make_creative
 
