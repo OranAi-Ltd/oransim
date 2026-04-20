@@ -113,16 +113,26 @@ class PlatformWorldModel:
             1 - cfg.algo_diversity * 0.4, 1 + cfg.algo_diversity * 0.4, size=self.pop.N
         ).astype(np.float32)
 
-        # 6. Platform audience skew (e.g. xhs female+tier1)
+        # 6. Platform audience skew — supported keys (any subset):
+        #    female_boost    · gender_idx == 0
+        #    male_boost      · gender_idx == 1
+        #    tier1_boost     · city_idx <= 1 (一线 + 新一线)
+        #    tier3_boost     · city_idx >= 2 (三四五线 + 县域)
+        #    young_boost     · age_idx <= 2  (15-44)
+        #    senior_boost    · age_idx >= 4  (55+)
+        # Any unsupported key is silently skipped.
         skew = np.ones(self.pop.N, dtype=np.float32)
-        if "female_boost" in cfg.audience_skew:
-            skew *= np.where(
-                self.pop.gender_idx == 0, cfg.audience_skew["female_boost"], 1.0
-            ).astype(np.float32)
-        if "tier1_boost" in cfg.audience_skew:
-            skew *= np.where(self.pop.city_idx <= 1, cfg.audience_skew["tier1_boost"], 1.0).astype(
-                np.float32
-            )
+        _mults = [
+            ("female_boost", self.pop.gender_idx == 0),
+            ("male_boost", self.pop.gender_idx == 1),
+            ("tier1_boost", self.pop.city_idx <= 1),
+            ("tier3_boost", self.pop.city_idx >= 2),
+            ("young_boost", self.pop.age_idx <= 2),
+            ("senior_boost", self.pop.age_idx >= 4),
+        ]
+        for key, mask in _mults:
+            if key in cfg.audience_skew:
+                skew *= np.where(mask, cfg.audience_skew[key], 1.0).astype(np.float32)
 
         final = content_score * plat_score * aud_score * kol_score * noise * skew
 
