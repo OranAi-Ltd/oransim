@@ -29,8 +29,51 @@ from .api_routers import ws as ws_router
 logger = logging.getLogger("oransim.api")
 
 
+def _check_multi_worker_state_safety() -> None:
+    """Warn on startup if the runtime is about to be sharded across multiple
+    workers. Oransim v0.2 stores the ~GB runtime state (population, agents,
+    world model, Embedding Bus indexes, brand-memory cache) in
+    process-local ``api_state`` / ``embedding_bus.BUS`` singletons. Each
+    gunicorn / uvicorn worker therefore holds its own independent copy:
+    boot time × N, no cross-worker consistency (a sandbox scenario created
+    on worker A is invisible on worker B), and memory × N.
+
+    A shared-state backend (Redis / a single "runtime" worker fronted by
+    in-process queues) is Enterprise-only in v0.2. Until it lands in OSS,
+    single-worker is the correct deployment for the OSS tier. We surface
+    a loud WARNING rather than silently letting the operator hit
+    surprising cross-request inconsistency in production.
+
+    Checked env vars: ``WEB_CONCURRENCY`` (gunicorn/uvicorn convention),
+    ``WORKERS``, ``UVICORN_WORKERS`` — the first one ≥ 2 trips the warn.
+    """
+    for var in ("WEB_CONCURRENCY", "WORKERS", "UVICORN_WORKERS"):
+        raw = os.environ.get(var)
+        if not raw:
+            continue
+        try:
+            n = int(raw)
+        except ValueError:
+            continue
+        if n >= 2:
+            logger.warning(
+                "[Oransim] %s=%d detected — the OSS runtime state is "
+                "process-local (~GB per worker, no cross-worker sync). "
+                "Expect %dx boot time, %dx memory, and inconsistent "
+                "sandbox / brand-memory / UEB state across requests. "
+                "Run a single worker in production until the shared-state "
+                "backend ships, or switch to Enterprise Edition.",
+                var,
+                n,
+                n,
+                n,
+            )
+            return
+
+
 @asynccontextmanager
 async def _lifespan(app_: FastAPI):
+    _check_multi_worker_state_safety()
     api_state.bootstrap()
     yield
 

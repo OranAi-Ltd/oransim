@@ -17,4 +17,18 @@ For v0.1.0-alpha, see the root [README.md](https://github.com/OranAi-Ltd/oransim
 | `SOUL_POOL_N` | `100` | Number of LLM persona agents |
 | `PORT` | `8001` | Backend API port |
 
+## Deployment: run a single worker
+
+Oransim v0.2 stores the runtime state (population, agents, world model,
+Embedding Bus indexes, brand-memory cache) in **process-local**
+singletons. There is no cross-worker synchronization in the OSS build.
+
+**Deploy with a single worker.** Setting `WEB_CONCURRENCY >= 2`,
+`WORKERS >= 2`, or `UVICORN_WORKERS >= 2` triggers a loud startup
+`WARNING` — every extra worker holds its own independent copy of the
+~GB runtime state, and sandbox / brand-memory / UEB state will diverge
+across requests. A shared-state Redis backend is on the Enterprise
+Edition roadmap; until it lands, single-worker is the correct choice
+for the OSS tier.
+
 See [ROADMAP.md](https://github.com/OranAi-Ltd/oransim/blob/main/ROADMAP.md) for when the full backend lands.

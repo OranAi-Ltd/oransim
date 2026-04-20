@@ -205,6 +205,74 @@ def test_demo_lightgbm_pkl_loads_and_predicts():
     assert pred > 0, f"impressions P50 prediction should be > 0, got {pred}"
 
 
+def test_multi_worker_warning_fires_when_concurrency_env_set():
+    """P2-④ regression: if WEB_CONCURRENCY (or sibling) is >= 2 the startup
+    hook must log a WARNING naming the variable, so operators don't
+    silently deploy the OSS build in a mode where sandbox / UEB state
+    diverges across workers.
+    """
+    import logging as _logging
+    import os
+
+    from oransim.api import _check_multi_worker_state_safety
+
+    for var in ("WEB_CONCURRENCY", "WORKERS", "UVICORN_WORKERS"):
+        os.environ.pop(var, None)
+    try:
+        os.environ["WEB_CONCURRENCY"] = "3"
+        logger = _logging.getLogger("oransim.api")
+        records: list[_logging.LogRecord] = []
+
+        class _Capture(_logging.Handler):
+            def emit(self, record: _logging.LogRecord) -> None:
+                records.append(record)
+
+        h = _Capture(level=_logging.WARNING)
+        logger.addHandler(h)
+        try:
+            _check_multi_worker_state_safety()
+        finally:
+            logger.removeHandler(h)
+
+        assert any(
+            r.levelno == _logging.WARNING and "WEB_CONCURRENCY" in r.getMessage() for r in records
+        ), f"no WEB_CONCURRENCY warning emitted; got {[r.getMessage() for r in records]}"
+    finally:
+        os.environ.pop("WEB_CONCURRENCY", None)
+
+
+def test_multi_worker_warning_silent_when_single_worker():
+    """Single-worker (or env var unset) must NOT emit the warning."""
+    import logging as _logging
+    import os
+
+    from oransim.api import _check_multi_worker_state_safety
+
+    for var in ("WEB_CONCURRENCY", "WORKERS", "UVICORN_WORKERS"):
+        os.environ.pop(var, None)
+    os.environ["WEB_CONCURRENCY"] = "1"
+    try:
+        logger = _logging.getLogger("oransim.api")
+        records: list[_logging.LogRecord] = []
+
+        class _Capture(_logging.Handler):
+            def emit(self, record: _logging.LogRecord) -> None:
+                records.append(record)
+
+        h = _Capture(level=_logging.WARNING)
+        logger.addHandler(h)
+        try:
+            _check_multi_worker_state_safety()
+        finally:
+            logger.removeHandler(h)
+
+        assert not any(
+            "WEB_CONCURRENCY" in r.getMessage() for r in records
+        ), "single-worker mode should not trigger the multi-worker warning"
+    finally:
+        os.environ.pop("WEB_CONCURRENCY", None)
+
+
 def test_lightgbm_load_pretrained_none_auto_resolves_or_errors_with_path():
     """P2-① regression: ``LightGBMQuantileWorldModel.load_pretrained(None)``
     must auto-resolve to ``<checkpoint_dir>/booster.pkl`` when present and
