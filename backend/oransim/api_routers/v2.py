@@ -101,6 +101,24 @@ def v2_wm_predict(req: V2WorldModelPredictRequest, model: str = "lightgbm_quanti
                 emb = embedder.embed(caption).astype(_np.float32)
                 comps = _np.asarray(blob["pca"]["components"], dtype=_np.float32)
                 mean = _np.asarray(blob["pca"]["mean"], dtype=_np.float32)
+                # Shape guard: pkl stores the raw embedding dim it was trained on
+                # (``embedding_dim_raw``, typically 768 for the hash fallback or
+                # 1536 for OpenAI ``text-embedding-3-small``). If the live
+                # embedder's output dim doesn't match, the subsequent
+                # ``(emb - mean) @ comps.T`` dies with an opaque broadcasting
+                # error. Detect the mismatch up front and return an actionable
+                # HTTP 400 explaining how to fix it.
+                expected_dim = int(blob["config"].get("embedding_dim_raw", comps.shape[1]))
+                if emb.shape[0] != expected_dim:
+                    raise HTTPException(
+                        400,
+                        f"embedding dim mismatch: live embedder produced {emb.shape[0]}-dim, "
+                        f"but demo pkl was trained on {expected_dim}-dim vectors. "
+                        f"Fix: either (1) unset OPENAI_API_KEY to force the 768-dim hash "
+                        f"fallback that matches this pkl, or (2) retrain the pkl on the "
+                        f"current embedder via `python -m backend.scripts.train_world_model_v2_pca "
+                        f"--embedder=openai` and deploy the new demo_v3 pkl.",
+                    )
                 emb_pca = (emb - mean) @ comps.T
                 scalar = _np.concatenate([scalar, emb_pca.astype(_np.float32)])
             x = scalar.reshape(1, -1)

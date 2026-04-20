@@ -612,6 +612,60 @@ def test_v2_endpoints_wired_to_registries():
     assert r.status_code == 501
 
 
+def test_v2_wm_predict_embedding_dim_mismatch_returns_400():
+    """Gap P1-5: if the live embedder dim doesn't match the pkl's trained dim,
+    the PCA projection ``(emb - mean) @ comps.T`` used to die with an opaque
+    ``ValueError: operands could not be broadcast together with shapes
+    (1536,) (768,)``. The endpoint must detect this and return an actionable
+    HTTP 400 instead.
+    """
+    import os
+
+    os.environ["POP_SIZE"] = "10000"
+    os.environ["SOUL_POOL_N"] = "5"
+    os.environ["LLM_MODE"] = "mock"
+    from pathlib import Path
+
+    import numpy as np
+    from fastapi.testclient import TestClient
+    from oransim import api
+    from oransim.runtime import real_embedder as _re
+
+    pkl_path = (
+        Path(_re.__file__).resolve().parent.parent.parent.parent
+        / "data"
+        / "models"
+        / "world_model_demo.pkl"
+    )
+    if not pkl_path.exists():
+        pytest.skip(f"demo pkl not shipped at {pkl_path}")
+
+    orig_embed = _re.RealTextEmbedder.embed
+    _re.RealTextEmbedder.embed = lambda self, text: np.zeros(1536, dtype=np.float32)
+    try:
+        c = TestClient(api.app)
+        r = c.post(
+            "/api/v2/world_model/predict?model=lightgbm_quantile",
+            json={
+                "features": {
+                    "niche": "beauty",
+                    "kol_tier": "mid",
+                    "budget": 80_000,
+                    "budget_bucket": 2,
+                    "kol_fan_count": 240_000,
+                    "kol_engagement_rate": 0.042,
+                }
+            },
+        )
+    finally:
+        _re.RealTextEmbedder.embed = orig_embed
+
+    assert r.status_code == 400
+    body = r.json()["detail"]
+    assert "embedding dim mismatch" in body
+    assert "1536" in body and "768" in body
+
+
 @pytest.mark.skipif(not _torch_available(), reason="CInA context test requires torch")
 def test_cina_in_context_path():
     """Gap 2: CausalTransformer must accept a context= argument."""
