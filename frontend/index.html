@@ -274,7 +274,7 @@
     <div id="tab-v1" style="display:none;">
       <h4 style="color:var(--accent); margin:0 0 6px; font-size:13px">Universal Embedding Bus（无限维度，越多越准）</h4>
       <div class="hint">每加一个数据源 = 注册一个 50 行 Embedder。下游所有模块自动受益。<br>
-        理论保证：generalization error ≤ 0.30 / √N，**累 4 倍数据 → 误差减半**（PAC-Bayes）</div>
+        启发式曲线：err ≈ 0.30 / √N（中心极限形状，非严格 PAC-Bayes 上界），**累 4 倍数据 → 误差减半**</div>
       <div id="ueb-stats" style="margin:8px 0;"></div>
       <div style="display:flex; gap:6px; margin:6px 0;">
         <button onclick="refreshUEB()">🔄 刷新</button>

@@ -68,7 +68,7 @@ def compare_providers_api(req: PredictRequest):
                 else "需要 use_llm=true 才能对比 OASIS"
             ),
             "math_basis": (
-                "Kish 1965 (Survey Sampling) + McAllester 1999 (PAC-Bayes): "
+                "Kish 1965 分层抽样 + 1/√N 启发式衰减曲线（非 PAC-Bayes 严格上界）: "
                 "O(√N) LLM oracles 足以无偏估计 N 规模总体"
             ),
         },

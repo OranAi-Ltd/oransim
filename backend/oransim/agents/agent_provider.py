@@ -224,7 +224,8 @@ class SLOCProvider(AgentProvider):
 
     100 LLM oracles anchor 100k-1M statistical agents via KNN-stratified
     importance weighting. Theoretical backbone: Kish 1965 survey sampling
-    + McAllester 1999 PAC-Bayes.
+    + a 1/√N heuristic decay curve (central-limit shape; not a derived
+    PAC-Bayes bound). See ``sloc.py`` for the curve target.
     """
 
     name = "sloc"

@@ -1,11 +1,17 @@
 """SLOC — Sparse LLM Oracle Calibration.
 
-Core IP of Oransim. Uses stratified sampling theory (Kish 1965) combined
-with PAC-Bayes bounds (McAllester 1999) to let O(√N) LLM oracles represent
-a population of N statistical agents.
+Core IP of Oransim. Uses stratified sampling theory (Kish 1965) plus a
+1/√N heuristic decay curve (the canonical central-limit shape, **not** a
+derived PAC-Bayes bound) to let O(√N) LLM oracles represent a population
+of N statistical agents.
 
-Theoretical guarantee:
-   | ĈSLOC − C_population | ≤ 0.30 / √N_anchors    (PAC-Bayes)
+Empirical target (curve, not a proof):
+   | ĈSLOC − C_population | ≈ 0.30 / √N_anchors
+
+The 0.30/√N shape is the target we validate against on backtests — it is
+the same curve used in the Embedding Bus scaling-law widget. A formal
+PAC-Bayes bound would require plugging in the posterior / prior KL term;
+we do not claim one.
 
 Under the hood: KNN coreset partition → per-anchor territory → log-weighted
 calibration factor. This module re-exports the implementation from

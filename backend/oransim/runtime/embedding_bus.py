@@ -385,16 +385,21 @@ class EmbeddingBus:
         }
 
     def _scaling_law(self) -> dict:
-        """Rough PAC-Bayes-style upper bound on generalization error vs N.
-        Decreases as 1/sqrt(N) — gives the 'more data → more accurate' visualization."""
+        """Heuristic 1/√N decay curve for the 'more data → more accurate'
+        visualization. NOT a derived PAC-Bayes bound — just the canonical
+        central-limit shape (error ≈ c/√N) pinned at c = 0.30 with a 0.005
+        irreducible floor. Kept for the scaling-law widget only; callers
+        that need a formal generalization bound must plug in their own."""
         n_total = sum(r.n_items_indexed for r in self._sources.values())
-        # baseline error 0.30, decays as 1/√N, irreducible floor 0.005
         err = max(0.005, 0.30 / np.sqrt(max(n_total, 1)))
         return {
             "n_total_items": n_total,
+            # Key name is kept for frontend / external-API backward compat,
+            # but the value is a heuristic curve point, not a derived bound.
             "estimated_generalization_err_upper_bound": round(float(err), 4),
             "halving_at_n": int(n_total * 4) if n_total > 0 else 0,
-            "interpretation": "上界按 PAC-Bayes 1/√N 衰减；累 4 倍数据 → 误差减半",
+            "interpretation": "启发式 1/√N 衰减曲线（非严格上界）；累 4 倍数据 → 误差减半",
+            "curve_family": "heuristic_inv_sqrt_n",
         }
 
 
