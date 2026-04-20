@@ -566,7 +566,17 @@ Third-party dependencies retain their original licenses. We are not affiliated w
 
 ## 💫 Team
 
-Built by **[OranAI Ltd.](https://oran.cn)** (橙果视界（深圳）科技有限公司). See §[Who we are](#who-we-are) above for team, funding, and company context. Contact: [`cto@orannai.com`](mailto:cto@orannai.com).
+Built by **[OranAI Ltd.](https://oran.cn)** (橙果视界（深圳）科技有限公司). See §[Who we are](#who-we-are) above for company context.
+
+### Core Maintainer
+
+**Fakong Yin (尹法空)** · CTO & Core Architect, OranAI Ltd. · [`cto@orannai.com`](mailto:cto@orannai.com) · [@OranAi-Ltd](https://github.com/OranAi-Ltd)
+
+Sole author of this repository's causal engine — 64-node Pearl SCM, per-arm counterfactual world model, causal neural Hawkes diffusion layer, Universal Embedding Bus, 8-router FastAPI backend, 5 platform adapters (XHS · TikTok · Douyin · Instagram Reels · YouTube Shorts), the LightGBM quantile baseline pipeline, and the 9-tab production frontend. End-to-end range across marketing strategy · ad-tech product · causal ML / RL / agent-based simulation · backend + data infrastructure — rare for a single engineer.
+
+Git log speaks for itself: `git log --author="Fakong Yin" --oneline | wc -l`.
+
+**Open roles** — we're hiring researchers (Causal ML · RL · agent-based simulation) and engineers (platform · data · infra). Reach out at [`cto@orannai.com`](mailto:cto@orannai.com).
 
 Contributors appear on [`CONTRIBUTORS.md`](CONTRIBUTORS.md) (auto-generated).
 

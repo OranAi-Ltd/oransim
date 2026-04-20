@@ -564,7 +564,17 @@ Apache License 2.0 —— 详见 [LICENSE](LICENSE) 和 [NOTICE](NOTICE)。
 
 ## 💫 团队
 
-由 **[OranAI Ltd.](https://oran.cn)** (橙果视界（深圳）科技有限公司) 出品。团队、融资、公司背景见上方 §[我们是谁](#我们是谁)。联系：[`cto@orannai.com`](mailto:cto@orannai.com)。
+由 **[OranAI Ltd.](https://oran.cn)** (橙果视界（深圳）科技有限公司) 出品。公司背景、融资、业务见上方 §[我们是谁](#我们是谁)。
+
+### 核心维护者
+
+**尹法空 (Fakong Yin)** · OranAI Ltd. CTO 兼核心架构师 · [`cto@orannai.com`](mailto:cto@orannai.com) · [@OranAi-Ltd](https://github.com/OranAi-Ltd)
+
+本仓库因果引擎独立作者 —— 64 节点 Pearl SCM、per-arm 反事实 world model、因果神经 Hawkes 扩散层、Universal Embedding Bus、8 路由 FastAPI 后端、5 平台 adapter（小红书 · TikTok · 抖音 · Instagram Reels · YouTube Shorts）、LightGBM quantile baseline 训练管线、9 tab 生产前端。从营销策略 · 广告产品到因果 ML / RL / agent-based 模拟，再到后端与数据基础设施，端到端跨度在单个工程师身上罕见。
+
+自证：`git log --author="Fakong Yin" --oneline | wc -l`。
+
+**招聘中** —— 研究员（因果 ML · RL · agent-based 模拟）和工程师（平台 · 数据 · 基础设施）。投递 [`cto@orannai.com`](mailto:cto@orannai.com)。
 
 贡献者名单在 [`CONTRIBUTORS.md`](CONTRIBUTORS.md)（自动生成）。
 
