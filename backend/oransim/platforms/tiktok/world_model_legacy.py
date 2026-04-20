@@ -133,7 +133,11 @@ class TikTokWorldModel(PlatformWorldModel):
         # 6. Duration retention (scalar, applied uniformly).
         retention = self._duration_retention(creative)
 
-        final = content_score * plat_score * aud_score * kol_score * noise * retention
+        # 7. Platform audience skew (DataReportal / Statista). Applying this
+        # in the FYP subclass is required — the XHS base class does the same.
+        skew = self._audience_skew_multiplier(cfg)
+
+        final = content_score * plat_score * aud_score * kol_score * noise * retention * skew
 
         total_imps = budget_to_impressions(budget_cny, platform)
         k = int(min(total_imps, self.pop.N))
