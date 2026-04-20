@@ -26,6 +26,12 @@ Per-platform sources:
                        interpolated。
   - 快手 Kuaishou:     Kuaishou 2024 Q4 公告（714.8M MAU, +3.3% YoY）
                        + Statista 2024 性别和下沉分布。
+  - Instagram, YT Shorts (placeholder, NOT point-cited):
+                       Meta FY24 + Alphabet Q4 2024 investor letters
+                       + DataReportal aggregate demographics. Values
+                       are directional placeholders so the 3-layer
+                       platform stack can boot; re-calibrate against a
+                       real panel before quoting numbers to clients.
 
 Supported keys in ``audience_skew`` (all multiplicative, centered at 1.0):
 
@@ -161,6 +167,52 @@ PLATFORMS: dict[str, PlatformConfig] = {
             "young_boost": 1.31,
             # 55+ ≈ 20 % → 20/30 ≈ 0.67
             "senior_boost": 0.67,
+        },
+    ),
+    # ------------------------------------------------------------------
+    # Global platforms (non-CN baseline). CPMs normalized to CNY
+    # (1 USD ≈ 7.2) so budget_to_impressions stays uniform. The
+    # audience_skew here is a **directional placeholder** derived from
+    # Meta/Alphabet investor-letter public talking points + DataReportal
+    # aggregate demographics — NOT a point-cited verbatim audience
+    # breakdown like XHS. Flagged below so production callers know to
+    # re-calibrate against a real panel before quoting to clients.
+    "instagram": PlatformConfig(
+        name="instagram",
+        cpm_cny=55.0,  # ~7.5 USD global avg 2024 aggregator data
+        conversion_cost=4.2,
+        cold_start_days=0.6,
+        algo_diversity=0.78,
+        audience_skew={
+            # Meta FY24 + DataReportal: global ad-audience 女 ≈ 49 %,
+            # 男 ≈ 51 %. Near-balanced; very slight male tilt directional.
+            "female_boost": 1.0,
+            "male_boost": 1.0,
+            # Global platform — CN tier not applicable. Leave at 1.0.
+            # 18-34 ≈ 60 % of ad audience (DataReportal aggregate).
+            # Implied 15-44 ≈ 75 % → 75/52 ≈ 1.44, conservative 1.35.
+            "young_boost": 1.35,
+            # 55+ ≈ 10-12 % → 11/30 ≈ 0.37, floored at 0.6.
+            "senior_boost": 0.6,
+        },
+    ),
+    "youtube_shorts": PlatformConfig(
+        name="youtube_shorts",
+        cpm_cny=28.0,  # Shorts CPMs noticeably lower than long-form YT
+        conversion_cost=5.5,
+        cold_start_days=0.8,
+        algo_diversity=0.75,
+        audience_skew={
+            # Alphabet Q4 2024 + DataReportal: YT 全站男 54 % / 女 46 %,
+            # Shorts 面板年纪略低但性别近似。Directional placeholder.
+            "female_boost": 0.94,
+            "male_boost": 1.05,
+            # Global platform — CN tier not applicable.
+            # Shorts 13-34 ≈ 65 % (aggregate from third-party panels);
+            # 15-44 ≈ 80 % → 80/52 ≈ 1.54, conservative 1.45.
+            "young_boost": 1.45,
+            # 55+ ≈ 8 % → 8/30 ≈ 0.27, floored at 0.6.
+            "senior_boost": 0.6,
         },
     ),
 }

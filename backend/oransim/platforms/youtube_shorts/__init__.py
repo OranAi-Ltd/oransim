@@ -8,9 +8,16 @@ pure-feed platforms.
 
 from .adapter import YouTubeShortsAdapter, YouTubeShortsAdapterConfig
 from .providers.synthetic import YouTubeShortsSyntheticProvider
+from .prs import PRS, YouTubeShortsPRS
+from .recsys_rl import YouTubeShortsRecSysRLSimulator
+from .world_model_legacy import YouTubeShortsWorldModel
 
 __all__ = [
+    "PRS",
     "YouTubeShortsAdapter",
     "YouTubeShortsAdapterConfig",
+    "YouTubeShortsPRS",
+    "YouTubeShortsRecSysRLSimulator",
     "YouTubeShortsSyntheticProvider",
+    "YouTubeShortsWorldModel",
 ]
