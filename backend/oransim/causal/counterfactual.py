@@ -57,23 +57,10 @@ def _amortized_abduct(
 ) -> np.ndarray:
     """Abduct per-agent latent noise u from baseline outcome.
 
-    Three modes, selectable by caller:
-
-    1. ``"reuse"`` (default) — return the sampled ``outcome.u_noise`` as-is.
-       This is Pearl's "fix U, change do(T), resample descendants" reading
-       when no external realization is available; sample-reuse, not a
-       posterior over U. Default path of ``ScenarioRunner.counterfactual``.
-
-    2. ``"shrink"`` — closed-form Bayesian shrink: pull u toward the value
-       that best explains ``observed_click`` under the simulator's logit
-       model. Requires ``observed_click``.
-
-    3. ``"learned"`` — a pre-trained amortizer MLP ``q(U | observed_click,
-       click_prob)`` fit on simulator rollouts. Uses the same forward model
-       as the simulator's generative process. Requires ``observed_click``.
-       MLP weights lazily trained once per process (~100 ms, zero external
-       deps); see :mod:`oransim.causal.abduction`. The ``sbi`` library's
-       proper normalizing-flow NPE / SNPE is an Enterprise Edition upgrade.
+    ``mode ∈ {"reuse" (default), "shrink", "learned"}``. Full mode
+    semantics + the Pearl-counterfactual motivation live in
+    :mod:`oransim.causal.abduction` — this function is the call site,
+    that module is the reference.
     """
     u = outcome.u_noise.copy()
     if observed_click is None or mode == "reuse":
