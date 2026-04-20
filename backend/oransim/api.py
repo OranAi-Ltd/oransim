@@ -57,7 +57,8 @@ def _check_multi_worker_state_safety() -> None:
             continue
         if n >= 2:
             logger.warning(
-                "[Oransim] %s=%d detected — the OSS runtime state is "
+                "[Oransim] %s=%d detected — the OSS runtime state "
+                "(api_state.* singletons + runtime.embedding_bus.BUS) is "
                 "process-local (~GB per worker, no cross-worker sync). "
                 "Expect %dx boot time, %dx memory, and inconsistent "
                 "sandbox / brand-memory / UEB state across requests. "
