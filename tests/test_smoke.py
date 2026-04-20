@@ -396,7 +396,6 @@ def test_population_age_occupation_jointly_plausible():
       - 退休 (occ 6) must be in age bucket 3-5 (45+)
     """
     import numpy as np
-
     from oransim.data.population import generate_population
 
     pop = generate_population(N=5000, seed=99)
