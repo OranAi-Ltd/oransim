@@ -1,7 +1,7 @@
 <div align="center">
 <img src="assets/wordmark.svg" alt="Oransim" width="640"/>
 
-### 商业级因果数字孪生 · 营销效果预测平台
+### 一分钱还没花，就先算清楚这次投放的回报。
 
 <p>
   <a href="https://github.com/OranAi-Ltd/oransim/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/OranAi-Ltd/oransim?color=blue"></a>
@@ -9,14 +9,14 @@
   <a href="#"><img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-blue"></a>
   <a href="https://github.com/OranAi-Ltd/oransim/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/OranAi-Ltd/oransim/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/OranAi-Ltd/oransim/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/OranAi-Ltd/oransim?style=social"></a>
-  <a href="https://oran.cn/oransim"><img alt="Website" src="https://img.shields.io/badge/website-oran.cn-FF6B35"></a>
+  <a href="https://oran.cn"><img alt="Website" src="https://img.shields.io/badge/website-oran.cn-FF6B35"></a>
 </p>
 
 <p>
   <a href="README.md">🇬🇧 English</a> · <strong>🇨🇳 中文</strong>
 </p>
 
-<p><em>推理 · 模拟 · 干预<br/>在一分钱都没花之前，预测每一个营销决定的效果。</em></p>
+<p><em>企业级因果仿真 · 面向品牌 growth 团队<br/>先看代码，再谈数据。</em></p>
 </div>
 
 ---
@@ -25,63 +25,101 @@
 <img src="assets/screenshots/hero.png" alt="Oransim · 60 秒完成带反事实推理的广告预演" width="100%"/>
 </p>
 
-## 这是什么
+**企业 CMO 专用** —— 一次投放花钱之前，先算清楚 ROI：**300 万+ 小红书真实帖 · 1 万+ KOL · 2 万+ KOC · 10 万+ 真实用户样本**，通过正规授权平台接口每日更新。跑在 **100 万+ 虚拟消费者社会**上的因果推理引擎，LLM 灵魂人格读你真实的素材给反应。因果逻辑透明，开源出来给你先审再授权数据。
 
-Oransim 是 OranAI 因果数字孪生技术栈的**开源 reference implementation** —— 架构和 `OranAI Enterprise` 生产模型同源，完整 ship 出来让研究者和工程师能读、能改、能压测每一层。给它一段素材、一个预算、一份 KOL 清单 —— ~60 秒拿到：
+*这个 OSS 仓库就是同一套因果引擎，跑在 2.1 万条 demo 语料上 —— 先上手、端到端审机制，再找 `cto@orannai.com` 开 Enterprise 数据授权。*
 
-- 📈 曝光 / 点击 / 转化 / ROI，带 P35/P50/P65 分位数区间
-- 🔄 反事实：`do(creative=B)` / `do(budget=x)` / `do(kol=…)` 一次 forward 出结果
-- 🗣️ 10 万个 LLM 人格读完真实文案后给点/跳 + 情绪 + 评论
-- 📊 14 天 Hawkes 扩散曲线 + 中途干预 rollout，如 `do(mute_at_day=3)`
-- 🧭 排好序的后续动作建议
+---
 
-v0.2 自带合成 demo 数据集（2.3 MB · 200 KOL / 2k scenarios / 100 event streams）和预训 LightGBM baseline（合成数据 R² 0.69–0.89）。git clone、pip install、配好 LLM API key 即可运行。
+## 我们是谁
 
-因果 Transformer + 因果神经 Hawkes 目前只 ship 架构 + 训练 loop + 推理代码（`pip install 'oransim[ml]'`）。**预训权重延到 [OrancBench v0.5](ROADMAP.md#v05--mid-q4-2026--q1-2027) 再发** —— 当前合成数据对 LightGBM 来说是 in-hypothesis，CT/NH 在 factual R² 上压不住它；v0.5 的 causal-native 任务（confounded treatment · CATE heterogeneity · temporal intervention）才是这俩架构能真正拉开差距的场景。
+**OranAI 橙果视界（深圳）科技有限公司** —— 深圳南山的 AI 营销公司，成立于 2024 年 5 月，已完成**数千万元人民币**融资，由[云天使基金领投，力合创投、金沙江联合资本跟投](https://36kr.com/p/3442645125141897)，与腾讯云联合共建 [AIGC 设计实验室](https://caijing.chinadaily.com.cn/a/202412/26/WS676d01b5a310b59111daaff3.html)。自研多模态模型矩阵（**Oran-VL 7B** / **Oran-XVL 72B**）驱动三条产品线 —— **PhotoG** 创意智能体 · **DataG** 洞察引擎 · **VoyaAI** 策略 copilot，服务 **70+ 企业客户**（美妆 / 快消 / 消费电子 / DTC 出海），含 Timekettle、[现代汽车 Pharos IV Best Prize 获奖合作](https://m.tech.china.com/articles/20260117/202601171798695.html)，**2025 年营收突破 2000 万**。
 
-## 为什么这不是一个模型能搞定的事
+**Oransim 就是那一套的因果引擎。** 客户问*"如果第 3 天把 KOL A 换成 KOL B 会怎样？"* —— 回答这个问题的 `do()` 算子、per-arm 反事实头、14 天 Hawkes 扩散 rollout，全在这个仓库里。我们以 Apache-2.0 协议开源，让企业买方能端到端自己审 —— **先看代码，再谈数据。**
 
-广告预测看起来像 regression，实际上里面塞了 5 个彼此无关的硬子问题。任何一个不单独建，其他的就解不好。
+<sub>媒体报道：[PR Newswire](https://www.prnewswire.com/news-releases/oranai-raises-multi-million-dollar-angel-funding-to-lead-ai-content-marketing-through-its-ai-agent-photog-302548911.html) · [亿邦动力](https://www.ebrun.com/20250520/579947.shtml) · [新浪科技](https://finance.sina.com.cn/tech/roll/2024-11-26/doc-incxkhus4289659.shtml) · [腾讯新闻](https://news.qq.com/rain/a/20250714A07JHO00) · [DoNews](https://www.donews.com/news/detail/5/3670706.html)</sub>
 
-**1. Treatment ≠ observation · 历史数据是被选择的**
-高预算 campaign 几乎总是被分给头部 KOL。问 `do(budget=5万, kol=中腰部)` 时，这个组合在训练集里一次都没出现。朴素回归会把头部 KOL 的 ROI 归因到预算上。必须有一层 loss 把表征和 treatment 解耦——这就是 balancing loss 存在的理由（HSIC / adversarial-IPTW / BCAUSS，不是学术装饰）。
+---
 
-**2. Budget 曲线是饱和非线性 + 频次疲劳**
-翻一倍预算不会翻一倍曝光；同一用户看到第 3 次同样广告，CTR 掉到 40%。线性模型外推到没见过的预算就错。Hill saturation 是 30 年 MMM 行业验证过的函数形式，不用它你就在自己编曲线（Dubé-Manchanda 2005 + Naik-Raman 2003）。
+## 它能解决什么
 
-**3. 扩散是自激点过程，不是独立时间序列**
-广告发出后 14 天曲线会出现二次 burst（转发触发）。RNN/Transformer 能拟合观察到的曲线，但回答不了「第 3 天停投后面会怎样」——这需要在时间维度上做 intervention rollout。Hawkes intensity 是唯一原生支持 `do()`-over-time 的 family（Mei-Eisner 2017 / Zuo 2020 / Geng 2022）。
+三个传统工具各解一点、但 Oransim 一套搞定的 campaign 决策：
 
-**4. MMM 做总量，不回答「A 和 B 哪个更好」**
-Robyn / LightweightMMM 那类只给总曲线，但营销决策往往是「我该换哪个 KOL」——这是 per-arm counterfactual 不是 total attribution。需要多头结构一次 forward 输出所有 treatment arm 下的 outcome（TARNet / Dragonnet 为此而生）。
+### 1. 上线前 · 算账
+> *"我有 4 个创意视频 × 3 套 KOL 组合 × 2 个预算档，哪个组合 ROI 最高？"*
 
-**5. 素材是多模态的，下游代码不能为每种模态重写**
-短视频有画面 + BGM + 字幕 + KOL 人脸；商品页有图 + 三维模型。如果 embedder 层不把所有模态映到同一向量空间，budget 曲线 / Hawkes / SCM 就得各自拟合 4 次。UEB 让下游对 modality 盲——一行不改就能吃新模态（文本已 ship；CLIP / SigLIP / I-JEPA / Whisper 排 v0.5）。
+传统做法：A/B 实际测 2 周，烧 ¥50 万才知道。**Oransim**：60 秒仿真、¥0 成本，24 种组合按 P35/P65 区间排序，挑最好的 3 个再真测。
 
-把这 5 个问题都建对，就是 Oransim。每一层不是为了叫得好听，是为了一个具体问题必须这样建。
+### 2. 投放中 · 改策略
+> *"第 3 天 CTR 没达标。能换掉 2 个 KOL、把预算给另外 3 个吗？ROI 会变多少？"*
+
+传统做法：数据团队连夜搭 dashboard。**Oransim**：`do(kol=swap_A_for_B, day=3)` 反事实 rollout 30 秒出结果，给你干预后的 14 天路径差。
+
+### 3. 复盘 · 反事实
+> *"这次 campaign ROI 翻车了。当时预算给到小红书而不是抖音，会怎样？"*
+
+传统做法：事后归因，结论含糊。**Oransim**：loadloaded 实际数据 + `do(platform_alloc={xhs: 1.0})`，在同一个 agent 群体上跑出反事实 ROI 曲线，明确知道"当时换了会怎样"。
+
+三个决策跑在同一个引擎上。下面讲它怎么搭的、凭什么信。
+
+---
+
+## 为什么现有工具答不了这三个问题
+
+每个营销智能工具都只答了一部分。没有一个能在同一套数据上答齐这三问：
+
+| 3 个 CMO 问题 | 现有工具在做什么 | 缺什么 |
+|---|---|---|
+| **上线前**在 24 种 creative × KOL × 预算组合里排序 | 传统 **Marketing Mix Modeler** 拟合总收入曲线 —— 每期一个总量数字 | 不告诉你**哪个组合** —— MMM 给总量，不给 per-arm 反事实 |
+| **投放中**换一个 KOL 会怎样？ | **CDP（客户数据平台）**只报已发生的 —— 点击漏斗、留存分层 | 不能在 `do()` 下向前 roll —— DMP 是观察性的、不是因果的 |
+| **复盘**如果当时换了平台预算分配会怎样？ | **黑盒预测器**（AutoML / LLM "预测 ROI"）给你一个数字，没推导 | 没法 audit 推理 —— SHAP 图 ≠ 因果图 |
+
+Oransim 就在这个缺口上：**per-arm 反事实**（上线前排序）· **时间维度的 `do()`-rollout**（投放中换策略）· **可审的因果图**（复盘归因）。一个引擎，三个决策。
+
+---
+
+## 凭什么信它 · 三种信号，选你 stakeholder 在意的那个
+
+### 🔬 机制 · 自己审代码
+
+你看的这个 OSS 仓库就是**完整的因果引擎**，不是营销 demo。git clone、在自己场景上跑、把任意一个预测追溯到 64 节点因果图里哪个 agent 决策 + 哪段 budget 曲线算出来的。不是"信我们这是 ML"—— 每个预测都能拆开看。
+
+```bash
+git clone https://github.com/OranAi-Ltd/oransim.git && cd oransim
+pip install -e '.[dev]' && python -m uvicorn oransim.api:app --port 8001 &
+curl http://localhost:8001/api/graph/inspect   # 因果图的 JSON 表示
+```
+
+### 📊 数据 · Enterprise 授权能拿到的
+
+OSS 附带 2.1 万帖参考语料 —— 够验证机制，不够跑生产 campaign。Enterprise Edition 跑在持续更新的授权数据面板上：
+
+| 数据资产 | 规模 | 来源 |
+|---|---|---|
+| 小红书帖子 | **300 万+**，每日刷新 | 正规授权平台接口 + 自研爬虫 |
+| KOL 档案 | **1 万+**，覆盖 **15 个赛道** —— 美妆 · 护肤 · 穿搭 · 3C · 食饮 · 母婴 · 家居 · 汽车 · 汽车后市场 · 健身 · 理财 · 奢品 · 宠物 · 医美 · 旅行 | 头部 + 腰部，带粉丝画像 |
+| KOC 档案 | **2 万+**，腰部影响力（1k-5w 粉），近 30 天活跃 | 主动招募 + 平台信号 |
+| 真实用户样本 | **10 万+** 小红书认证用户，按月调研 | 主动招募 |
+
+*联系 [`cto@orannai.com`](mailto:cto@orannai.com?subject=Oransim%20Enterprise%20数据授权) 开通 Enterprise 数据访问。*
+
+### 📚 研究 · 12 年技术谱系支撑每一层
+
+Oransim 不是"拍脑袋 LLM"—— 每层都追溯到 2010–2024 同行评议文献：
 
 <details>
-<summary>每层对应的架构 + 研究谱系（点开展开）</summary>
+<summary>架构 + 研究谱系（点开展开）</summary>
 
-- **问题 1 · Causal Transformer World Model**（6-layer · 代码在 [`backend/oransim/world_model/transformer.py`](backend/oransim/world_model/transformer.py)）
-  - 平衡损失：HSIC (Gretton 2005) · adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
-  - per-arm 反事实头：TARNet (Shalit ICML 2017) · Dragonnet (Shi NeurIPS 2019)
-  - in-context 摊销：CInA (Arik & Pfister NeurIPS 2023)
-- **问题 2 · 预算曲线**（`world_model/budget.py`）：Hill 饱和 (Dubé & Manchanda 2005) + 频次疲劳 (Naik & Raman 2003)
-- **问题 3 · Causal Neural Hawkes Process**（CNHP · 代码在 [`backend/oransim/diffusion/neural_hawkes.py`](backend/oransim/diffusion/neural_hawkes.py)）
-  - 连续时间 neural intensity：Neural Hawkes Process (Mei & Eisner NeurIPS 2017)
-  - Transformer encoder：Transformer Hawkes (Zuo ICML 2020)
-  - counterfactual rollout：counterfactual TPP (Geng NeurIPS 2022)
-  - 采样 + 训练：Intensity-free (Shchur ICLR 2020) · MC compensator (Chen ICLR 2021) · Ogata 1981 thinning
-- **问题 4 · per-arm counterfactual head**（和问题 1 的 CT 共享多头结构）：TARNet / Dragonnet 一次 forward 出所有 arm
-- **问题 5 · Universal Embedding Bus (UEB)**：modality-generic registry；文本当前走 OpenAI-compat，多模态（CLIP / Qwen-VL / SigLIP / I-JEPA / Whisper / CLAP）v0.5
-- **SCM**（`causal/scm.py` · `causal/counterfactual.py`）：Pearl 三步（溯因 → 干预 → 预测），64 节点 / 117 边，含话语 + 级联 mediator (Sunstein 2017 · Bikhchandani 1992)
-- **Agent 人口池**（`data/population.py` · `data/synthesizers/`）：IPF / Deming-Stephan 1940 baseline；Bayesian Network / CTGAN / TabDDPM 变体在路线图
-- **LightGBM quantile baseline**（`world_model/lightgbm_quantile.py`）：P35/P50/P65 三个分位数回归器，亚毫秒推理，作为 CT/NH 的 ablation 对照
+- **Per-arm 反事实头** —— TARNet (Shalit ICML 2017) · Dragonnet (Shi NeurIPS 2019)
+- **表征平衡损失** —— HSIC (Gretton 2005) · adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
+- **In-context 摊销** —— CInA (Arik & Pfister NeurIPS 2023)
+- **因果神经 Hawkes 过程** —— Mei & Eisner NeurIPS 2017 + Zuo ICML 2020 + Geng NeurIPS 2022 counterfactual TPP
+- **预算曲线** —— Hill 饱和 (Dubé & Manchanda 2005) + 频次疲劳 (Naik & Raman 2003)
+- **SCM** —— Pearl 3 步（溯因 → 干预 → 预测），64 节点 / 117 边，含话语 + 级联 mediator (Sunstein 2017 · Bikhchandani 1992)
+- **Agent 人口** —— IPF / Deming-Stephan 1940 baseline
 
+详见 `backend/oransim/{world_model,diffusion,causal}/` —— 每个文件内嵌 citations。
 </details>
-
-> 🏢 **OranAI Enterprise Edition** —— OSS 是合成数据上的 reference implementation。商业版（Enterprise Edition）在此之上加：真实面板 KOL / 笔记索引、SLA-backed 托管推理、on-premise 私有部署、垂类专属校准（美妆 / 服装 / 3C / 食饮 / 奢品 / 汽车）。联系 `cto@orannai.com` 试点。能力对照见 §[企业版](#enterprise)。
 
 ---
 
@@ -158,35 +196,6 @@ python -m uvicorn oransim.api:app --port 8001 &
 </td>
 </tr>
 </table>
-
----
-
-## ✨ 为什么选 Oransim
-
-|  | 传统分析工具 | AutoML / 黑盒预测 | **Oransim** |
-|---|---|---|---|
-| **能回答「为什么这个预测变了？」** | 部分（规则追踪） | ❌ 不透明（最多 SHAP） | ✅ 每个预测都能沿因果图、per-agent 推理链、注意力路径溯源 |
-| **能回答「如果换种做法会怎样？」** | ❌ 从头再跑一遍 | ❌ 模型不知道 | ✅ 原生反事实头——`do(创意=B)` 一次 forward 直接出结果 |
-| **能看单个用户反应** | 仅聚合 | 仅聚合 | ✅ 按 POP_SIZE 扩展的虚拟消费者池 + 10k 个 LLM 人格读完**你的**真实文案 |
-| **14 天扩散 + 中途干预预测** | 线性衰减 | 通用时序模型 | ✅ 自激点过程，支持「第 3 天停投会怎样」这类问题 |
-| **真实预算曲线** | ❌ 线性：2× 预算 = 2× 效果 | ❌ 同 | ✅ 递减收益 + 频次疲劳（贴合真实营销经济学） |
-| **消除虚假相关** | ❌ | ❌ | ✅ 表征平衡损失，把学到的表征与 treatment 分配解耦 |
-| **新 campaign 不用重训** | ❌ 从头分析 | ❌ 每个场景重训 | ✅ In-context 摊销——推理时条件依赖你的历史 campaign |
-| **多平台** | 单平台 | 单平台 | ✅ 5 个 adapter（小红书 · TikTok · IG · YouTube · 抖音），两轴可扩展 |
-| **成本** | 按位 license 费 | 按次 API token 费 | ✅ Apache-2.0 · 自部署 · 免费 |
-
-<details>
-<summary>每一行对应的技术文献</summary>
-
-- *为什么解释*：因果图路径追踪（64 节点、117 边，含长周期反馈回路，不是严格 DAG — 见[§因果图](#causal-graph)）+ per-head attention + agent 推理链
-- *反事实头*：TARNet (Shalit ICML 2017)、Dragonnet (Shi NeurIPS 2019)；Pearl 三步：溯因 → 干预 → 预测
-- *LLM 人格*：取前 10k 显著 agent 升级为 LLM 驱动人格（Park et al. 2023 Generative Agents）
-- *14 天扩散*：因果神经 Hawkes (Mei & Eisner 2017 + Zuo ICML 2020 + Geng NeurIPS 2022 counterfactual TPP)
-- *预算曲线*：Hill 饱和 (Dubé & Manchanda 2005) + 频次疲劳 (Naik & Raman 2003)
-- *表征平衡*：HSIC (Gretton 2005) 或 adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
-- *In-context 摊销*：CInA (Arik & Pfister NeurIPS 2023)
-
-</details>
 
 ---
 
@@ -477,18 +486,37 @@ Phase 1 基线在 **10 万条合成数据**上训练 —— 详见 [`data/models
 
 ---
 
-## 🏢 OranAI 付费版
+## 🏢 OranAI Enterprise Edition
 
-开源版用合成数据保证透明可复现。**OranAI Enterprise** 提供：
+你看的这个 OSS 是**因果引擎**。Enterprise Edition 是**生产级版本** —— 真实数据面板 · SLA 托管推理 · 垂直校准 · 全程陪跑上线。
 
-- 📊 **真实训练数据** —— 持续更新 100 万+ 真实 campaign，覆盖美妆 / 服装 / 3C / 食饮 / 奢品 / 汽车
-- ⚡ **SLA 托管推理** —— 99.9% 可用性，秒级响应
-- 🎯 **垂类世界模型** —— 美妆 / 服装 / 3C / 食饮垂直校准
-- 🤝 **白手套上线支持** —— 自定义 adapter 开发 / 集成 / 培训
-- 🔒 **私有化部署** —— SOC 2 / ISO 27001 / GDPR 合规路径
-- 🎓 **托管式模型更新** —— 平台演进时零停机换模型
+### 能力对照
 
-**联系：** `cto@orannai.com` · [预约 demo](mailto:cto@orannai.com?subject=Oransim%20Enterprise%20Demo)
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **因果引擎** | ✅ Apache-2.0，完整源码 | ✅ 同一引擎 |
+| **数据面板** | 2.1 万条 demo 小红书帖 + 3 千 KOL | **300 万+ 帖 · 1 万+ KOL · 2 万+ KOC · 10 万+ 真实用户样本**，每日刷新 |
+| **垂类校准** | 通用先验 | **10+ 垂类** —— 美妆 · 3C · 汽车 · 奢品 · 医美 · ... 每个垂类独立的粉丝画像 + CPM 曲线校准 |
+| **LLM 灵魂 agent** | 文本 LLM，用你自己 API key | 全多模态（图 + 视频 + 音频），驱动 Oran-VL 7B / Oran-XVL 72B |
+| **托管推理** | 自部署 | 99.9% SLA · 秒级响应 · 全球加速 |
+| **部署形态** | 本地 / 你自己的云 | 托管 · 私有化 · 混合 |
+| **合规** | — | SOC 2 / ISO 27001 合规路径 · GDPR · 中国《个人信息保护法》 |
+| **上线支持** | 自服务文档 | 白手套 —— 定制 adapter / 集成 / 培训 |
+| **模型更新** | 社区节奏 | 托管式 —— 平台演进时零停机刷新 |
+
+### 典型试点（2 周 · ¥0 承诺）
+
+1. **Day 1-3 · 范围对齐** —— 从你正在跑的 campaign 里选 2-3 个作为测试场景
+2. **Day 4-10 · 仿真推演** —— 你提供 创意 + KOL 短名单 + 历史 KPI → 我们跑反事实仿真 → 给出排序推荐
+3. **Day 11-14 · 实盘验证** —— 你执行其中一条推荐上市 → 我们对比上线前预测 vs 实际 → 出校准报告
+
+**退出条件**：我们的上线前 P35/P65 区间**覆盖真实 KPI ≥ 80%**。不达标，试点结束，不收费。达标，再谈定价。
+
+### 联系
+
+- **预约试点**：[`cto@orannai.com`](mailto:cto@orannai.com?subject=Oransim%20Enterprise%20试点) · 通常 24h 内回复
+- **投资 / 合作**：同一邮箱，主题标记 `[Investor]` 或 `[Partner]`
+- **媒体**：同一邮箱，主题标记 `[Press]`
 
 ---
 
@@ -511,8 +539,8 @@ Phase 1 基线在 **10 万条合成数据**上训练 —— 详见 [`data/models
 
 ```bibtex
 @software{oransim2026,
-  author       = {Yin, Fakong and {Oransim contributors}},
-  title        = {Oransim: Causal Digital Twin for Marketing at Scale},
+  author       = {{OranAI Ltd. and Oransim contributors}},
+  title        = {Oransim: Causal Simulation for Enterprise Growth Teams},
   version      = {0.2.0-alpha},
   date         = {2026-04-18},
   url          = {https://github.com/OranAi-Ltd/oransim},
@@ -536,12 +564,7 @@ Apache License 2.0 —— 详见 [LICENSE](LICENSE) 和 [NOTICE](NOTICE)。
 
 ## 💫 团队
 
-Oransim 由 **[OranAI Ltd.](https://oran.cn)** (橙果视界（深圳）科技有限公司) 出品。
-
-**核心维护者**
-- **尹法空（Yin Fakong）** —— CTO · 架构师 · [cto@orannai.com](mailto:cto@orannai.com) · [@OranAi-Ltd](https://github.com/OranAi-Ltd)
-
-**招聘中** —— 我们在招研究员（Causal ML / RL / 基于 Agent 的模拟）和工程师（平台 / 基础设施），欢迎投递 [cto@orannai.com](mailto:cto@orannai.com)。
+由 **[OranAI Ltd.](https://oran.cn)** (橙果视界（深圳）科技有限公司) 出品。团队、融资、公司背景见上方 §[我们是谁](#我们是谁)。联系：[`cto@orannai.com`](mailto:cto@orannai.com)。
 
 贡献者名单在 [`CONTRIBUTORS.md`](CONTRIBUTORS.md)（自动生成）。
 

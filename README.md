@@ -1,7 +1,7 @@
 <div align="center">
 <img src="assets/wordmark.svg" alt="Oransim" width="640"/>
 
-### Causal Digital Twin for Marketing at Scale
+### Predict your next campaign's ROI before spending a dollar.
 
 <p>
   <a href="https://github.com/OranAi-Ltd/oransim/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/OranAi-Ltd/oransim?color=blue"></a>
@@ -9,14 +9,14 @@
   <a href="#"><img alt="Python" src="https://img.shields.io/badge/python-3.10%2B-blue"></a>
   <a href="https://github.com/OranAi-Ltd/oransim/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/OranAi-Ltd/oransim/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/OranAi-Ltd/oransim/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/OranAi-Ltd/oransim?style=social"></a>
-  <a href="https://oran.cn/oransim"><img alt="Website" src="https://img.shields.io/badge/website-oran.cn-FF6B35"></a>
+  <a href="https://oran.cn"><img alt="Website" src="https://img.shields.io/badge/website-oran.cn-FF6B35"></a>
 </p>
 
 <p>
   <strong>🇬🇧 English</strong> · <a href="README.zh-CN.md">🇨🇳 中文</a>
 </p>
 
-<p><em>Reason. Simulate. Intervene.<br/>Predict any marketing decision before you spend a dollar.</em></p>
+<p><em>Causal simulation for enterprise growth teams.<br/>Audit the engine, license the data.</em></p>
 </div>
 
 ---
@@ -25,58 +25,101 @@
 <img src="assets/screenshots/hero.png" alt="Oransim hero · 60-second prediction with counterfactual reasoning over a agent-based society" width="100%"/>
 </p>
 
-## What it does
+**For enterprise CMOs** — predict your next campaign's ROI before spending: **3M+ indexed 小红书 notes · 10,000+ KOLs · 20,000+ KOCs · 100,000+ consumer panel**, refreshed daily via licensed platform APIs. Counterfactual reasoning engine running on a **1M+ virtual consumer society** with LLM-backed soul personas reading your actual creatives. Transparent causal logic, open-sourced so you can audit it before licensing data access.
 
-Oransim is the **open-source reference implementation** of the OranAI causal digital-twin stack for social-media ad campaigns — same architecture as the production `OranAI Enterprise` models, shipped in full so researchers and engineers can read, extend, and pressure-test every layer. Give it a creative, a budget, and a KOL list — in ~60 seconds you get:
+*The OSS repo you're reading is the same causal engine running on a 21k-note demo corpus — try it, audit the mechanism end-to-end, then contact `cto@orannai.com` for Enterprise data access.*
 
-- 📈 Predicted impressions / clicks / conversions / ROI with P35/P50/P65 bands
-- 🔄 Counterfactuals — `do(creative=B)` / `do(budget=x)` / `do(kol=…)` in one forward pass
-- 🗣️ 100k LLM personas reading the actual creative, returning click / skip / comment reactions
-- 📊 14-day Hawkes diffusion curve with mid-campaign intervention rollouts, e.g. `do(mute_at_day=3)`
-- 🧭 Ranked next actions
+---
 
-v0.2 ships a synthetic demo corpus (2.3 MB — 200 KOLs, 2k scenarios, 100 event streams) and a pretrained LightGBM baseline (R² 0.69–0.89 on synthetic eval). Clone, install, set an LLM API key, run.
+## Who we are
 
-Causal Transformer + Causal Neural Hawkes ship architecture + training loop + inference code only (`pip install 'oransim[ml]'`). **Pretrained weights land with [OrancBench v0.5](ROADMAP.md#v05--mid-q4-2026--q1-2027)** — the current synthetic corpus sits inside the LightGBM baseline's hypothesis class, so CT/NH factual R² wouldn't beat it. The v0.5 causal-native tasks (confounded treatment · CATE heterogeneity · temporal intervention) are where CT/NH structurally win, and that's when weights go out.
+**OranAI Ltd. (橙果视界（深圳）科技有限公司)** — a Shenzhen-based AI marketing company founded May 2024, closed a **multi-million-dollar angel+ round** led by [Cloud Angels Fund, with participation from Leaguer Venture Capital and Jinshajiang United Capital](https://36kr.com/p/3442645125141897). We co-operate the [Tencent Cloud × OranAI AIGC Design Lab](https://caijing.chinadaily.com.cn/a/202412/26/WS676d01b5a310b59111daaff3.html), run our in-house multimodal matrix (**Oran-VL 7B** / **Oran-XVL 72B**) behind three products — **PhotoG** (creative agent) · **DataG** (insight engine) · **VoyaAI** (strategy co-pilot) — and serve **70+ enterprise clients** across beauty, FMCG, consumer electronics, and DTC outbound — including [Timekettle and Hyundai Motor (Pharos IV Best Prize)](https://m.tech.china.com/articles/20260117/202601171798695.html), with 2025 revenue crossing **RMB 20M**.
 
-## Why this isn't one model
+**Oransim is the causal engine inside that stack.** When a CMO using OranAI asks *"what if we swapped KOL A for B on day 3 of this campaign?"* — the `do()`-operator, the per-arm counterfactual heads, and the 14-day Hawkes rollout that answer the question all live in this repository. We open-sourced it under Apache-2.0 so enterprise buyers can audit the reasoning end-to-end — **trust the engine, then license the data panel.**
 
-Ad prediction looks like regression, but it's actually 5 unrelated hard subproblems stacked on top of each other. Skip any one and the others don't hold.
+<sub>As featured in: [PR Newswire](https://www.prnewswire.com/news-releases/oranai-raises-multi-million-dollar-angel-funding-to-lead-ai-content-marketing-through-its-ai-agent-photog-302548911.html) · [亿邦动力](https://www.ebrun.com/20250520/579947.shtml) · [新浪科技](https://finance.sina.com.cn/tech/roll/2024-11-26/doc-incxkhus4289659.shtml) · [腾讯新闻](https://news.qq.com/rain/a/20250714A07JHO00) · [DoNews](https://www.donews.com/news/detail/5/3670706.html)</sub>
 
-**1. Treatment ≠ observation · historical data is selected, not sampled.** High-budget campaigns almost always go to tier-1 KOLs. When you ask `do(budget=50k, kol=mid-tier)`, that combination appears zero times in training. Naive regression credits the ROI to budget when the real driver was KOL quality. You need a loss that decouples the learned representation from treatment assignment — that's why HSIC / adversarial-IPTW / BCAUSS exist, not academic flavor.
+---
 
-**2. Budget curves are saturated and fatigue-driven.** Doubling spend doesn't double impressions; a user's CTR drops to 40% on their 3rd exposure to the same creative. Linear models extrapolate wrong to budgets they never saw. Hill saturation is 30 years of MMM industry-validated functional form — without it you're inventing your own curve (Dubé-Manchanda 2005 + Naik-Raman 2003).
+## What it solves
 
-**3. Diffusion is a self-exciting point process, not an independent time series.** A 14-day engagement curve typically shows a second burst from reposts. RNN/Transformer can fit observed curves but can't answer "what if we stopped boosting on day 3" — that needs intervention rollout *inside* the temporal model. Hawkes intensity is the only family with native `do()`-over-time support (Mei-Eisner 2017 + Zuo 2020 + Geng 2022).
+Three campaign decisions that break traditional tools but collapse to one Oransim workflow:
 
-**4. MMM answers totals; decisions answer "A vs B".** Robyn / Meta LightweightMMM give you the total revenue curve. But the actual marketing question is usually "should I swap KOL A for B" — that's per-arm counterfactual, not total attribution. You need multi-head structure that emits all treatment-arm outcomes in a single forward pass (TARNet / Dragonnet are built for exactly this).
+### 1. Pre-launch · 上线前算账
+> *"I have 4 creative videos × 3 KOL shortlists × 2 budget tiers — which combination has the highest ROI?"*
 
-**5. Creatives are multi-modal; the rest of the stack shouldn't care.** Short videos have frames + BGM + subtitles + KOL faces; product pages have images + 3D models. If the embedder layer doesn't project every modality into the same vector space, the budget curve / Hawkes / SCM each need to refit for each new modality. UEB's job is to make downstream code modality-blind — you add a new input, zero downstream changes (text shipped; CLIP / SigLIP / I-JEPA / Whisper on v0.5).
+Traditional approach: A/B test for 2 weeks, burn ¥500k to learn. **Oransim**: 60-second simulation on ¥0, rank all 24 combinations with P35/P65 confidence bands, pick top 3 to actually test.
 
-Get all 5 right and you have Oransim. Each layer isn't there to sound good — each one is the only answer to one specific question the others can't handle.
+### 2. Mid-campaign · 投放中改策略
+> *"Day 3 CTR is below target. Can I swap out 2 KOLs and reallocate budget to 3 others — and how much ROI shifts?"*
+
+Traditional approach: data team rebuilds a dashboard overnight. **Oransim**: `do(kol=swap_A_for_B, day=3)` counterfactual rollout in 30 seconds — shows the 14-day path diff with the intervention applied.
+
+### 3. Post-mortem · 复盘反事实
+> *"This campaign underperformed. If we'd spent on 小红书 instead of 抖音, what would we have gotten?"*
+
+Traditional approach: retrospective analysis, ambiguous conclusion. **Oransim**: load actuals + `do(platform_alloc={xhs: 1.0})`, get the counterfactual ROI curve over the same agent population — confident attribution of what would have happened.
+
+All three run on the same engine. Below is how it's built and why you can trust it.
+
+---
+
+## Why current tools can't answer these three questions
+
+Every marketing intelligence tool answers part of the question. None answer all three campaign decisions above on the same data:
+
+| The 3 CMO questions | What existing tools do | What's missing |
+|---|---|---|
+| **Pre-launch ROI ranking** for 24 creative × KOL × budget combinations | Classical **Marketing Mix Modelers** fit the total revenue curve — one number per period | Can't tell you *which combination*: MMM is a total, not a per-arm counterfactual |
+| **Mid-campaign intervention** — what if I swap a KOL on day 3? | **Customer Data Platforms** report what already happened — click funnel, cohort retention | Can't roll forward under a `do()` — DMPs are observational, not causal |
+| **Post-mortem counterfactual** — what if we'd spent on 小红书 instead of 抖音? | **Black-box predictors** (AutoML, LLM "predict ROI") output a number with no derivation | Can't audit the reasoning — SHAP plots ≠ a causal graph |
+
+Oransim sits in the gap: **per-arm counterfactuals** (pre-launch ranking) · **temporal `do()`-rollout** (mid-campaign swap) · **transparent causal graph** (post-mortem audit). One engine, three decisions.
+
+---
+
+## Why you can trust it — three signals, pick what your stakeholders care about
+
+### 🔬 Mechanism · audit the engine yourself
+
+The OSS repo you're reading is the **full causal engine**, not a marketing demo. Clone it, run it on your scenarios, trace any prediction back through the 64-node causal graph to which agent decision and which budget-curve calculation produced it. No "trust us, it's ML" — every prediction is decomposable.
+
+```bash
+git clone https://github.com/OranAi-Ltd/oransim.git && cd oransim
+pip install -e '.[dev]' && python -m uvicorn oransim.api:app --port 8001 &
+curl http://localhost:8001/api/graph/inspect   # the causal graph, in JSON
+```
+
+### 📊 Data · what Enterprise licenses get you beyond the OSS demo
+
+The OSS ships a 21k-note reference corpus — enough to validate the mechanism, not enough to power production campaigns. Enterprise Edition runs on a continuously refreshed licensed panel:
+
+| Asset | Scale | Source |
+|---|---|---|
+| 小红书 notes | **3,000,000+**, daily refresh | Licensed platform APIs + in-house crawlers |
+| KOL profiles | **10,000+** across 15 verticals — 美妆 · 护肤 · 穿搭 · 3C · 食饮 · 母婴 · 家居 · 汽车 · 汽车后市场 · 健身 · 理财 · 奢品 · 宠物 · 医美 · 旅行 | Top-tier + mid-tier, fan-profile metadata |
+| KOC profiles | **20,000+**, waist-layer (1k–50k fans), active within 30 days | Opt-in recruitment + platform signal |
+| Consumer panel | **100,000+** verified 小红书 users, surveyed monthly | Opt-in recruitment |
+
+*Contact [`cto@orannai.com`](mailto:cto@orannai.com?subject=Oransim%20Enterprise%20Data%20Access) for Enterprise data access.*
+
+### 📚 Research · 12-year tech lineage behind every layer
+
+Oransim isn't a "vibes LLM" — every layer traces to 2010–2024 peer-reviewed literature:
 
 <details>
-<summary>Architecture + research lineage per layer (click to expand)</summary>
+<summary>Architecture + research lineage (click to expand)</summary>
 
-- **Problem 1 · Causal Transformer World Model** (6-layer · code in [`backend/oransim/world_model/transformer.py`](backend/oransim/world_model/transformer.py))
-  - balancing loss: HSIC (Gretton 2005) · adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
-  - per-arm counterfactual heads: TARNet (Shalit ICML 2017) · Dragonnet (Shi NeurIPS 2019)
-  - in-context amortization: CInA (Arik & Pfister NeurIPS 2023)
-- **Problem 2 · budget curves** (`world_model/budget.py`): Hill saturation (Dubé & Manchanda 2005) + frequency fatigue (Naik & Raman 2003)
-- **Problem 3 · Causal Neural Hawkes Process** (CNHP · code in [`backend/oransim/diffusion/neural_hawkes.py`](backend/oransim/diffusion/neural_hawkes.py))
-  - continuous-time neural intensity: Neural Hawkes Process (Mei & Eisner NeurIPS 2017)
-  - Transformer encoder: Transformer Hawkes (Zuo ICML 2020)
-  - counterfactual rollout: counterfactual TPP (Geng NeurIPS 2022)
-  - sampling + training: Intensity-free (Shchur ICLR 2020) · MC compensator (Chen ICLR 2021) · Ogata 1981 thinning
-- **Problem 4 · per-arm counterfactual head** (shares multi-head structure with the CT in Problem 1): TARNet / Dragonnet emit all treatment arms in a single forward pass
-- **Problem 5 · Universal Embedding Bus (UEB)**: modality-generic registry; text via OpenAI-compat today, multi-modal (CLIP / Qwen-VL / SigLIP / I-JEPA / Whisper / CLAP) on v0.5
-- **SCM** (`causal/scm.py` · `causal/counterfactual.py`): Pearl 3-step (abduction → action → prediction), 64 nodes / 117 edges, discourse + cascade mediators (Sunstein 2017 · Bikhchandani 1992)
-- **Agent population** (`data/population.py` · `data/synthesizers/`): IPF / Deming-Stephan 1940 baseline; Bayesian-network / CTGAN / TabDDPM variants on roadmap
-- **LightGBM Quantile baseline** (`world_model/lightgbm_quantile.py`): P35/P50/P65 quantile regressors, sub-ms inference, ablation counterpart to CT/NH
+- **Per-arm counterfactual heads** — TARNet (Shalit ICML 2017) · Dragonnet (Shi NeurIPS 2019)
+- **Representation balancing** — HSIC (Gretton 2005) · adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
+- **In-context amortization** — CInA (Arik & Pfister NeurIPS 2023)
+- **Causal Neural Hawkes Process** — Mei & Eisner NeurIPS 2017 + Zuo ICML 2020 + Geng NeurIPS 2022 counterfactual TPP
+- **Budget curves** — Hill saturation (Dubé & Manchanda 2005) + frequency fatigue (Naik & Raman 2003)
+- **SCM** — Pearl 3-step (abduction → action → prediction), 64 nodes / 117 edges, discourse + cascade mediators (Sunstein 2017 · Bikhchandani 1992)
+- **Agent population** — IPF / Deming-Stephan 1940 baseline
 
+See `backend/oransim/{world_model,diffusion,causal}/` — every file has inline citations.
 </details>
-
-> 🏢 **OranAI Enterprise Edition** — this OSS release is a reference implementation on synthetic data. The commercial Enterprise Edition extends it with a real-panel KOL/notes index, hosted inference with SLA, on-premise deployment, and vertical-specific calibration (beauty / fashion / 3C / food-and-beverage / luxury / automotive). Contact `cto@orannai.com` for pilot. See §[Enterprise](#enterprise) below for the capability matrix and fair-use boundary.
 
 ---
 
@@ -153,35 +196,6 @@ The frontend shows a yellow banner at the top whenever the backend is still in m
 </td>
 </tr>
 </table>
-
----
-
-## ✨ Why Oransim
-
-|  | Traditional Analytics | AutoML / Black-Box Predictors | **Oransim** |
-|---|---|---|---|
-| **Answers "why did the prediction change?"** | Partial — rule trace | ❌ Opaque (SHAP at best) | ✅ Every prediction traces back through the causal graph, per-agent reasoning, and attention paths |
-| **Answers "what if I'd done X instead?"** | ❌ Re-run from scratch | ❌ Model doesn't know | ✅ Native counterfactual heads — ask `do(creative=B)` in one forward pass |
-| **Sees individual user reactions** | Aggregates only | Aggregates only | ✅ scalable simulated consumers + 10k LLM personas reading your actual copy |
-| **Predicts 14-day diffusion + intervention** | Linear decay | Generic time-series | ✅ Self-exciting point process that handles "what if we stopped boosting on day 3" |
-| **Realistic budget curves** | ❌ Linear = 2× budget = 2× results | ❌ Same | ✅ Diminishing returns + frequency fatigue (real-world marketing economics) |
-| **Removes spurious correlations** | ❌ | ❌ | ✅ Representation balancing loss decorrelates learned features from treatment assignment |
-| **Transfers to a new campaign without retraining** | ❌ Redo the analysis | ❌ Per-problem retrain | ✅ In-context amortization — model conditions on your prior campaigns at inference time |
-| **Multiple platforms** | Single platform | Single platform | ✅ 5 adapters shipped (XHS / TikTok / IG / YouTube / Douyin), 2-axis extensible |
-| **Cost** | Per-seat licensing | API tokens per call | ✅ Apache-2.0 · self-hosted · free |
-
-<details>
-<summary>Technical references for each row</summary>
-
-- *Why explanation*: causal-graph path tracing (64 nodes, 117 edges, cyclic with long-term feedback loops — see [§causal graph](#causal-graph) for why it's not a strict DAG) + per-head attention maps + agent reasoning traces
-- *Counterfactual heads*: TARNet (Shalit ICML 2017), Dragonnet (Shi NeurIPS 2019); Pearl 3-step abduction → action → prediction
-- *LLM personas*: top-K salient agents (`SOUL_POOL_N`) upgraded to LLM-backed personas for **qualitative rationalization** (commentary-style, click decision stays in the statistical layer — see §Soul Agents for the honest positioning). Park et al. 2023-style LLM-decides variant is on the v0.5+ roadmap
-- *14-day diffusion*: Causal Neural Hawkes (Mei & Eisner 2017 + Zuo ICML 2020 + Geng NeurIPS 2022 counterfactual TPP)
-- *Budget curves*: Hill saturation (Dubé & Manchanda 2005) + frequency fatigue (Naik & Raman 2003)
-- *Balancing loss*: HSIC (Gretton 2005) or adversarial-IPTW · BCAUSS · CaT (Melnychuk ICML 2022)
-- *In-context amortization*: CInA (Arik & Pfister NeurIPS 2023)
-
-</details>
 
 ---
 
@@ -476,16 +490,35 @@ See [ROADMAP.md](ROADMAP.md) for the full 3-horizon × 8-theme plan. Teasers:
 
 ## 🏢 OranAI Enterprise Edition
 
-Oransim OSS ships on synthetic data for transparency and reproducibility. **OranAI Enterprise Edition** provides:
+The OSS you just read is the **causal engine**. Enterprise Edition is the **production-grade version** — real data panel, SLA-backed inference, vertical calibration, and a team that onboards you.
 
-- 📊 **Real-world training data** — continuously updated 1M+ labeled campaigns across beauty, fashion, 3C, F&B, luxury, auto
-- ⚡ **SLA-backed hosted inference** — 99.9% uptime, sub-second response
-- 🎯 **Vertical world models** — beauty / fashion / electronics / F&B specialized calibration
-- 🤝 **White-glove onboarding** — custom adapter development, integration support, training
-- 🔒 **On-premise deployment** — with SOC 2 / ISO 27001 / GDPR compliance path
-- 🎓 **Managed model updates** — no downtime model refresh as platforms evolve
+### Capability matrix
 
-**Contact:** `cto@orannai.com` · [Book a demo](mailto:cto@orannai.com?subject=Oransim%20Enterprise%20Demo)
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **Causal engine** | ✅ Apache-2.0, full source | ✅ Same engine |
+| **Data panel** | 21k demo 小红书 notes + 3k KOLs | **3M+ notes · 10k+ KOLs · 20k+ KOCs · 100k+ consumer panel**, daily refresh |
+| **Vertical calibration** | Generic priors | **10+ verticals** — beauty · 3C · auto · luxury · medical aesthetics · ... each with its own fan-profile + CPM curve calibration |
+| **LLM soul agents** | Text LLM, your API key | Full multimodal (image + video + audio) via Oran-VL 7B / Oran-XVL 72B |
+| **Hosted inference** | Self-host | 99.9% SLA, sub-second response, 全球加速 |
+| **Deployment** | Local / your cloud | Hosted · on-prem · hybrid |
+| **Compliance** | — | SOC 2 / ISO 27001 path · GDPR · 中国《个人信息保护法》 |
+| **Onboarding** | Self-serve docs | White-glove — custom adapter dev, integration, training |
+| **Model updates** | Community cadence | Managed — zero-downtime refresh as platforms evolve |
+
+### Typical pilot (2 weeks, ¥0 commitment)
+
+1. **Day 1–3 · Scope call** — we pick 2–3 of your active campaigns as test scenarios
+2. **Day 4–10 · Simulation** — you give us creative + KOL shortlist + historical KPIs → we run counterfactual simulation → present ranked recommendations
+3. **Day 11–14 · In-market validation** — you execute one recommendation in market → we compare our pre-launch prediction vs actuals → calibration report
+
+**Exit criteria**: our pre-launch P35/P65 bands contain the actual KPI **≥ 80% of the time**. If not, pilot ends, no charge. If yes, we talk pricing.
+
+### Contact
+
+- **Book a pilot**: [`cto@orannai.com`](mailto:cto@orannai.com?subject=Oransim%20Enterprise%20Pilot) · typically <24h reply
+- **Investors / partnerships**: same email, tag `[Investor]` or `[Partner]` in subject
+- **Press**: same email, tag `[Press]`
 
 ---
 
@@ -508,8 +541,8 @@ If you use Oransim in research, please cite:
 
 ```bibtex
 @software{oransim2026,
-  author       = {Yin, Fakong and {Oransim contributors}},
-  title        = {Oransim: Causal Digital Twin for Marketing at Scale},
+  author       = {{OranAI Ltd. and Oransim contributors}},
+  title        = {Oransim: Causal Simulation for Enterprise Growth Teams},
   version      = {0.2.0-alpha},
   date         = {2026-04-18},
   url          = {https://github.com/OranAi-Ltd/oransim},
@@ -533,12 +566,7 @@ Third-party dependencies retain their original licenses. We are not affiliated w
 
 ## 💫 Team
 
-Oransim is built by **[OranAI Ltd.](https://oran.cn)** (橙果视界（深圳）科技有限公司).
-
-**Core Maintainers**
-- **Fakong Yin** — CTO & Core Architect · [cto@orannai.com](mailto:cto@orannai.com) · [@OranAi-Ltd](https://github.com/OranAi-Ltd)
-
-**Open roles** — we're hiring researchers (Causal ML, RL, Agent-based Simulation) and engineers (Platform, Infra). Reach out at [cto@orannai.com](mailto:cto@orannai.com).
+Built by **[OranAI Ltd.](https://oran.cn)** (橙果视界（深圳）科技有限公司). See §[Who we are](#who-we-are) above for team, funding, and company context. Contact: [`cto@orannai.com`](mailto:cto@orannai.com).
 
 Contributors appear on [`CONTRIBUTORS.md`](CONTRIBUTORS.md) (auto-generated).
 
