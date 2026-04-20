@@ -38,19 +38,23 @@ OCCUPATION = ["学生", "白领", "蓝领", "个体", "公务员/教师", "自�
 OCC_PROBS = np.array([0.11, 0.25, 0.22, 0.14, 0.08, 0.06, 0.09, 0.05])
 
 # P(occupation | age_bucket) — rows align with AGE_BUCKETS, columns with
-# OCCUPATION. Replaces the previous marginal-only sampling, which let
-# 72 岁学生 / 48 岁退休 appear. 学生 concentrates in 15-24, 退休 in 55+,
-# 公务员/教师 needs 25+, etc. Rows sum to 1; marginals still approximate
-# OCC_PROBS when weighted by AGE_PROBS.
+# OCCUPATION. Calibrated against 2024《渐进式延迟法定退休年龄决定》
+# (effective 2025.1.1) and 2023 Chinese labor-force participation stats:
+#   - 男职工 60 岁（2040 年延到 63）
+#   - 女干部 55 岁（2040 年延到 58）
+#   - 女工人 50 岁（2040 年延到 55）
+# Consequence: 女工人 retirement falls into the 45-54 bucket, so that
+# bucket carries ~12% retirees (not 0-4%). 55-64 catches male + most
+# female retirees (~55%). 65+ is essentially fully retired (~87%).
 OCC_BY_AGE = np.array(
     [
         # 学生  白领  蓝领  个体  公务员 自由 退休  无业
         [0.45, 0.14, 0.16, 0.06, 0.03, 0.05, 0.00, 0.11],  # 15-24
         [0.04, 0.40, 0.24, 0.12, 0.07, 0.06, 0.00, 0.07],  # 25-34
         [0.01, 0.34, 0.24, 0.16, 0.10, 0.08, 0.00, 0.07],  # 35-44
-        [0.00, 0.28, 0.23, 0.18, 0.12, 0.07, 0.04, 0.08],  # 45-54
-        [0.00, 0.16, 0.15, 0.14, 0.08, 0.05, 0.36, 0.06],  # 55-64
-        [0.00, 0.04, 0.04, 0.06, 0.02, 0.03, 0.76, 0.05],  # 65+
+        [0.00, 0.24, 0.21, 0.17, 0.11, 0.07, 0.12, 0.08],  # 45-54 (女工人 50 退)
+        [0.00, 0.11, 0.10, 0.09, 0.06, 0.04, 0.55, 0.05],  # 55-64 (男 + 女干部 大部分退)
+        [0.00, 0.02, 0.02, 0.03, 0.01, 0.02, 0.87, 0.03],  # 65+ (基本全退)
     ],
     dtype=np.float64,
 )
