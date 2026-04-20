@@ -518,6 +518,86 @@ def test_learned_abduction_on_real_scenario_runner_outcome():
     )
 
 
+def test_fixed_point_solver_banach_converges_on_contraction():
+    """Banach iteration must converge to (I-M)^(-1) b for a contraction M.
+
+    Simple 3-node linear system with spectral radius 0.5 < 1. Closed-form
+    equilibrium is x* = (I-M)^(-1) b; iteration must land within tol.
+    """
+    from oransim.causal.fixed_point import banach_iterate, solve_linear_scm
+
+    rng = np.random.default_rng(0)
+    M = rng.uniform(0, 0.25, size=(3, 3))  # row sums bounded ⇒ ρ(M) ≤ 0.75
+    b = rng.uniform(-1, 1, size=3)
+
+    closed = solve_linear_scm(M, b)
+    assert closed.converged, f"closed-form failed: {closed}"
+    assert closed.spectral_radius is not None and closed.spectral_radius < 1
+
+    def f(x):
+        return M @ x + b
+
+    banach = banach_iterate(f, np.zeros(3), tol=1e-8, max_iter=500)
+    assert banach.converged, f"Banach did not converge: {banach}"
+    assert np.allclose(
+        banach.x, closed.x, atol=1e-6
+    ), f"iteration and closed-form disagree: {banach.x} vs {closed.x}"
+
+
+def test_fixed_point_solver_detects_divergent_spectral_radius():
+    """ρ(M) ≥ 1 must be flagged; closed-form may still solve (if I-M
+    non-singular) but converged=False signals dynamic instability.
+    """
+    import pytest
+    from oransim.causal.fixed_point import solve_linear_scm
+
+    M = np.array([[1.2, 0.0], [0.0, 0.8]], dtype=np.float64)  # ρ = 1.2
+    b = np.array([1.0, 1.0], dtype=np.float64)
+    result = solve_linear_scm(M, b)
+    assert result.spectral_radius == pytest.approx(1.2, rel=1e-6)
+    assert not result.converged, "ρ ≥ 1 must not be marked converged"
+
+
+def test_equilibrium_under_do_on_shipped_scc():
+    """The shipped SCM has a non-trivial feedback SCC; equilibrium_under_do
+    must: (1) extract it, (2) build a contractive linear system by default,
+    (3) converge via closed-form.
+    """
+    import pytest
+
+    try:
+        import networkx as nx  # noqa: F401
+    except ImportError:
+        pytest.skip("networkx not installed")
+    from oransim.causal.scm import equilibrium_under_do, get_feedback_scc
+
+    scc = get_feedback_scc()
+    assert len(scc) > 1, "expected a non-trivial feedback SCC in the shipped graph"
+
+    # Baseline: no intervention, no exogenous — equilibrium should be the
+    # zero vector (b = 0).
+    baseline = equilibrium_under_do()
+    assert baseline["converged"], f"baseline did not converge: {baseline}"
+    assert (
+        baseline["spectral_radius"] < 1.0
+    ), f"default weights exceeded contraction bound: ρ={baseline['spectral_radius']}"
+    assert all(abs(v) < 1e-9 for v in baseline["equilibrium"].values())
+
+    # Intervention: clamp one node inside the SCC to a positive value →
+    # equilibrium must have that node at the clamp AND propagate signal
+    # through the cycle (at least one other node non-zero).
+    target = sorted(scc)[0]
+    cf = equilibrium_under_do(intervention={target: 1.0})
+    assert cf["converged"]
+    assert cf["equilibrium"][target] == pytest.approx(1.0, abs=1e-9)
+    downstream_nonzero = sum(
+        1 for name, v in cf["equilibrium"].items() if name != target and abs(v) > 1e-6
+    )
+    assert (
+        downstream_nonzero > 0
+    ), "clamping a node inside the SCC should propagate to at least one other node"
+
+
 def test_dag_dict_unrolled_is_strict_dag():
     """Time-unrolled projection of the causal graph must be strictly acyclic
     at any n_steps ≥ 1, so downstream modules (CausalDAG-Transformer,

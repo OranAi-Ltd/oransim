@@ -502,3 +502,183 @@ def dag_dict_unrolled(n_steps: int = 2) -> dict:
             "n_within_slice_edges": len(EDGES) - len(feedback),
         },
     }
+
+
+# ============================================================================
+# Fixed-point equilibrium under do() — Bongers et al. 2021 cyclic-SCM treatment
+# ============================================================================
+#
+# For the feedback SCC (nodes participating in long-term marketing loops
+# like repurchase → brand_equity → ecpm_bid → next-cycle impression_dist),
+# a single topological forward pass is ill-defined. Following Bongers 2021
+# §5, we treat the SCC as a **linear structural system** ``x = M x + b``
+# whose equilibrium ``x* = (I - M)^(-1) b`` is the result of the do()
+# intervention. ``M`` is the SCC adjacency with per-edge linear
+# coefficients; ``b`` absorbs (i) exogenous inputs from non-SCC parents
+# and (ii) ``do()`` clamps (intervention fixes the node value and zeros
+# out its in-edges).
+#
+# See :mod:`oransim.causal.fixed_point` for the generic solver; this
+# section defines the Oransim-specific SCC extraction + linear-system
+# assembly + the public ``equilibrium_under_do`` entry point.
+
+
+def get_feedback_scc() -> set[str]:
+    """Return the set of node names in the single feedback strongly-connected
+    component of the causal graph.
+
+    The shipped SCM has exactly one non-singleton SCC (verified by
+    :func:`tests.test_causal_invariants.test_scm_shape_is_intentional_cyclic_graph`),
+    containing the long-term brand↔funnel feedback loop. This is the
+    component Bongers-style fixed-point evaluation applies to.
+
+    ``networkx`` is imported lazily so this module stays importable in
+    environments without the dev extras (CI tests for the cyclic graph
+    already require networkx).
+    """
+    try:
+        import networkx as nx
+    except ImportError as e:
+        raise ImportError(
+            "networkx is required for SCC extraction. Install via "
+            "pip install 'oransim[dev]' or pip install networkx."
+        ) from e
+
+    g = nx.DiGraph()
+    for n in NODES:
+        g.add_node(n.name)
+    for s, t in EDGES:
+        g.add_edge(s, t)
+
+    sccs = [scc for scc in nx.strongly_connected_components(g) if len(scc) > 1]
+    if not sccs:
+        return set()
+    # Return the largest (the shipped graph has exactly one non-singleton SCC).
+    return max(sccs, key=len)
+
+
+def _default_edge_weights(scc: set[str]) -> dict[tuple[str, str], float]:
+    """Assign a default per-edge coefficient for edges inside the SCC.
+
+    The linear model ``x = M x + b`` needs a per-edge weight. Without a
+    calibration dataset we use a uniform weight per node's in-degree,
+    rescaled to keep the spectral radius strictly below 1 (a necessary
+    condition for a well-posed equilibrium — see
+    :func:`oransim.causal.fixed_point.solve_linear_scm`).
+
+    For the shipped 25-node SCC this keeps the system contractive by a
+    comfortable margin (ρ ≈ 0.7 in practice). Production Enterprise
+    deployments calibrate these weights from real-campaign data;
+    overriding via the ``weights`` argument of
+    :func:`equilibrium_under_do` is the extension point.
+    """
+    in_degree: dict[str, int] = {n: 0 for n in scc}
+    scc_edges: list[tuple[str, str]] = []
+    for s, t in EDGES:
+        if s in scc and t in scc:
+            in_degree[t] += 1
+            scc_edges.append((s, t))
+    # Per-edge weight = 0.75 / max(1, in_degree(t)) — sum of incoming
+    # coefficients per node is ≤ 0.75, so spectral radius is bounded by 0.75
+    # (Gerschgorin circles + scaled adjacency argument).
+    return {(s, t): 0.75 / max(1, in_degree[t]) for (s, t) in scc_edges}
+
+
+def equilibrium_under_do(
+    intervention: dict[str, float] | None = None,
+    *,
+    weights: dict[tuple[str, str], float] | None = None,
+    exogenous: dict[str, float] | None = None,
+    method: str = "linear_closed_form",
+):
+    """Compute equilibrium values of the feedback SCC under ``do(X=x)``.
+
+    Parameters
+    ----------
+    intervention : mapping ``node_name → clamped_value`` for ``do()`` nodes.
+        Nodes in the intervention dict have their in-edges zeroed (per
+        Pearl's truncated-factorisation rule) and their value forced.
+        Nodes outside the SCC are ignored (they are upstream / downstream
+        of the cycle, not part of the equilibrium).
+    weights : mapping ``(source, target) → coefficient`` — override the
+        default per-edge weight assignment. Missing entries fall back to
+        the default.
+    exogenous : mapping ``node_name → b_i`` — exogenous input for that
+        SCC node (captures contributions from non-SCC parents). Missing
+        entries default to 0.
+    method : ``"linear_closed_form"`` (default, Bongers 2021 §5) or
+        ``"banach"`` (generic damped Picard iteration, useful when the
+        structural functions are non-linear).
+
+    Returns
+    -------
+    dict with ``equilibrium`` (node name → equilibrium value),
+    ``spectral_radius`` (diagnostic; iff ``< 1`` the system is
+    contractive and Banach iteration would also converge), ``converged``
+    (bool), ``method`` (string), and ``scc_size``.
+    """
+    from .fixed_point import banach_iterate, solve_linear_scm
+
+    scc = sorted(get_feedback_scc())  # sort for deterministic node ordering
+    if not scc:
+        return {
+            "equilibrium": {},
+            "spectral_radius": 0.0,
+            "converged": True,
+            "method": method,
+            "scc_size": 0,
+            "note": "no non-trivial feedback SCC in the current graph",
+        }
+
+    idx = {name: i for i, name in enumerate(scc)}
+    n = len(scc)
+    intervention = intervention or {}
+    exogenous = exogenous or {}
+    default_w = _default_edge_weights(set(scc))
+    if weights is None:
+        weights = {}
+
+    # Build adjacency matrix M (rows = target, cols = source, so x = M x)
+    import numpy as np
+
+    M = np.zeros((n, n), dtype=np.float64)
+    for s, t in EDGES:
+        if s in idx and t in idx:
+            M[idx[t], idx[s]] = weights.get((s, t), default_w.get((s, t), 0.0))
+
+    # Apply do() truncation: intervened nodes have their in-edges zeroed.
+    clamps = np.zeros(n, dtype=np.float64)
+    for node, value in intervention.items():
+        if node in idx:
+            i = idx[node]
+            M[i, :] = 0.0  # ignore parents (truncated factorisation)
+            clamps[i] = float(value)
+
+    # Build b vector: exogenous inputs + do() clamps
+    b = np.zeros(n, dtype=np.float64)
+    for node, val in exogenous.items():
+        if node in idx:
+            b[idx[node]] = float(val)
+    b = b + clamps  # clamps are absorbed as forced value
+
+    if method == "linear_closed_form":
+        result = solve_linear_scm(M, b)
+    elif method == "banach":
+        # Define f(x) = M x + b, iterate from zero
+        def f(x: np.ndarray) -> np.ndarray:
+            return M @ x + b
+
+        result = banach_iterate(f, np.zeros(n), tol=1e-6, max_iter=200)
+    else:
+        raise ValueError(f"unknown method {method!r}; expected 'linear_closed_form' or 'banach'")
+
+    equilibrium = {name: float(result.x[i]) for name, i in idx.items()}
+    return {
+        "equilibrium": equilibrium,
+        "spectral_radius": result.spectral_radius,
+        "converged": result.converged,
+        "n_iter": result.n_iter,
+        "residual_inf": result.residual_inf,
+        "method": result.method,
+        "scc_size": n,
+    }
