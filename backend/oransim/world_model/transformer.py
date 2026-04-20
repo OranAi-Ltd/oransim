@@ -1000,7 +1000,9 @@ class CausalTransformerWorldModel(WorldModel):
         doesn't exist (current status in v0.2.0-alpha — no weights shipped).
         """
         if path is None:
-            default_dir = Path(CausalTransformerWMConfig().checkpoint_dir)
+            # Resolve relative to repo root (not CWD) for portability.
+            repo_root = Path(__file__).resolve().parents[3]
+            default_dir = repo_root / CausalTransformerWMConfig().checkpoint_dir
             candidate = default_dir / "model.pt"
             if candidate.exists():
                 path = str(candidate)

@@ -813,7 +813,9 @@ class CausalNeuralHawkesProcess(DiffusionModel):
     @classmethod
     def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> CausalNeuralHawkesProcess:
         if path is None:
-            default_dir = Path(CausalNeuralHawkesConfig().checkpoint_dir)
+            # Resolve relative to repo root (not CWD) for portability.
+            repo_root = Path(__file__).resolve().parents[3]
+            default_dir = repo_root / CausalNeuralHawkesConfig().checkpoint_dir
             candidate = default_dir / "model.pt"
             if candidate.exists():
                 path = str(candidate)

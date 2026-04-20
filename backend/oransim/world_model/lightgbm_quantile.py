@@ -211,8 +211,11 @@ class LightGBMQuantileWorldModel(WorldModel):
             # path. Only looks for ``booster.pkl`` (the canonical name the
             # scripts/train_lightgbm_quantile.py harness writes) to avoid
             # accidentally loading an unrelated pkl that happens to live
-            # in that dir.
-            default_dir = Path(LightGBMWMConfig().checkpoint_dir)
+            # in that dir. Resolved relative to the repo root
+            # (``Path(__file__).parents[3]``), not CWD, so the auto-resolve
+            # works regardless of where the process was started.
+            repo_root = Path(__file__).resolve().parents[3]
+            default_dir = repo_root / LightGBMWMConfig().checkpoint_dir
             candidate = default_dir / "booster.pkl"
             if candidate.exists():
                 path = str(candidate)
