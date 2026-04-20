@@ -205,6 +205,38 @@ def test_demo_lightgbm_pkl_loads_and_predicts():
     assert pred > 0, f"impressions P50 prediction should be > 0, got {pred}"
 
 
+def test_lightgbm_load_pretrained_none_auto_resolves_or_errors_with_path():
+    """P2-① regression: ``LightGBMQuantileWorldModel.load_pretrained(None)``
+    must auto-resolve to ``<checkpoint_dir>/booster.pkl`` when present and
+    emit an error mentioning the looked-for path when absent.
+    """
+    import tempfile
+
+    from oransim.world_model.lightgbm_quantile import (
+        LightGBMQuantileWorldModel,
+        LightGBMWMConfig,
+    )
+
+    default_candidate = Path(LightGBMWMConfig().checkpoint_dir) / "booster.pkl"
+    if default_candidate.exists():
+        model = LightGBMQuantileWorldModel.load_pretrained(None)
+        assert model is not None
+        return
+
+    with pytest.raises(FileNotFoundError, match=str(default_candidate)):
+        LightGBMQuantileWorldModel.load_pretrained(None)
+
+    with tempfile.TemporaryDirectory() as td:
+        fake = Path(td) / "booster.pkl"
+        fake.write_bytes(b"not a real pkl")
+        try:
+            LightGBMQuantileWorldModel.load_pretrained(str(fake))
+        except FileNotFoundError:
+            pytest.fail("explicit path should not trigger auto-resolve error")
+        except Exception:
+            pass
+
+
 def test_demo_synthetic_data_shipped():
     """The small synthetic demo dataset must ship for immediate exploration."""
     root = Path(__file__).parent.parent

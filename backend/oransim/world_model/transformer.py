@@ -994,21 +994,30 @@ class CausalTransformerWorldModel(WorldModel):
     def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> CausalTransformerWorldModel:
         """Load pretrained weights.
 
-        If ``path`` is ``None``, tries the bundled release checkpoint.
-        Raises :class:`FileNotFoundError` with a helpful message when no
-        checkpoint is available (current status in v0.2.0-alpha).
+        If ``path`` is ``None``, auto-resolves
+        ``<checkpoint_dir>/model.pt``. Falls through to
+        :class:`FileNotFoundError` with a helpful message when that file
+        doesn't exist (current status in v0.2.0-alpha — no weights shipped).
         """
         if path is None:
-            raise FileNotFoundError(
-                "No pretrained CausalTransformerWorldModel weights are available "
-                "in v0.2.0-alpha.\n"
-                "Options:\n"
-                "  1. Train locally: "
-                "python -m backend.scripts.train_transformer_wm --config default\n"
-                "  2. Watch for weights at "
-                "https://github.com/OranAi-Ltd/oransim/releases (starting v0.2)\n"
-                "  3. Use the LightGBM baseline: get_world_model('lightgbm_quantile')"
-            )
+            default_dir = Path(CausalTransformerWMConfig().checkpoint_dir)
+            candidate = default_dir / "model.pt"
+            if candidate.exists():
+                path = str(candidate)
+            else:
+                raise FileNotFoundError(
+                    "No pretrained CausalTransformerWorldModel weights are available "
+                    "in v0.2.0-alpha.\n"
+                    f"Auto-resolve looked for: {candidate} (not found)\n"
+                    "Options:\n"
+                    "  1. Train locally: "
+                    "python -m backend.scripts.train_transformer_wm --config default "
+                    "(writes to the auto-resolve path above)\n"
+                    "  2. Pass an explicit path to load_pretrained(path=...)\n"
+                    "  3. Watch for weights at "
+                    "https://github.com/OranAi-Ltd/oransim/releases (starting v0.2)\n"
+                    "  4. Use the LightGBM baseline: get_world_model('lightgbm_quantile')"
+                )
         torch = _require_torch()
         ckpt = torch.load(path, map_location="cpu")
         cfg = CausalTransformerWMConfig(**ckpt["config"])

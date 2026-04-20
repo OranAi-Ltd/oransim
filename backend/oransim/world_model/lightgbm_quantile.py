@@ -206,12 +206,26 @@ class LightGBMQuantileWorldModel(WorldModel):
     @classmethod
     def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> LightGBMQuantileWorldModel:
         if path is None:
-            raise FileNotFoundError(
-                "No bundled LightGBMQuantileWorldModel weights in v0.2.0-alpha.\n"
-                "Options:\n"
-                "  1. Train locally: python -m backend.scripts.train_lightgbm_quantile --config default\n"
-                "  2. Watch v0.2 release for a pretrained pkl"
-            )
+            # Auto-resolve: if the user has previously run .save() into the
+            # default checkpoint dir, pick it up without needing an explicit
+            # path. Only looks for ``booster.pkl`` (the canonical name the
+            # scripts/train_lightgbm_quantile.py harness writes) to avoid
+            # accidentally loading an unrelated pkl that happens to live
+            # in that dir.
+            default_dir = Path(LightGBMWMConfig().checkpoint_dir)
+            candidate = default_dir / "booster.pkl"
+            if candidate.exists():
+                path = str(candidate)
+            else:
+                raise FileNotFoundError(
+                    "No bundled LightGBMQuantileWorldModel weights in v0.2.0-alpha.\n"
+                    f"Auto-resolve looked for: {candidate} (not found)\n"
+                    "Options:\n"
+                    "  1. Train locally: python -m backend.scripts.train_lightgbm_quantile "
+                    "--config default (writes to the auto-resolve path above)\n"
+                    "  2. Pass an explicit path to load_pretrained(path=...)\n"
+                    "  3. Watch v0.2 release for a pretrained pkl"
+                )
         with open(path, "rb") as f:
             blob = pickle.load(f)
 

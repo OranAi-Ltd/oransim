@@ -813,14 +813,22 @@ class CausalNeuralHawkesProcess(DiffusionModel):
     @classmethod
     def load_pretrained(cls, path: str | None = None, **kwargs: Any) -> CausalNeuralHawkesProcess:
         if path is None:
-            raise FileNotFoundError(
-                "No pretrained CausalNeuralHawkesProcess weights in v0.2.0-alpha.\n"
-                "Options:\n"
-                "  1. Train locally: "
-                "python -m backend.scripts.train_neural_hawkes --config default\n"
-                "  2. Watch v0.2 release for weights\n"
-                "  3. Use the ParametricHawkes baseline for fast inference"
-            )
+            default_dir = Path(CausalNeuralHawkesConfig().checkpoint_dir)
+            candidate = default_dir / "model.pt"
+            if candidate.exists():
+                path = str(candidate)
+            else:
+                raise FileNotFoundError(
+                    "No pretrained CausalNeuralHawkesProcess weights in v0.2.0-alpha.\n"
+                    f"Auto-resolve looked for: {candidate} (not found)\n"
+                    "Options:\n"
+                    "  1. Train locally: "
+                    "python -m backend.scripts.train_neural_hawkes --config default "
+                    "(writes to the auto-resolve path above)\n"
+                    "  2. Pass an explicit path to load_pretrained(path=...)\n"
+                    "  3. Watch v0.2 release for weights\n"
+                    "  4. Use the ParametricHawkes baseline for fast inference"
+                )
         torch = _require_torch()
         ckpt = torch.load(path, map_location="cpu")
         cfg = CausalNeuralHawkesConfig(**ckpt["config"])
