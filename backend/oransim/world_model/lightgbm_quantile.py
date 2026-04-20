@@ -214,7 +214,31 @@ class LightGBMQuantileWorldModel(WorldModel):
             )
         with open(path, "rb") as f:
             blob = pickle.load(f)
-        cfg = LightGBMWMConfig(**blob["config"])
+
+        # The shipped demo pkl (``data/models/world_model_demo.pkl``) uses a
+        # different feature pipeline (7-scalar + 16-dim PCA-reduced text
+        # embedding, see ``scripts/train_world_model_v2_pca.py``) than this
+        # class's ``_featurize``. Its config dict also carries extra keys
+        # (``feature_names``, ``niches``, ``kol_tiers``, ``embedding_dim_raw``…)
+        # that would blow up ``LightGBMWMConfig.__init__`` with an unexpected
+        # keyword argument error. Detect that layout and raise an explicit,
+        # actionable error instead of a cryptic ``TypeError``.
+        demo_v2_markers = {"feature_names", "niches", "kol_tiers", "embedding_dim_raw"}
+        blob_cfg = blob.get("config", {})
+        if demo_v2_markers & set(blob_cfg):
+            raise RuntimeError(
+                f"The pkl at {path} was trained with the demo_v2 feature pipeline "
+                "(7 scalar tabular + 16-dim PCA text embedding), which the Python API "
+                "LightGBMQuantileWorldModel._featurize does not implement. Use either:\n"
+                "  1. POST /api/v2/world_model/predict?model=lightgbm_quantile — the HTTP "
+                "endpoint has the matching feature-build logic (see "
+                "backend/oransim/api_routers/v2.py).\n"
+                "  2. Train a new pkl via LightGBMQuantileWorldModel.fit(dataset) or "
+                "python -m backend.scripts.train_lightgbm_quantile — the resulting pkl "
+                "will be compatible with this .predict() path."
+            )
+
+        cfg = LightGBMWMConfig(**blob_cfg)
         model = cls(cfg)
         lgb = model._lgb
         for kpi, per_q in blob["boosters"].items():
