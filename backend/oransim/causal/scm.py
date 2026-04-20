@@ -673,9 +673,13 @@ def equilibrium_under_do(
         raise ValueError(f"unknown method {method!r}; expected 'linear_closed_form' or 'banach'")
 
     equilibrium = {name: float(result.x[i]) for name, i in idx.items()}
+    # banach_iterate does not compute spectral radius (it's linear-SCM only);
+    # coerce to a JSON-safe float-or-null so FastAPI callers see a consistent
+    # schema regardless of which solver path ran.
+    spectral_radius = float(result.spectral_radius) if result.spectral_radius is not None else None
     return {
         "equilibrium": equilibrium,
-        "spectral_radius": result.spectral_radius,
+        "spectral_radius": spectral_radius,
         "converged": result.converged,
         "n_iter": result.n_iter,
         "residual_inf": result.residual_inf,

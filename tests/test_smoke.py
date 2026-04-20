@@ -273,6 +273,145 @@ def test_multi_worker_warning_silent_when_single_worker():
         os.environ.pop("WEB_CONCURRENCY", None)
 
 
+def test_three_layer_platform_stack_parity_for_douyin_instagram_youtube_shorts():
+    """P2-③ regression: Douyin / Instagram / YouTube Shorts must each expose
+    the full (PRS, RecSysRL, WorldModel) 3-layer surface that previously
+    only TikTok / XHS had. Each layer must import, instantiate, and the
+    world-model simulate_impression path must return an ImpressionResult
+    with the same schema shape as XHS.
+    """
+    from oransim.data.platforms import PLATFORMS
+    from oransim.platforms.douyin import (
+        DouyinPRS,
+        DouyinRecSysRLSimulator,
+        DouyinWorldModel,
+    )
+    from oransim.platforms.instagram import (
+        InstagramPRS,
+        InstagramRecSysRLSimulator,
+        InstagramWorldModel,
+    )
+    from oransim.platforms.youtube_shorts import (
+        YouTubeShortsPRS,
+        YouTubeShortsRecSysRLSimulator,
+        YouTubeShortsWorldModel,
+    )
+
+    assert "instagram" in PLATFORMS, "IG must be registered in data.platforms"
+    assert "youtube_shorts" in PLATFORMS, "YT Shorts must be registered in data.platforms"
+
+    for prs_cls in (DouyinPRS, InstagramPRS, YouTubeShortsPRS):
+        prs = prs_cls()
+        assert prs.is_ready() is False
+        info = prs.info()
+        assert info["loaded"] is False
+        assert "reason" in info
+
+    os.environ["POP_SIZE"] = "500"
+    os.environ["SOUL_POOL_N"] = "5"
+    os.environ["LLM_MODE"] = "mock"
+    from oransim.data.creatives import make_creative
+    from oransim.data.population import generate_population
+
+    pop = generate_population(N=500, seed=7)
+
+    creative = make_creative("c1", "测试", duration_sec=20.0)
+
+    wms = {
+        "douyin": (DouyinWorldModel(pop), DouyinRecSysRLSimulator),
+        "instagram": (InstagramWorldModel(pop), InstagramRecSysRLSimulator),
+        "youtube_shorts": (YouTubeShortsWorldModel(pop), YouTubeShortsRecSysRLSimulator),
+    }
+    for platform, (wm, rl_cls) in wms.items():
+        imp = wm.simulate_impression(creative, platform, budget_cny=5000.0, rng_seed=7)
+        assert imp.platform == platform
+        assert imp.total_impressions > 0
+        assert len(imp.agent_idx) > 0
+        for key in ("content", "platform_activity", "audience_filter", "kol_boost"):
+            assert key in imp.score_breakdown, f"{platform} missing {key} in score_breakdown"
+        rl = rl_cls(wm)
+        assert rl is not None
+
+
+def test_audience_skew_actually_reaches_fyp_world_models():
+    """Regression: reviewer caught that the 4 FYP subclasses (TikTok, Douyin,
+    Instagram, YouTube Shorts) were completely overriding ``simulate_impression``
+    and silently dropping the XHS base class's ``audience_skew`` application.
+    That made every ``PLATFORMS[p].audience_skew`` entry dead code for those
+    platforms.
+
+    Verify the fix: platforms with ``young_boost >> 1.0`` should pick
+    systematically more young-age agents at the top of their ranking
+    than platforms with ``young_boost ≈ 1.0``.
+    """
+    os.environ["POP_SIZE"] = "500"
+    from oransim.data.creatives import make_creative
+    from oransim.data.population import generate_population
+    from oransim.platforms.instagram import InstagramWorldModel
+    from oransim.platforms.youtube_shorts import YouTubeShortsWorldModel
+
+    pop = generate_population(N=8000, seed=11)
+    creative = make_creative("c_skew", "测试", duration_sec=22.0)
+
+    ig = InstagramWorldModel(pop)
+    yt = YouTubeShortsWorldModel(pop)
+
+    # Low enough budget that k << pop.N so the top-k selection is
+    # actually discriminating on score, not returning the whole pop.
+    imp_ig = ig.simulate_impression(creative, "instagram", budget_cny=50.0, rng_seed=21)
+    imp_yt = yt.simulate_impression(creative, "youtube_shorts", budget_cny=50.0, rng_seed=21)
+
+    frac_young_ig = (pop.age_idx[imp_ig.agent_idx] <= 2).mean()
+    frac_young_yt = (pop.age_idx[imp_yt.agent_idx] <= 2).mean()
+    frac_young_pop = (pop.age_idx <= 2).mean()
+
+    assert frac_young_ig > frac_young_pop, (
+        f"IG young_boost=1.35 not reaching simulate_impression — "
+        f"imp young frac {frac_young_ig:.3f} not > pop baseline {frac_young_pop:.3f}"
+    )
+    assert frac_young_yt > frac_young_pop, (
+        f"YT young_boost=1.45 not reaching simulate_impression — "
+        f"imp young frac {frac_young_yt:.3f} not > pop baseline {frac_young_pop:.3f}"
+    )
+
+
+def test_transformer_and_neural_hawkes_load_pretrained_none_emits_resolved_path_in_error():
+    """P1-05 regression: all three ``load_pretrained(None)`` flows must
+    name the path they auto-resolved-against when raising FileNotFoundError,
+    so the operator knows exactly where to drop a checkpoint. Previously
+    only LightGBM was regression-tested; transformer + neural_hawkes were
+    not, so a revert there could silently break the auto-resolve UX.
+    """
+    if not _torch_available():
+        pytest.skip("transformer + neural_hawkes load_pretrained requires torch")
+
+    from oransim.diffusion.neural_hawkes import (
+        CausalNeuralHawkesConfig,
+        CausalNeuralHawkesProcess,
+    )
+    from oransim.world_model.transformer import (
+        CausalTransformerWMConfig,
+        CausalTransformerWorldModel,
+    )
+
+    for model_cls, cfg_cls, fname in (
+        (CausalTransformerWorldModel, CausalTransformerWMConfig, "model.pt"),
+        (CausalNeuralHawkesProcess, CausalNeuralHawkesConfig, "model.pt"),
+    ):
+        repo_root = Path(__file__).resolve().parents[1]
+        expected_dir = repo_root / cfg_cls().checkpoint_dir
+        expected_candidate = expected_dir / fname
+        if expected_candidate.exists():
+            continue
+        with pytest.raises(FileNotFoundError) as exc:
+            model_cls.load_pretrained(None)
+        msg = str(exc.value)
+        assert str(expected_candidate) in msg, (
+            f"{model_cls.__name__}.load_pretrained(None) error should name "
+            f"the resolved path {expected_candidate}, got: {msg}"
+        )
+
+
 def test_lightgbm_load_pretrained_none_auto_resolves_or_errors_with_path():
     """P2-① regression: ``LightGBMQuantileWorldModel.load_pretrained(None)``
     must auto-resolve to ``<checkpoint_dir>/booster.pkl`` when present and

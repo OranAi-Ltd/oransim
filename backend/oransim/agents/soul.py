@@ -525,8 +525,11 @@ class SoulAgentPool:
                         r = soul_infer_llm(persona=p, **kol_kwargs)
                     return _post(pid, r)
 
-                workers = min(
-                    int(__import__("os").environ.get("LLM_CONCURRENCY", "15")), len(chosen)
+                # floor at 1: ThreadPoolExecutor(max_workers=0) raises ValueError,
+                # so defensively guard against LLM_CONCURRENCY=0 or empty-chosen.
+                workers = max(
+                    1,
+                    min(int(__import__("os").environ.get("LLM_CONCURRENCY", "15")), len(chosen)),
                 )
                 results_map = {}
                 total_in = total_out = 0
