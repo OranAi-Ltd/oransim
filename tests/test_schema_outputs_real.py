@@ -39,6 +39,32 @@ def test_tag_lift_accepts_english_niche_key():
     assert out["target_niche"] == "beauty"
 
 
+def test_tag_lift_tokenizer_emits_words_not_fragments():
+    """P1-4 regression: ``_all_tags`` used to produce 2/3-char Chinese
+    n-gram fragments (e.g. ``月关``, ``学到``, ``关于``) that polluted the
+    tag_lift_ranking output. The tokenizer now prefers jieba word
+    segmentation when available and falls back to hashtags-only when it
+    isn't — never back to the n-gram path.
+    """
+    from oransim.agents import tag_lift
+    from oransim.agents.tag_lift import _all_tags
+
+    text = "今天推荐一款面霜超级好用 #美妆# 月关于熬夜修护"
+    tags = _all_tags(text)
+    assert "美妆" in tags, "explicit #tag# must always be extracted"
+
+    if tag_lift._HAS_JIEBA:
+        # Fragment that the old n-gram tokenizer emitted must NOT appear.
+        assert "月关" not in tags, "n-gram fragment leak: jieba path should not emit 月关"
+        assert "关于" not in tags, "stop-word-ish fragment leak"
+        # Real jieba tokens should be present.
+        assert "熬夜" in tags, "jieba should segment 熬夜 as a real word"
+        assert "面霜" in tags, "jieba should segment 面霜 as a real word"
+    else:
+        # Without jieba the graceful degradation is hashtags only — no fragments.
+        assert tags == ["美妆"], f"without jieba, tokenizer must return hashtags only, got {tags}"
+
+
 def test_content_type_coef_returns_format_coefficients():
     from oransim.agents.content_type_coef import compute_content_type_coefficients
 

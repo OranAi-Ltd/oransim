@@ -34,6 +34,23 @@ _STOP = set(
     "月关于系列学到"
 )
 
+# Prefer jieba word-segmentation (real words) over 2/3-char Chinese n-grams
+# (which produce noise fragments like "月关" or "学到"). Kept as a soft dep:
+# if jieba isn't installed we fall back to explicit ``#tag#`` hashtags only,
+# not the n-gram path — the fragments were the P1-4 quality bug.
+try:
+    import jieba as _jieba  # type: ignore
+
+    _jieba.initialize()
+    _HAS_JIEBA = True
+except ImportError:
+    _jieba = None  # type: ignore
+    _HAS_JIEBA = False
+
+# Drop 1-char tokens (too noisy) and tokens longer than 10 chars (likely junk).
+_MIN_TOK_LEN = 2
+_MAX_TOK_LEN = 10
+
 # Chinese niche label → English key used in synthetic notes corpus.
 _ZH_TO_EN = {
     "美妆": "beauty",
@@ -58,25 +75,40 @@ def _resolve_niche(n: str | None) -> str | None:
     return _ZH_TO_EN.get(n, n)
 
 
-def _ngrams(s: str, n: int) -> list[str]:
-    return [s[i : i + n] for i in range(len(s) - n + 1)]
+_CN_CHAR_RE = re.compile(r"[\u4e00-\u9fff]+")
 
 
 def _all_tags(text: str) -> list[str]:
-    """Extract candidate tags: explicit #tag# plus 2-3 char Chinese n-grams."""
+    """Extract candidate tags.
+
+    Strategy:
+
+    1. Always pull explicit ``#tag#`` hashtags (the highest-signal source).
+    2. If jieba is available, add word-segmented Chinese tokens (length ≥ 2,
+       not in the stoplist, Chinese-only). This gives real words like
+       "面霜" / "口红" / "熬夜" rather than the 2/3-gram fragments the
+       previous implementation emitted ("月关", "学到", …).
+    3. If jieba isn't available, we stop at hashtags — the fragment path
+       was the P1-4 bug, so graceful degradation is preferred over
+       reintroducing noise.
+    """
     if not text:
         return []
     tags: list[str] = []
     for m in re.finditer(r"#([^\s#]{2,20})#", text):
         tags.append(m.group(1))
-    text_cn = re.sub(r"[^\u4e00-\u9fff]+", "", text)
-    for n in (2, 3):
-        for g in _ngrams(text_cn, n):
-            if g in _STOP:
+    if not _HAS_JIEBA:
+        return tags
+    for run in _CN_CHAR_RE.findall(text):
+        for tok in _jieba.lcut(run, cut_all=False):
+            if not (_MIN_TOK_LEN <= len(tok) <= _MAX_TOK_LEN):
                 continue
-            if n == 2 and any(c in _STOP for c in g):
+            if tok in _STOP:
                 continue
-            tags.append(g)
+            # Drop tokens whose every char is in the stoplist (e.g. "了的").
+            if all(c in _STOP for c in tok):
+                continue
+            tags.append(tok)
     return tags
 
 
