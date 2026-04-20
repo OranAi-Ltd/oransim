@@ -490,20 +490,81 @@ See [ROADMAP.md](ROADMAP.md) for the full 3-horizon × 8-theme plan. Teasers:
 
 ## 🏢 OranAI Enterprise Edition
 
-The OSS you just read is the **causal engine**. Enterprise Edition is the **production-grade version** — real data panel, SLA-backed inference, vertical calibration, and a team that onboards you.
+The OSS you just read is the **causal engine**. Both editions run on the same Apache-2.0 code — the differences below span **8 dimensions**: data, pretrained weights, algorithms, learning loop, governance, integrations, team product, runtime. Audit the engine in this repo, then license the production stack.
 
 ### Capability matrix
 
+#### 📊 Data · real-world panel
+
 | | Oransim OSS | OranAI Enterprise |
 |---|---|---|
-| **Causal engine** | ✅ Apache-2.0, full source | ✅ Same engine |
-| **Data panel** | 21k demo 小红书 notes + 3k KOLs | **3M+ notes · 10k+ KOLs · 20k+ KOCs · 100k+ consumer panel**, daily refresh |
-| **Vertical calibration** | Generic priors | **10+ verticals** — beauty · 3C · auto · luxury · medical aesthetics · ... each with its own fan-profile + CPM curve calibration |
-| **LLM soul agents** | Text LLM, your API key | Full multimodal (image + video + audio) via Oran-VL 7B / Oran-XVL 72B |
-| **Hosted inference** | Self-host | 99.9% SLA, sub-second response, 全球加速 |
-| **Deployment** | Local / your cloud | Hosted · on-prem · hybrid |
+| **Data panel** | 21k demo 小红书 notes + 3k KOLs | **3M+ notes · 10k+ KOLs · 20k+ KOCs · 100k+ consumer panel**, daily refresh `[licensed platform APIs · ClickHouse]` |
+| **Vertical calibration** | Generic priors | **10+ verticals** each calibrated — beauty · 3C · auto · luxury · medical aesthetics · … `[per-vertical fan_profile pkl + CPM–conversion curve fits]` |
+| **Competitor panel** | — | Competitor KOL rosters + historical CPM/CVR 实盘 data `[public disclosures + third-party licensed feeds]` |
+
+#### 🧠 Models · pretrained weights
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **World-model checkpoints** | All 3 models ship with `pretrained_url: "coming_soon"` · falls back to LightGBM baseline | **Pretrained CausalTransformer + CausalNeuralHawkes** with DAG-attention enabled `[trained on 10M+ real impressions · DAG mask derived from the 64-node SCM]` |
+| **LLM soul agents** | Text LLM via your API key | Full multimodal — reads your actual creatives (image + video + audio) `[proprietary multimodal backbone · details under NDA]` |
+| **Client-specific fine-tuning** | Shared generic baseline | Fine-tuned on **your real campaign data** · monthly incremental updates |
+
+#### 🧮 Algorithms · solvers & posteriors
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **Counterfactual posterior** | Sample-reuse + closed-form Bayesian shrink + pure-numpy MLP amortizer | **Normalizing-flow learned posterior** · proper Pearl Step-1 abduction on cyclic graphs `[sbi NPE / SNPE]` |
+| **Cyclic SCM equilibrium** | Time-unrolled DAG (acyclic approximation) + linear-SCC Banach fixed-point (requires ρ < 1) | **Non-linear equilibrium solver** with contraction guarantees on arbitrary cyclic SCMs `[Bongers 2021 §5 + damped Picard + spectral-radius monitoring]` |
+| **Synthetic population** | IPF marginal matching (1-way marginals → 8-dim joint · ignores pairwise) | **Bayesian-net / diffusion joint synthesizer** · preserves pairwise + higher-order structure `[bnlearn · TabDDPM · both return HTTP 501 in OSS]` |
+| **KOL matching** | Heuristic cosine (creative embed × KOL interest vector) | **Learned cross-attention encoder** · creative tokens × KOL-persona tokens `[transformer cross-attention · trained on real CPM-conversion labels]` |
+| **Tag / trend extraction** | jieba tokenizer on 21k synthetic notes (static) | **Real-panel index** · daily refresh from live platform feeds `[Kafka → ClickHouse]` |
+
+#### 🔁 Learning loop
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **Incremental learning from actuals** | Static model · manual retrain | Post-campaign actuals auto-stream back into the training set |
+| **Cross-campaign brand memory** | Per-request brand memory only | 12-month continuous brand-equity tracking · avoids re-targeting the same cohort |
+
+#### 🧭 Governance
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **Audit trail** | Local logs | Tamper-evident signed audit chain per prediction (input + model version + data snapshot, fully replayable) |
+| **Approval workflow** | — | Strategy → budget → go-live multi-stage approval |
+| **Rollback / version control** | — | Model-version + data-version + campaign-version binding · one-click rollback |
 | **Compliance** | — | SOC 2 / ISO 27001 path · GDPR · 中国《个人信息保护法》 |
-| **Onboarding** | Self-serve docs | White-glove — custom adapter dev, integration, training |
+
+#### 🔗 Integrations
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **Martech connectors** | — | 巨量引擎 / 磁力引擎 / 小红书千帆 / 腾讯广告 / Google Ads / Meta Ads · official APIs |
+| **CRM / CDP bidirectional sync** | — | Salesforce · SAP CDP · Adobe AEP · customer-owned CDP |
+| **SSO / RBAC** | — | SAML 2.0 · OIDC · role-based permissions |
+
+#### 👥 Team product
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **Multi-tenant isolation** | Single-tenant, local | Strict tenant isolation · competitor data physically segregated |
+| **Collaboration** | CLI | Planner / buyer / approver multi-role workflow · Lark / Slack webhooks |
+| **Saved scenario library** | No persistence | Scenario catalog + decision-chain traceability |
+
+#### ⚙️ Runtime
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **Agent runtime** | Single-process Python · 100k agents (`SOUL_POOL_N ≤ 1000` LLM personas) | **Distributed Ray actor pool** · 1M+ agents · 10k+ LLM personas in parallel `[Ray 2.x + vLLM batched inference]` |
+| **Shared state** | Process-local singletons + multi-worker startup WARNING | **Redis-backed shared state** · sandbox / brand-memory / UEB consistent across workers `[Redis 7 + asyncio client]` |
+
+#### 🎧 Managed service
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **Deployment** | Local / your cloud | Hosted · on-prem · hybrid · 99.9% SLA · sub-second · 全球加速 |
+| **Onboarding** | Self-serve docs | White-glove — custom adapter dev · integration · training |
 | **Model updates** | Community cadence | Managed — zero-downtime refresh as platforms evolve |
 
 ### Typical pilot (2 weeks, ¥0 commitment)

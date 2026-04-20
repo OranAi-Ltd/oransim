@@ -488,20 +488,81 @@ Phase 1 基线在 **10 万条合成数据**上训练 —— 详见 [`data/models
 
 ## 🏢 OranAI Enterprise Edition
 
-你看的这个 OSS 是**因果引擎**。Enterprise Edition 是**生产级版本** —— 真实数据面板 · SLA 托管推理 · 垂直校准 · 全程陪跑上线。
+你看的这个 OSS 是**因果引擎**。两版跑的是同一套 Apache-2.0 代码，下面的差异横跨 **8 个维度**：数据 · 预训权重 · 算法 · 学习闭环 · 治理 · 集成 · 团队产品 · 运行时。先审本仓的引擎，再授权生产栈。
 
 ### 能力对照
 
+#### 📊 Data · 真实数据面板
+
 | | Oransim OSS | OranAI Enterprise |
 |---|---|---|
-| **因果引擎** | ✅ Apache-2.0，完整源码 | ✅ 同一引擎 |
-| **数据面板** | 2.1 万条 demo 小红书帖 + 3 千 KOL | **300 万+ 帖 · 1 万+ KOL · 2 万+ KOC · 10 万+ 真实用户样本**，每日刷新 |
-| **垂类校准** | 通用先验 | **10+ 垂类** —— 美妆 · 3C · 汽车 · 奢品 · 医美 · ... 每个垂类独立的粉丝画像 + CPM 曲线校准 |
-| **LLM 灵魂 agent** | 文本 LLM，用你自己 API key | 全多模态（图 + 视频 + 音频），驱动 Oran-VL 7B / Oran-XVL 72B |
-| **托管推理** | 自部署 | 99.9% SLA · 秒级响应 · 全球加速 |
-| **部署形态** | 本地 / 你自己的云 | 托管 · 私有化 · 混合 |
+| **数据面板** | 2.1 万条 demo 小红书帖 + 3 千 KOL | **300 万+ 帖 · 1 万+ KOL · 2 万+ KOC · 10 万+ 真实用户样本**，每日刷新 `[licensed platform APIs · ClickHouse]` |
+| **垂类校准** | 通用先验 | **10+ 垂类**各自校准 —— 美妆 · 3C · 汽车 · 奢品 · 医美 · … `[per-vertical fan_profile pkl + CPM–conversion 曲线拟合]` |
+| **竞品面板** | — | 竞品 KOL roster + 历史 CPM / CVR 实盘数据 `[公开信息披露 + 第三方授权]` |
+
+#### 🧠 Models · 预训练权重
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **World-model 权重** | 3 个模型都挂 `pretrained_url: "coming_soon"` · 默认回落 LightGBM baseline | **预训 CausalTransformer + CausalNeuralHawkes** · DAG-attention 打开 `[1000 万+ 真实曝光训练 · DAG mask 由 64 节点 SCM 派生]` |
+| **LLM 灵魂 agent** | 文本 LLM · 自带 API key | 全多模态 —— 读真素材（图 / 视频 / 音频） `[proprietary 多模态 backbone · 细节 under NDA]` |
+| **客户专属微调** | 共享通用 baseline | 用**客户真实 campaign 数据**微调 · 每月增量更新 |
+
+#### 🧮 Algorithms · 求解器与后验
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **反事实后验** | sample-reuse + 闭式 Bayesian shrink + 纯 numpy MLP amortizer | **Normalizing-flow learned posterior** · cyclic 图上正规的 Pearl Step-1 abduction `[sbi NPE / SNPE]` |
+| **Cyclic SCM equilibrium** | 时间展开 DAG 近似 + 线性 SCC 的 Banach fixed-point（需 ρ < 1） | **非线性 equilibrium solver** · 任意 cyclic SCM 带收缩性保证 `[Bongers 2021 §5 + damped Picard + spectral-radius monitoring]` |
+| **合成人口** | IPF 边际匹配（1-way marginal → 8 维 joint · 忽略 pairwise） | **Bayesian-net / diffusion joint 合成器** · 保留 pairwise + higher-order 结构 `[bnlearn · TabDDPM · 二者在 OSS 中返回 HTTP 501]` |
+| **KOL 匹配** | 启发式 cosine（creative embed × KOL 兴趣向量） | **Learned cross-attention encoder** · creative token × KOL-persona token `[transformer cross-attention · 真 CPM-conversion label 训出来]` |
+| **标签 / 趋势抽取** | jieba 分词 · 2.1 万合成 notes（静态） | **Real-panel 索引** · 日级从实盘 feed 刷新 `[Kafka → ClickHouse]` |
+
+#### 🔁 Learning loop · 学习闭环
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **实盘回流训练** | 静态模型 · 手工重训 | 客户 campaign 跑完 · 实际 KPI 自动回流训练集 |
+| **跨 campaign 品牌记忆** | 仅单次请求记忆 | 12 个月连续品牌资产追踪 · 避免重复打同一批人群 |
+
+#### 🧭 Governance · 治理与审计
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **审计链路** | 本地 log | 每次预测防篡改签名审计链（input + 模型版本 + 数据快照 · 可完整回放） |
+| **审批流** | — | 策略 → 预算 → 投放多级审批 |
+| **回滚 / 版本控制** | — | 模型版本 + 数据版本 + 投放版本绑定 · 一键回滚 |
 | **合规** | — | SOC 2 / ISO 27001 合规路径 · GDPR · 中国《个人信息保护法》 |
-| **上线支持** | 自服务文档 | 白手套 —— 定制 adapter / 集成 / 培训 |
+
+#### 🔗 Integrations · 集成
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **Martech 连接器** | — | 巨量引擎 / 磁力引擎 / 小红书千帆 / 腾讯广告 / Google Ads / Meta Ads · 官方接入 |
+| **CRM / CDP 双向同步** | — | Salesforce · SAP CDP · Adobe AEP · 客户自建 CDP |
+| **SSO / RBAC** | — | SAML 2.0 · OIDC · 角色权限 |
+
+#### 👥 Team product · 团队产品
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **多租户隔离** | 单租户 · 本地 | 严格租户隔离 · 竞品数据物理隔离 |
+| **协作** | CLI | 策划 / 采买 / 审批多角色流程 · 飞书 / Slack webhook |
+| **场景库** | 无持久化 | 场景目录 + 决策链可追溯 |
+
+#### ⚙️ Runtime · 规模与并发
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **Agent runtime** | 单进程 Python · 10 万 agent（`SOUL_POOL_N ≤ 1000` LLM persona） | **Ray 分布式 actor pool** · 100 万+ agent · 1 万+ LLM persona 并行 `[Ray 2.x + vLLM 批推理]` |
+| **共享 state** | 进程内单例 + 多 worker 启动 WARNING | **Redis 共享 state** · sandbox / 品牌记忆 / UEB 跨 worker 一致 `[Redis 7 + asyncio client]` |
+
+#### 🎧 Managed service · 托管陪跑
+
+| | Oransim OSS | OranAI Enterprise |
+|---|---|---|
+| **部署形态** | 本地 / 你自己的云 | 托管 · 私有化 · 混合 · 99.9% SLA · 秒级响应 · 全球加速 |
+| **上线支持** | 自服务文档 | 白手套 —— 定制 adapter · 集成 · 培训 |
 | **模型更新** | 社区节奏 | 托管式 —— 平台演进时零停机刷新 |
 
 ### 典型试点（2 周 · ¥0 承诺）
