@@ -123,8 +123,16 @@ class ScenarioRunner:
             if fixed_u is not None and plat in fixed_u:
                 pre_u = fixed_u[plat]
                 prior_idx = (fixed_idx or {}).get(plat, imp.agent_idx)
-                # Align noise to current impression agents (intersection by agent idx)
-                pre_map = {int(ai): u for ai, u in zip(prior_idx, pre_u, strict=False)}
+                if len(prior_idx) != len(pre_u):
+                    raise ValueError(
+                        f"counterfactual noise-alignment mismatch on platform {plat!r}: "
+                        f"prior_idx has {len(prior_idx)} agents but pre_u has {len(pre_u)} "
+                        f"entries. This would previously have been silently truncated by "
+                        f"zip(..., strict=False), corrupting abduction precision."
+                    )
+                # Align noise to current impression agents (intersection by agent idx).
+                # strict=True so accidental length drift surfaces at the source.
+                pre_map = {int(ai): u for ai, u in zip(prior_idx, pre_u, strict=True)}
                 fu = np.array([pre_map.get(int(a), 0.0) for a in imp.agent_idx], dtype=np.float32)
 
             # Monte Carlo (average over seeds)
