@@ -7,8 +7,12 @@ expose per-node timing + do-operator counterfactuals.
 
 from __future__ import annotations
 
+import asyncio
+import json
+
 import numpy as np
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from .. import api_state
@@ -426,7 +430,32 @@ def _build_schema_outputs(
 
 
 @router.post("/api/predict")
-def predict(req: PredictRequest):
+async def predict(req: PredictRequest):
+    """Async keepalive wrapper around the sync predict pipeline.
+
+    Middleboxes (ISP proxies, cloud LB, WAF) commonly kill TCP connections
+    that stay silent for 60-120 s. The full-fat predict (LLM souls +
+    discourse + groupchat + 90-day brand_memory) can run 2-5 min on the
+    money path, so we stream whitespace keepalive chunks every 10 s and
+    emit the real JSON payload at the end. JSON.parse ignores leading
+    whitespace, so frontend ``fetch().json()`` needs no change.
+    """
+    loop = asyncio.get_running_loop()
+    fut = loop.run_in_executor(None, _predict_sync, req)
+
+    async def gen():
+        while not fut.done():
+            try:
+                await asyncio.wait_for(asyncio.shield(asyncio.wrap_future(fut)), timeout=10)
+            except asyncio.TimeoutError:
+                yield b" \n"  # keepalive whitespace; JSON parser ignores
+        result = fut.result()
+        yield json.dumps(result, ensure_ascii=False, default=str).encode("utf-8")
+
+    return StreamingResponse(gen(), media_type="application/json")
+
+
+def _predict_sync(req: PredictRequest):
     scenario, macro_summary = build_scenario(req)
     first_plat = next(iter(scenario.platform_alloc.keys()))
 
