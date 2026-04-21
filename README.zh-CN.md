@@ -33,7 +33,7 @@
 
 ## 我们是谁
 
-**OranAI 橙果视界（深圳）科技有限公司** —— 深圳南山的 AI 营销公司，成立于 2024 年 5 月，已完成**数千万元人民币**融资，由[云天使基金领投，力合创投、金沙江联合资本跟投](https://36kr.com/p/3442645125141897)，与腾讯云联合共建 [AIGC 设计实验室](https://caijing.chinadaily.com.cn/a/202412/26/WS676d01b5a310b59111daaff3.html)。自研多模态模型矩阵（**Oran-VL 7B** / **Oran-XVL 72B**）驱动四条产品线 —— **PhotoG** 创意智能体 · **DataG** 洞察引擎 · **VoyaAI** 策略 copilot · **[DataCenter](https://datacenter.oran.cn/)** 实时达人 + 笔记面板（即将上线），服务 **70+ 企业客户**（美妆 / 快消 / 消费电子 / DTC 出海），含 Timekettle、[现代汽车 Pharos IV Best Prize 获奖合作](https://m.tech.china.com/articles/20260117/202601171798695.html)，**2025 年营收突破 2000 万**。
+**OranAI 橙果视界（深圳）科技有限公司** —— 深圳南山的 AI 营销公司，成立于 2024 年 5 月，已完成**数千万元人民币**融资，由[云天使基金领投，力合创投、金沙江联合资本跟投](https://36kr.com/p/3442645125141897)，与腾讯云联合共建 [AIGC 设计实验室](https://caijing.chinadaily.com.cn/a/202412/26/WS676d01b5a310b59111daaff3.html)。自研多模态模型矩阵（**Oran-VL 7B** / **Oran-XVL 72B**）驱动四条产品线 —— **PhotoG** 创意智能体 · **DataG** 洞察引擎 · **VoyaAI** 策略 copilot · **[DataCenter](https://datacenter.oran.cn/)** 实时达人 + 笔记面板，服务 **70+ 企业客户**（美妆 / 快消 / 消费电子 / DTC 出海），含 Timekettle、[现代汽车 Pharos IV Best Prize 获奖合作](https://m.tech.china.com/articles/20260117/202601171798695.html)，**2025 年营收突破 2000 万**。
 
 **Oransim 就是那一套的因果引擎。** 客户问*"这么投放广告好不好"* —— 回答这个问题的 `do()` 算子、per-arm 反事实头、14 天 Hawkes 扩散 rollout，全在这个仓库里。我们以 Apache-2.0 协议开源，让企业买方能端到端自己审 —— **先看代码，再谈数据。**
 
