@@ -489,6 +489,8 @@ Phase 1 基线在 **10 万条合成数据**上训练 —— 详见 [`data/models
 
 你看的这个 OSS 是**因果引擎**。两版跑的是同一套 Apache-2.0 代码，下面的差异横跨 **8 个维度**：数据 · 预训权重 · 算法 · 学习闭环 · 治理 · 集成 · 团队产品 · 运行时。先审本仓的引擎，再授权生产栈。
 
+> **💼 商务联系** —— [`cto@orannai.com`](mailto:cto@orannai.com?subject=Oransim%20商务咨询) · 报价 · 数据授权 · 试点 · 私有化部署 · 24h 内回复 · 或先上实时面板 **[datacenter.oran.cn](https://datacenter.oran.cn/)** 看数据。
+
 ### 能力对照
 
 #### 📊 Data · 真实数据面板
@@ -574,9 +576,12 @@ Phase 1 基线在 **10 万条合成数据**上训练 —— 详见 [`data/models
 
 ### 联系
 
-- **预约试点**：[`cto@orannai.com`](mailto:cto@orannai.com?subject=Oransim%20Enterprise%20试点) · 通常 24h 内回复
-- **投资 / 合作**：同一邮箱，主题标记 `[Investor]` 或 `[Partner]`
-- **媒体**：同一邮箱，主题标记 `[Press]`
+所有联系 → [`cto@orannai.com`](mailto:cto@orannai.com) · 通常 24h 内回复。主题里标 tag 帮我们分流：
+
+- **[Business]** —— 报价 · demo · 数据授权 · API 集成 · 私有化部署
+- **[Pilot]** —— 预约上面那个 2 周试点
+- **[Investor]** / **[Partner]** —— 投资 / 战略合作
+- **[Press]** —— 媒体咨询
 
 ---
 

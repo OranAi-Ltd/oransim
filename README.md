@@ -491,6 +491,8 @@ See [ROADMAP.md](ROADMAP.md) for the full 3-horizon × 8-theme plan. Teasers:
 
 The OSS you just read is the **causal engine**. Both editions run on the same Apache-2.0 code — the differences below span **8 dimensions**: data, pretrained weights, algorithms, learning loop, governance, integrations, team product, runtime. Audit the engine in this repo, then license the production stack.
 
+> **💼 Business contact** — [`cto@orannai.com`](mailto:cto@orannai.com?subject=Oransim%20Business%20Inquiry) · pricing · data licensing · pilot · on-prem deployment · typical reply < 24h · or browse the live panel at **[datacenter.oran.cn](https://datacenter.oran.cn/)** first.
+
 ### Capability matrix
 
 #### 📊 Data · real-world panel
@@ -576,9 +578,12 @@ The OSS you just read is the **causal engine**. Both editions run on the same Ap
 
 ### Contact
 
-- **Book a pilot**: [`cto@orannai.com`](mailto:cto@orannai.com?subject=Oransim%20Enterprise%20Pilot) · typically <24h reply
-- **Investors / partnerships**: same email, tag `[Investor]` or `[Partner]` in subject
-- **Press**: same email, tag `[Press]`
+All inbound → [`cto@orannai.com`](mailto:cto@orannai.com) · typical reply < 24h. Tag the subject so we route it right:
+
+- **[Business]** — pricing · demo · data licensing · API integration · on-prem deployment
+- **[Pilot]** — book the 2-week pilot described above
+- **[Investor]** / **[Partner]** — investors / strategic partners
+- **[Press]** — media inquiries
 
 ---
 
