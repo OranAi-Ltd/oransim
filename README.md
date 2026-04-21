@@ -25,15 +25,15 @@
 <img src="assets/screenshots/hero.png" alt="Oransim hero · 60-second prediction with counterfactual reasoning over a agent-based society" width="100%"/>
 </p>
 
-**For enterprise CMOs** — predict your next campaign's ROI before spending: **3M+ indexed 小红书 notes · 10,000+ KOLs · 20,000+ KOCs · 100,000+ consumer panel**, refreshed daily via licensed platform APIs. Counterfactual reasoning engine running on a **1M+ virtual consumer society** with LLM-backed soul personas reading your actual creatives. Transparent causal logic, open-sourced so you can audit it before licensing data access.
+**For enterprise CMOs** — predict your next campaign's ROI before spending: **4.3M+ indexed 小红书 notes · 2.1M+ creators (达人) across 15 verticals · 100,000+ surveyed consumer panel**, refreshed daily via licensed platform APIs. Counterfactual reasoning engine running on a **1M+ virtual consumer society** with LLM-backed soul personas reading your actual creatives. Transparent causal logic, open-sourced so you can audit it before licensing data access.
 
-*The OSS repo you're reading is the same causal engine running on a 21k-note demo corpus — try it, audit the mechanism end-to-end, then contact `cto@orannai.com` for Enterprise data access.*
+*The OSS repo you're reading is the same causal engine running on a 21k-note demo corpus — try it, audit the mechanism end-to-end, then explore the live Enterprise data panel at [datacenter.oran.cn](https://datacenter.oran.cn/) or contact `cto@orannai.com` for licensed access.*
 
 ---
 
 ## Who we are
 
-**OranAI Ltd. (橙果视界（深圳）科技有限公司)** — a Shenzhen-based AI marketing company founded May 2024, closed a **multi-million-dollar angel+ round** led by [Cloud Angels Fund, with participation from Leaguer Venture Capital and Jinshajiang United Capital](https://36kr.com/p/3442645125141897). We co-operate the [Tencent Cloud × OranAI AIGC Design Lab](https://caijing.chinadaily.com.cn/a/202412/26/WS676d01b5a310b59111daaff3.html), run our in-house multimodal matrix (**Oran-VL 7B** / **Oran-XVL 72B**) behind three products — **PhotoG** (creative agent) · **DataG** (insight engine) · **VoyaAI** (strategy co-pilot) — and serve **70+ enterprise clients** across beauty, FMCG, consumer electronics, and DTC outbound — including [Timekettle and Hyundai Motor (Pharos IV Best Prize)](https://m.tech.china.com/articles/20260117/202601171798695.html), with 2025 revenue crossing **RMB 20M**.
+**OranAI Ltd. (橙果视界（深圳）科技有限公司)** — a Shenzhen-based AI marketing company founded May 2024, closed a **multi-million-dollar angel+ round** led by [Cloud Angels Fund, with participation from Leaguer Venture Capital and Jinshajiang United Capital](https://36kr.com/p/3442645125141897). We co-operate the [Tencent Cloud × OranAI AIGC Design Lab](https://caijing.chinadaily.com.cn/a/202412/26/WS676d01b5a310b59111daaff3.html), run our in-house multimodal matrix (**Oran-VL 7B** / **Oran-XVL 72B**) behind four products — **PhotoG** (creative agent) · **DataG** (insight engine) · **VoyaAI** (strategy co-pilot) · **[DataCenter](https://datacenter.oran.cn/)** (real-time creator + note panel explorer, launching) — and serve **70+ enterprise clients** across beauty, FMCG, consumer electronics, and DTC outbound — including [Timekettle and Hyundai Motor (Pharos IV Best Prize)](https://m.tech.china.com/articles/20260117/202601171798695.html), with 2025 revenue crossing **RMB 20M**.
 
 **Oransim is the causal engine inside that stack.** When a CMO using OranAI asks *"what if we swapped KOL A for B on day 3 of this campaign?"* — the `do()`-operator, the per-arm counterfactual heads, and the 14-day Hawkes rollout that answer the question all live in this repository. We open-sourced it under Apache-2.0 so enterprise buyers can audit the reasoning end-to-end — **trust the engine, then license the data panel.**
 
@@ -92,16 +92,15 @@ curl http://localhost:8001/api/graph/inspect   # the causal graph, in JSON
 
 ### 📊 Data · what Enterprise licenses get you beyond the OSS demo
 
-The OSS ships a 21k-note reference corpus — enough to validate the mechanism, not enough to power production campaigns. Enterprise Edition runs on a continuously refreshed licensed panel:
+The OSS ships a 21k-note reference corpus — enough to validate the mechanism, not enough to power production campaigns. Enterprise Edition runs on a continuously refreshed licensed panel, explorable live at **[datacenter.oran.cn](https://datacenter.oran.cn/)**:
 
 | Asset | Scale | Source |
 |---|---|---|
-| 小红书 notes | **3,000,000+**, daily refresh | Licensed platform APIs + in-house crawlers |
-| KOL profiles | **10,000+** across 15 verticals — 美妆 · 护肤 · 穿搭 · 3C · 食饮 · 母婴 · 家居 · 汽车 · 汽车后市场 · 健身 · 理财 · 奢品 · 宠物 · 医美 · 旅行 | Top-tier + mid-tier, fan-profile metadata |
-| KOC profiles | **20,000+**, waist-layer (1k–50k fans), active within 30 days | Opt-in recruitment + platform signal |
+| 小红书 notes | **4,300,000+**, daily refresh | Licensed platform APIs + in-house crawlers |
+| Creators (达人) | **2,100,000+** across 15 verticals — 美妆 · 护肤 · 穿搭 · 3C · 食饮 · 母婴 · 家居 · 汽车 · 汽车后市场 · 健身 · 理财 · 奢品 · 宠物 · 医美 · 旅行 · spanning KOL (top + mid tier), KOC (waist, 1k–50k fans), and long-tail creators | Platform signal + fan-profile metadata |
 | Consumer panel | **100,000+** verified 小红书 users, surveyed monthly | Opt-in recruitment |
 
-*Contact [`cto@orannai.com`](mailto:cto@orannai.com?subject=Oransim%20Enterprise%20Data%20Access) for Enterprise data access.*
+*Browse the live panel at **[datacenter.oran.cn](https://datacenter.oran.cn/)** · contact [`cto@orannai.com`](mailto:cto@orannai.com?subject=Oransim%20Enterprise%20Data%20Access) for licensed integration.*
 
 ### 📚 Research · 12-year tech lineage behind every layer
 
@@ -498,7 +497,7 @@ The OSS you just read is the **causal engine**. Both editions run on the same Ap
 
 | | Oransim OSS | OranAI Enterprise |
 |---|---|---|
-| **Data panel** | 21k demo 小红书 notes + 3k KOLs | **3M+ notes · 10k+ KOLs · 20k+ KOCs · 100k+ consumer panel**, daily refresh `[licensed platform APIs · ClickHouse]` |
+| **Data panel** | 21k demo 小红书 notes + 3k KOLs | **4.3M+ notes · 2.1M+ 达人 (KOL + KOC + long-tail) · 100k+ consumer panel**, daily refresh · live at [datacenter.oran.cn](https://datacenter.oran.cn/) `[licensed platform APIs · ClickHouse]` |
 | **Vertical calibration** | Generic priors | **10+ verticals** each calibrated — beauty · 3C · auto · luxury · medical aesthetics · … `[per-vertical fan_profile pkl + CPM–conversion curve fits]` |
 | **Competitor panel** | — | Competitor KOL rosters + historical CPM/CVR 实盘 data `[public disclosures + third-party licensed feeds]` |
 

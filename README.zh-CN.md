@@ -25,15 +25,15 @@
 <img src="assets/screenshots/hero.png" alt="Oransim · 60 秒完成带反事实推理的广告预演" width="100%"/>
 </p>
 
-**企业 CMO 专用** —— 一次投放花钱之前，先算清楚 ROI：**300 万+ 小红书真实帖 · 1 万+ KOL · 2 万+ KOC · 10 万+ 真实用户样本**，通过正规授权平台接口每日更新。跑在 **100 万+ 虚拟消费者社会**上的因果推理引擎，LLM 灵魂人格读你真实的素材给反应。因果逻辑透明，开源出来给你先审再授权数据。
+**企业 CMO 专用** —— 一次投放花钱之前，先算清楚 ROI：**430 万+ 小红书真实帖 · 210 万+ 达人跨 15 个垂类 · 10 万+ 调研消费者样本**，通过正规授权平台接口每日更新。跑在 **100 万+ 虚拟消费者社会**上的因果推理引擎，LLM 灵魂人格读你真实的素材给反应。因果逻辑透明，开源出来给你先审再授权数据。
 
-*这个 OSS 仓库就是同一套因果引擎，跑在 2.1 万条 demo 语料上 —— 先上手、端到端审机制，再找 `cto@orannai.com` 开 Enterprise 数据授权。*
+*这个 OSS 仓库就是同一套因果引擎，跑在 2.1 万条 demo 语料上 —— 先上手、端到端审机制，再访问 Enterprise 实时数据面板 [datacenter.oran.cn](https://datacenter.oran.cn/)，或邮件 `cto@orannai.com` 开授权。*
 
 ---
 
 ## 我们是谁
 
-**OranAI 橙果视界（深圳）科技有限公司** —— 深圳南山的 AI 营销公司，成立于 2024 年 5 月，已完成**数千万元人民币**融资，由[云天使基金领投，力合创投、金沙江联合资本跟投](https://36kr.com/p/3442645125141897)，与腾讯云联合共建 [AIGC 设计实验室](https://caijing.chinadaily.com.cn/a/202412/26/WS676d01b5a310b59111daaff3.html)。自研多模态模型矩阵（**Oran-VL 7B** / **Oran-XVL 72B**）驱动三条产品线 —— **PhotoG** 创意智能体 · **DataG** 洞察引擎 · **VoyaAI** 策略 copilot，服务 **70+ 企业客户**（美妆 / 快消 / 消费电子 / DTC 出海），含 Timekettle、[现代汽车 Pharos IV Best Prize 获奖合作](https://m.tech.china.com/articles/20260117/202601171798695.html)，**2025 年营收突破 2000 万**。
+**OranAI 橙果视界（深圳）科技有限公司** —— 深圳南山的 AI 营销公司，成立于 2024 年 5 月，已完成**数千万元人民币**融资，由[云天使基金领投，力合创投、金沙江联合资本跟投](https://36kr.com/p/3442645125141897)，与腾讯云联合共建 [AIGC 设计实验室](https://caijing.chinadaily.com.cn/a/202412/26/WS676d01b5a310b59111daaff3.html)。自研多模态模型矩阵（**Oran-VL 7B** / **Oran-XVL 72B**）驱动四条产品线 —— **PhotoG** 创意智能体 · **DataG** 洞察引擎 · **VoyaAI** 策略 copilot · **[DataCenter](https://datacenter.oran.cn/)** 实时达人 + 笔记面板（即将上线），服务 **70+ 企业客户**（美妆 / 快消 / 消费电子 / DTC 出海），含 Timekettle、[现代汽车 Pharos IV Best Prize 获奖合作](https://m.tech.china.com/articles/20260117/202601171798695.html)，**2025 年营收突破 2000 万**。
 
 **Oransim 就是那一套的因果引擎。** 客户问*"这么投放广告好不好"* —— 回答这个问题的 `do()` 算子、per-arm 反事实头、14 天 Hawkes 扩散 rollout，全在这个仓库里。我们以 Apache-2.0 协议开源，让企业买方能端到端自己审 —— **先看代码，再谈数据。**
 
@@ -92,16 +92,15 @@ curl http://localhost:8001/api/graph/inspect   # 因果图的 JSON 表示
 
 ### 📊 数据 · Enterprise 授权能拿到的
 
-OSS 附带 2.1 万帖参考语料 —— 够验证机制，不够跑生产 campaign。Enterprise Edition 跑在持续更新的授权数据面板上：
+OSS 附带 2.1 万帖参考语料 —— 够验证机制，不够跑生产 campaign。Enterprise Edition 跑在持续更新的授权数据面板上，实时可探索：**[datacenter.oran.cn](https://datacenter.oran.cn/)**：
 
 | 数据资产 | 规模 | 来源 |
 |---|---|---|
-| 小红书帖子 | **300 万+**，每日刷新 | 正规授权平台接口 + 自研爬虫 |
-| KOL 档案 | **1 万+**，覆盖 **15 个赛道** —— 美妆 · 护肤 · 穿搭 · 3C · 食饮 · 母婴 · 家居 · 汽车 · 汽车后市场 · 健身 · 理财 · 奢品 · 宠物 · 医美 · 旅行 | 头部 + 腰部，带粉丝画像 |
-| KOC 档案 | **2 万+**，腰部影响力（1k-5w 粉），近 30 天活跃 | 主动招募 + 平台信号 |
+| 小红书帖子 | **430 万+**，每日刷新 | 正规授权平台接口 + 自研爬虫 |
+| 达人档案 | **210 万+**，覆盖 **15 个赛道** —— 美妆 · 护肤 · 穿搭 · 3C · 食饮 · 母婴 · 家居 · 汽车 · 汽车后市场 · 健身 · 理财 · 奢品 · 宠物 · 医美 · 旅行 · 含头部 + 腰部 KOL、腰部 KOC（1k-5w 粉）和长尾达人 | 平台信号 + 粉丝画像元数据 |
 | 真实用户样本 | **10 万+** 小红书认证用户，按月调研 | 主动招募 |
 
-*联系 [`cto@orannai.com`](mailto:cto@orannai.com?subject=Oransim%20Enterprise%20数据授权) 开通 Enterprise 数据访问。*
+*实时面板访问 **[datacenter.oran.cn](https://datacenter.oran.cn/)** · 授权集成邮件 [`cto@orannai.com`](mailto:cto@orannai.com?subject=Oransim%20Enterprise%20数据授权)。*
 
 ### 📚 研究 · 12 年技术谱系支撑每一层
 
@@ -496,7 +495,7 @@ Phase 1 基线在 **10 万条合成数据**上训练 —— 详见 [`data/models
 
 | | Oransim OSS | OranAI Enterprise |
 |---|---|---|
-| **数据面板** | 2.1 万条 demo 小红书帖 + 3 千 KOL | **300 万+ 帖 · 1 万+ KOL · 2 万+ KOC · 10 万+ 真实用户样本**，每日刷新 `[licensed platform APIs · ClickHouse]` |
+| **数据面板** | 2.1 万条 demo 小红书帖 + 3 千 KOL | **430 万+ 帖 · 210 万+ 达人（KOL + KOC + 长尾）· 10 万+ 调研用户样本**，每日刷新 · 实时面板 [datacenter.oran.cn](https://datacenter.oran.cn/) `[licensed platform APIs · ClickHouse]` |
 | **垂类校准** | 通用先验 | **10+ 垂类**各自校准 —— 美妆 · 3C · 汽车 · 奢品 · 医美 · … `[per-vertical fan_profile pkl + CPM–conversion 曲线拟合]` |
 | **竞品面板** | — | 竞品 KOL roster + 历史 CPM / CVR 实盘数据 `[公开信息披露 + 第三方授权]` |
 
