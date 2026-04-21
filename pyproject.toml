@@ -45,6 +45,10 @@ dependencies = [
     "scikit-learn>=1.4",
     "pydantic>=2.6",
     "lightgbm>=4.3",
+    # Chinese word segmentation for tag_lift extraction — required, not soft.
+    # Without it _all_tags falls back to hashtags-only, which produces empty
+    # tag pools on the synthetic notes_v3 corpus and breaks compute_tag_lift.
+    "jieba>=0.42",
 ]
 
 [project.optional-dependencies]
