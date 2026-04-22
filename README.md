@@ -45,17 +45,17 @@
 
 Three campaign decisions that break traditional tools but collapse to one Oransim workflow:
 
-### 1. Pre-launch · 上线前算账
+### 1. Pre-launch 
 > *"I have 4 creative videos × 3 KOL shortlists × 2 budget tiers — which combination has the highest ROI?"*
 
 Traditional approach: A/B test for 2 weeks, burn ¥500k to learn. **Oransim**: 60-second simulation on ¥0, rank all 24 combinations with P35/P65 confidence bands, pick top 3 to actually test.
 
-### 2. Mid-campaign · 投放中改策略
+### 2. Mid-campaign 
 > *"Day 3 CTR is below target. Can I swap out 2 KOLs and reallocate budget to 3 others — and how much ROI shifts?"*
 
 Traditional approach: data team rebuilds a dashboard overnight. **Oransim**: `do(kol=swap_A_for_B, day=3)` counterfactual rollout in 30 seconds — shows the 14-day path diff with the intervention applied.
 
-### 3. Post-mortem · 复盘反事实
+### 3. Post-mortem 
 > *"This campaign underperformed. If we'd spent on 小红书 instead of 抖音, what would we have gotten?"*
 
 Traditional approach: retrospective analysis, ambiguous conclusion. **Oransim**: load actuals + `do(platform_alloc={xhs: 1.0})`, get the counterfactual ROI curve over the same agent population — confident attribution of what would have happened.
