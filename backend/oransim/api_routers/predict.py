@@ -401,6 +401,22 @@ def _build_schema_outputs(
         from ..agents.final_report import build_final_report
         from ..agents.schema_outputs import build_schema_outputs
 
+        # target_niches fallback: sniff one from the caption when the UI
+        # didn't pass it. Otherwise the T2-A2 Top-10 ranking degenerates
+        # to a tier/text-overlap popularity contest and off-niche KOLs
+        # win ("food caption → beauty blogger tops the chart").
+        effective_target_niches = req.target_niches
+        if not effective_target_niches:
+            try:
+                from ..agents.kol_content_match import detect_niche_from_caption
+
+                sniffed = detect_niche_from_caption(
+                    (scenario_summary_out.get("caption") or "")[:200]
+                )
+                if sniffed:
+                    effective_target_niches = [sniffed]
+            except Exception:
+                pass
         schema_outputs = build_schema_outputs(
             kpis=kpis_out,
             lifecycle=lifecycle,
@@ -412,10 +428,11 @@ def _build_schema_outputs(
             competitors=req.competitors,
             own_brand=req.own_brand,
             category=req.category,
-            target_niches=req.target_niches,
+            target_niches=effective_target_niches,
             enable_competitor_llm=bool(req.competitors),
             enable_kol_ilp=req.enable_kol_ilp,
             enable_search_elasticity=req.enable_search_elasticity,
+            persona_display_max=max(50, int(req.n_souls or 50)),
         )
         schema_outputs["report_strategy_case"] = build_final_report(
             scenario=scenario_summary_out,
@@ -461,6 +478,10 @@ def _predict_sync(req: PredictRequest):
 
     imp, oc, click_prob_by_agent = _run_first_pass(scenario, first_plat)
 
+    # Lazy-grow the soul pool on demand so the UI slider isn't silently
+    # clipped to the startup SOUL_POOL_N env (hard cap is le=10000 on the
+    # request schema).
+    api_state.SOULS.expand_to(req.n_souls)
     souls = api_state.SOULS.infer_batch(
         scenario.creative,
         click_prob_by_agent,

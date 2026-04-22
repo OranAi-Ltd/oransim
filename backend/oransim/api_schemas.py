@@ -24,9 +24,11 @@ class PredictRequest(BaseModel):
     kol_niche: str | None = None
     use_llm: bool = False
     llm_calibrate: bool = True  # if use_llm, also rescale KPIs by LLM votes
-    # Hard cap at 1000 — beyond that, LLM latency and memory cost run away.
-    # Further capped at runtime by the actual soul pool size.
-    n_souls: int = Field(default=50, ge=0, le=1000)
+    # Pool is lazy-grown on demand via SOULS.expand_to, so the slider can go
+    # past the startup SOUL_POOL_N env. Hard cap at 10000 to keep a single
+    # request's LLM fanout bounded — at concurrency 15 that's still ~10
+    # minutes on the LLM path.
+    n_souls: int = Field(default=100, ge=0, le=10000)
     lifecycle_days: int = Field(default=14, ge=1, le=60)
     today: str | None = None  # ISO date for holiday/season; default today
     daypart: str = "auto"  # morning/noon/afternoon/evening/late/auto

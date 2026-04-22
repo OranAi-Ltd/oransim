@@ -336,12 +336,35 @@ class SoulAgentPool:
 
     def __init__(self, population: Population, n: int = 30, seed: int = 123):
         self.pop = population
+        self._seed = seed
         rng = np.random.default_rng(seed)
         # Sample stratified by gender × city tier to get diverse personas
         self.idx = rng.choice(population.N, size=n, replace=False)
         self.personas: dict[int, Persona] = {
             int(i): build_persona(population, int(i), rng) for i in self.idx
         }
+
+    def expand_to(self, n: int) -> int:
+        """Lazily grow the pool to at least ``n`` personas; returns the final
+        pool size. Lets the UI slider request more LLM voters than the
+        startup ``SOUL_POOL_N`` env value without silent clipping."""
+        cur = len(self.personas)
+        if n <= cur:
+            return cur
+        target = min(n, self.pop.N)  # can't exceed the population size
+        need = target - cur
+        existing = set(int(i) for i in self.idx)
+        rng = np.random.default_rng(self._seed ^ (cur * 2654435761 & 0xFFFFFFFF))
+        all_ids = np.arange(self.pop.N, dtype=np.int64)
+        remaining = np.array([i for i in all_ids if int(i) not in existing],
+                             dtype=np.int64)
+        if len(remaining) == 0:
+            return cur
+        pick = rng.choice(remaining, size=min(need, len(remaining)), replace=False)
+        new_personas = {int(i): build_persona(self.pop, int(i), rng) for i in pick}
+        self.personas.update(new_personas)
+        self.idx = np.concatenate([self.idx, pick])
+        return len(self.personas)
 
     def infer_one(
         self,

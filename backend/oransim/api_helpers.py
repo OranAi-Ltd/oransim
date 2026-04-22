@@ -45,9 +45,38 @@ def build_scenario(req: PredictRequest) -> tuple[Scenario, dict]:
             gender=req.audience_gender,
             city_tiers=req.audience_city_tiers,
         )
+    # kol_niche fallback: when the client didn't pass kol_niche, sniff one
+    # from the caption. The sniff returns synthetic-pool labels (see
+    # kol_content_match._CAPTION_NICHE_KW), which we then map to the mock
+    # KOL library's English niche keys used by pick_kol_by_spec
+    # (data/kols.py NICHES). Without this, an unconstrained pick returns
+    # the platform's IR-champion regardless of topic, which makes
+    # discourse comments cite off-niche KOLs (e.g. "travel blogger" under
+    # a food caption).
+    resolved_niche = req.kol_niche
+    if resolved_niche is None:
+        try:
+            from .agents.kol_content_match import detect_niche_from_caption
+
+            # Synthetic-pool label (zh) → mock library niche key (en).
+            # 宠物 / 家居 have no mock counterpart; leave unconstrained.
+            _POOL_ZH_TO_MOCK_EN = {
+                "饮品": "food", "食饮": "food",
+                "美妆": "beauty",
+                "服装": "fashion",
+                "3C": "tech",
+                "母婴": "mom",
+                "健身": "fitness",
+                "旅游": "travel",
+            }
+            zh = detect_niche_from_caption(c.caption or "")
+            if zh:
+                resolved_niche = _POOL_ZH_TO_MOCK_EN.get(zh)
+        except Exception:
+            pass
     kol_per = {}
     for plat in req.platform_alloc:
-        kol = pick_kol_by_spec(api_state.KOLS, plat, niche=req.kol_niche)
+        kol = pick_kol_by_spec(api_state.KOLS, plat, niche=resolved_niche)
         kol_per[plat] = kol
     if req.today:
         try:

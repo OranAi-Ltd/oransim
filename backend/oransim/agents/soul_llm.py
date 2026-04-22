@@ -115,6 +115,7 @@ PROMPT_TEMPLATE = """<persona>
 达人/创作者：{kol_name}（{kol_niche} 赛道，粉丝 {kol_fans}）
 位置：feed 第 3 屏
 素材文案：{caption}
+投放品类：{kol_niche}（只按此赛道判断，别把"探店/vlog"等通用词当成旅行或其它赛道）
 视觉：{visual}，BGM：{music}，时长 {duration}s
 </impression>
 

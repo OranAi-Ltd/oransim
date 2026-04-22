@@ -456,13 +456,14 @@ def build_schema_outputs(
     enable_competitor_llm: bool = False,
     enable_kol_ilp: bool = True,
     enable_search_elasticity: bool = True,
+    persona_display_max: int = 50,
 ) -> dict:
     """One-shot: build all schema-aligned outputs from a prediction payload."""
     world_model = (extras or {}).get("world_model") if extras else None
     diffusion = fit_diffusion_curve(lifecycle)
     mc_funnel = build_mc_funnel(kpis, world_model)
     beta_fits = fit_beta_on_funnel(mc_funnel)
-    personas = structure_agent_personas(soul_quotes, max_n=50)
+    personas = structure_agent_personas(soul_quotes, max_n=persona_display_max)
     plat_ts = build_platform_ts(lifecycle, per_platform, predicted_sentiment)
     em = emergent_metrics(kpis, world_model)
     sens = sensitivity_tornado(kpis, extras)
