@@ -103,6 +103,7 @@ def _gather_candidates(
     target_niches: list[str] | None = None,
     max_per_niche: int = 80,
     platform: str = "xhs",
+    caption: str | None = None,
 ) -> list[dict]:
     pool = _load_pool()
     if not pool:
@@ -113,6 +114,21 @@ def _gather_candidates(
     for k in pool:
         niche = k.get("niche_zh") or _normalize_niche(k.get("niche_en", ""))
         by_niche.setdefault(niche, []).append(k)
+
+    # Caption sniff fallback — when caller didn't pass target_niches, try
+    # to detect a niche from the caption. Without this, the portfolio
+    # solver scans the full pool and off-niche high-ROI KOLs can win on
+    # cost-efficiency alone (e.g. beauty腰部 beating美食 on a food post).
+    # Mirrors the same fallback used by T2-A2 kol_content_match.
+    if not target_zh and caption:
+        try:
+            from .kol_content_match import detect_niche_from_caption
+
+            sniffed = detect_niche_from_caption(caption)
+            if sniffed and sniffed in by_niche:
+                target_zh = {sniffed}
+        except Exception:
+            pass
 
     cands: list[dict] = []
     niches_to_scan = target_zh if target_zh else set(by_niche.keys())
@@ -199,9 +215,10 @@ def optimize_kol_mix(
     min_koc_ratio: float = 0.5,
     max_per_niche: int = 80,
     platform: str = "xhs",
+    caption: str | None = None,
 ) -> dict:
     """Schema T2-A1 kol_mix_optimization payload."""
-    cands = _gather_candidates(target_niches, max_per_niche, platform)
+    cands = _gather_candidates(target_niches, max_per_niche, platform, caption=caption)
     picked, solver = _milp_solve(cands, total_budget, min_koc_ratio)
 
     kol_count = sum(1 for p in picked if p["tier"] in ("头部", "腰部"))

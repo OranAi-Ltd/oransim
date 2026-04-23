@@ -500,6 +500,7 @@ def build_schema_outputs(
                 total_budget=budget,
                 target_niches=target_niches,
                 min_koc_ratio=0.5,
+                caption=(scenario_summary.get("caption") or "")[:200],
             )
             kol_reinvest = reinvest_ranking(kol_mix.get("selected_kols", []))
         except Exception as e:
