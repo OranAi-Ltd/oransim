@@ -17,12 +17,9 @@ import time
 import uuid
 
 from .soul_llm import (
-    API_KEY,
-    BASE_URL,
     MODEL,
     TIMEOUT,
-    _extract_json,
-    _http_post,
+    call_llm_json_with_retry,
     estimate_cost_cny,
     llm_available,
 )
@@ -83,13 +80,11 @@ def _call_llm(
         "temperature": 0.3,
         "max_tokens": 500,
     }
-    headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
     t0 = time.time()
     try:
-        resp = _http_post(f"{BASE_URL}/chat/completions", headers, body, timeout=TIMEOUT * 2)
-        content = resp["choices"][0]["message"]["content"]
-        usage = resp.get("usage", {})
-        parsed = _extract_json(content)
+        parsed, usage = call_llm_json_with_retry(
+            body, max_retries=2, timeout=TIMEOUT * 2, use_stream=False
+        )
         parsed["_latency_ms"] = int((time.time() - t0) * 1000)
         parsed["_tokens_in"] = usage.get("prompt_tokens", 0)
         parsed["_tokens_out"] = usage.get("completion_tokens", 0)

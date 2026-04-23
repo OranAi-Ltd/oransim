@@ -176,11 +176,8 @@ def simulate_discourse_llm(
     import random
 
     from .soul_llm import (
-        API_KEY,
-        BASE_URL,
         MODEL,
-        _extract_json,
-        _http_stream_post,
+        call_llm_json_with_retry,
         estimate_cost_cny,
         llm_available,
     )
@@ -191,7 +188,6 @@ def simulate_discourse_llm(
     rng = random.Random(seed)
     chosen = rng.sample(list(souls.personas.keys()), min(n_commenters, len(souls.personas)))
 
-    headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
     workers = int(os.environ.get("LLM_CONCURRENCY", "15"))
     kol_name = f"{kol.name}({kol.niche})" if kol else "(无达人)"
 
@@ -217,8 +213,8 @@ def simulate_discourse_llm(
             ],
         }
         try:
-            content, usage = _http_stream_post(f"{BASE_URL}/chat/completions", headers, body)
-            r = _extract_json(content)
+            # Retry wrapper handles network flake + malformed JSON
+            r, usage = call_llm_json_with_retry(body, max_retries=2)
             return (
                 pid,
                 CommentVerdict(
@@ -262,8 +258,7 @@ def simulate_discourse_llm(
             ],
         }
         try:
-            content, usage = _http_stream_post(f"{BASE_URL}/chat/completions", headers, body)
-            summary = _extract_json(content)
+            summary, usage = call_llm_json_with_retry(body, max_retries=2)
             tok_in += usage.get("prompt_tokens", 0)
             tok_out += usage.get("completion_tokens", 0)
         except Exception:

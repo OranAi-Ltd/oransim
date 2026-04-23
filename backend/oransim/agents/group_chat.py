@@ -228,11 +228,8 @@ def simulate_group_chat(
     if use_llm:
         try:
             from .soul_llm import (
-                API_KEY,
-                BASE_URL,
                 MODEL,
-                _extract_json,
-                _http_stream_post,
+                call_llm_json_with_retry,
                 estimate_cost_cny,
                 llm_available,
             )
@@ -242,10 +239,6 @@ def simulate_group_chat(
             llm_ok = False
     else:
         llm_ok = False
-
-    headers = None
-    if llm_ok:
-        headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
 
     for r in range(n_rounds):
         # randomize agent speaking order each round
@@ -286,12 +279,10 @@ def simulate_group_chat(
                     ],
                 }
                 try:
-                    content, usage = _http_stream_post(
-                        f"{BASE_URL}/chat/completions", headers, body
-                    )
+                    # Retry wrapper: network + JSON parse resilience
+                    parsed, usage = call_llm_json_with_retry(body, max_retries=2)
                     tok_in += usage.get("prompt_tokens", 0)
                     tok_out += usage.get("completion_tokens", 0)
-                    parsed = _extract_json(content)
                     will_speak = bool(parsed.get("will_speak", True))
                     text = (parsed.get("text") or "").strip()
                     addresses = parsed.get("addresses_to")
@@ -344,8 +335,6 @@ def simulate_group_chat(
     summary = None
     if llm_ok and len(messages) > 3:
         try:
-            from .soul_llm import BASE_URL, MODEL, _extract_json, _http_stream_post
-
             body = {
                 "model": MODEL,
                 "temperature": 0.4,
@@ -360,10 +349,9 @@ def simulate_group_chat(
                     },
                 ],
             }
-            content, usage = _http_stream_post(f"{BASE_URL}/chat/completions", headers, body)
+            summary, usage = call_llm_json_with_retry(body, max_retries=2)
             tok_in += usage.get("prompt_tokens", 0)
             tok_out += usage.get("completion_tokens", 0)
-            summary = _extract_json(content)
         except Exception:
             summary = None
     if summary is None:

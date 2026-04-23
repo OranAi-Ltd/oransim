@@ -217,28 +217,108 @@ def soul_infer_llm(
 
 
 def _extract_json(s: str) -> dict:
-    """Pull the first JSON object out of an LLM response, tolerating code fences / prose."""
-    s = s.strip()
-    # strip ``` fences
+    """Pull the first JSON object out of an LLM response, tolerating code fences / prose.
+
+    Legacy callers (soul_infer_llm, discourse, group_chat) still rely on the
+    best-effort soul-shaped dict on parse failure. New callers should use
+    :func:`_extract_json_strict` instead.
+    """
+    try:
+        return _extract_json_strict(s)
+    except ValueError:
+        return {
+            "will_click": False,
+            "reason": "(parse error) " + (s or "")[:40],
+            "comment": "",
+            "feel": "无感",
+            "purchase_intent_7d": 0.1,
+        }
+
+
+def _extract_json_strict(s: str) -> dict:
+    """Parse first JSON object; raise ValueError on any issue (no fallback)."""
+    s = (s or "").strip()
     if s.startswith("```"):
         s = s.strip("`")
         if s.startswith("json"):
             s = s[4:]
-    # find first { and last }
     i, j = s.find("{"), s.rfind("}")
-    if i != -1 and j != -1 and j > i:
+    if i == -1 or j == -1 or j <= i:
+        raise ValueError(f"no JSON object found in LLM response: {s[:80]!r}")
+    try:
+        return json.loads(s[i : j + 1])
+    except json.JSONDecodeError as e:
+        raise ValueError(f"JSON parse failed: {e}; content={s[i:j+1][:120]!r}")
+
+
+# ---------------------------------------------------------------------------
+# Retry wrapper for OpenAI-compat JSON callers
+# ---------------------------------------------------------------------------
+#
+# All new LLM callers should use ``call_llm_json_with_retry``. It handles:
+#   (1) transient network errors (timeouts / 429 / 5xx) with exponential backoff
+#   (2) malformed JSON responses — next attempt appends a "strict JSON"
+#       reminder to the user message so the model is less likely to wrap
+#       the answer in prose or code fences on the retry
+#   (3) gives up after ``max_retries`` and re-raises the last exception, so
+#       the caller can fall back to a mock / template path
+def call_llm_json_with_retry(
+    body: dict,
+    *,
+    max_retries: int = 2,
+    use_stream: bool | None = None,
+    timeout: float = TIMEOUT,
+    url: str | None = None,
+) -> tuple[dict, dict]:
+    """Call ``/chat/completions`` + parse JSON with automatic retry.
+
+    Returns ``(parsed_dict, usage_dict)``. Raises the last exception on
+    final failure. Requires ``llm_available()`` to be true.
+    """
+    if not llm_available():
+        raise RuntimeError("LLM mode is not 'api' or API key missing")
+    if use_stream is None:
+        use_stream = os.environ.get("LLM_STREAM", "1") not in ("0", "false", "False")
+    headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
+    target = url or f"{BASE_URL}/chat/completions"
+    # clone body so we don't mutate the caller's dict while injecting hints
+    body = json.loads(json.dumps(body))
+    last_err: BaseException | None = None
+    for attempt in range(max_retries + 1):
         try:
-            return json.loads(s[i : j + 1])
-        except Exception:
-            pass
-    # fallback: best-effort synthesis
-    return {
-        "will_click": False,
-        "reason": "(parse error) " + s[:40],
-        "comment": "",
-        "feel": "无感",
-        "purchase_intent_7d": 0.1,
-    }
+            if use_stream:
+                content, usage = _http_stream_post(target, headers, body, timeout=timeout)
+            else:
+                resp = _http_post(target, headers, body, timeout=timeout)
+                content = resp["choices"][0]["message"]["content"]
+                usage = resp.get("usage", {})
+            parsed = _extract_json_strict(content)
+            return parsed, usage
+        except (
+            urllib.error.HTTPError,
+            urllib.error.URLError,
+            TimeoutError,
+            ConnectionError,
+            ValueError,
+            json.JSONDecodeError,
+        ) as e:
+            last_err = e
+            if attempt >= max_retries:
+                break
+            time.sleep(0.5 * (2 ** attempt))  # 0.5s → 1s → 2s
+            # On JSON parse failure, nudge the model toward a stricter format
+            if isinstance(e, (ValueError, json.JSONDecodeError)):
+                for msg in reversed(body.get("messages", [])):
+                    if msg.get("role") == "user":
+                        if "严格输出纯 JSON" not in msg["content"]:
+                            msg["content"] = (
+                                msg["content"]
+                                + "\n\n【重要】严格输出纯 JSON 对象，不要任何代码块围栏、前后文字、解释。"
+                            )
+                        break
+            elif isinstance(e, urllib.error.HTTPError) and e.code == 429:
+                time.sleep(1.5)  # extra slack on explicit rate-limit
+    raise last_err  # type: ignore[misc]
 
 
 # Cost estimation table (CNY per 1M tokens, rough as of 2025-2026)
