@@ -139,6 +139,8 @@ python -m http.server 8090 --directory frontend
 # 4. 浏览器打开 http://localhost:8090 → 点 "⚡ 极速" → "🚀 预测"
 ```
 
+> 📌 **你现在跑的是什么数据** —— 一分钟上手流程消费的是仓内 `data/synthetic/`（2k 场景 / 500 notes / 100 事件流）+ `data/models/world_model_demo.pkl`（合成语料上训练的 LightGBM）。这是 **按公开报告均值校准的演示数据集** —— 可复现、能跑通全链路，但**不是真实流量**。想把自己的数据（CSV / JSONL / OpenAPI / 自建 DB）接进来，跳到 [📦 数据层](#-数据层--默认合成--自接真实数据) 章节。
+
 Mock 模式走模板，没 LLM 调用——能跑通但 soul persona / 群聊 / 评论区辩论 / LLM 校准全部退化。**切真 LLM：**
 
 ```bash
@@ -195,6 +197,75 @@ python -m uvicorn oransim.api:app --port 8001 &
 </td>
 </tr>
 </table>
+
+---
+
+## 📦 数据层 · 默认合成 · 自接真实数据
+
+Oransim 把**框架**（引擎：世界模型、SCM、Hawkes、soul、平台）和**数据**（在里面流的内容）解耦。OSS 仓库自带一份小规模合成数据让全链路开箱即用；每一条数据路径都可以被你自己的真实数据源替换。
+
+### 仓里默认带了什么
+
+| 文件 | 是什么 | 用在哪 |
+|---|---|---|
+| `data/synthetic/notes_v3.json` | 500 条合成 notes · 10 个 niche | caption / tag / 粉丝 / 互动率先验 |
+| `data/synthetic/scenarios_v0_1.jsonl` | 2k 合成场景 · 虚构投放 | 世界模型训练 + held-out 评估 |
+| `data/synthetic/event_streams_v0_1.jsonl` | 100 条合成 Hawkes 事件流 | 扩散预测器拟合 |
+| `data/synthetic/niche_priors_calibrated.json` | 按 niche 的 CTR / CVR 先验均值 | 世界模型无信号时的兜底先验 |
+| `data/models/world_model_demo.pkl` | LightGBM quantile baseline（约 3 MB） | 预训权重 —— `backend/scripts/gen_synthetic_data.py` 可重训 |
+| `data/niches.json` | **Niche 注册表**（10 个条目） | niche key / 中文名 / CTR 先验 / 同义词的单一数据源 |
+
+> ⚠️ **这是演示数据，不是真相。** 合成数据生成器按公开行业报告的均值（CTR / 互动率范围引自广泛引用的行业白皮书）校准，但**不反映**任何特定平台的真实流量、也不反映你的具体受众。要拿 Oransim 做投放决策，你需要 (a) 通过 `DataProvider` 接你自己的数据（见下），或 (b) Enterprise Edition 的**生产验证过的真实面板数据** —— 详见 [Enterprise](#-oranai-enterprise-edition)。
+
+### 把你自己的数据接进来 · 三种路径
+
+Oransim 的 `DataProvider` 接口位于 `oransim/platforms/providers/`。按你数据所在的地方选：
+
+| Provider | 适用场景 | 契约 | 参考 |
+|---|---|---|---|
+| `CSVProvider` | BI / 数据仓库批量导出 | 每张表一个 CSV（`notes.csv` / `kols.csv`） | [`docs/zh/platforms/writing-a-provider.md`](docs/zh/platforms/writing-a-provider.md)（若无则看英文版） |
+| `JSONLProvider` | 流式事件（Kafka 落地成文件） | 每行一个 JSON object | 同上 |
+| `OpenAPIProvider` | 实时 REST / GraphQL | 实现 4 个读接口 | 同上 |
+| *自己实现* | PostgreSQL / ClickHouse / Snowflake / BigQuery | 继承 `DataProvider` 接口 | 同上 |
+
+**你的数据源至少要暴露这些字段**：
+
+```yaml
+notes:
+  - note_id, caption, niche, platform, publish_time,
+    author_fans_count, read_count, like_count, collection_count, comment_count
+kols:
+  - anchor_id, nick, niche, platform, fan_count,
+    interaction_rate, ad_price_cny
+```
+
+字段名可以通过 `provider.field_map` 重命名；完整 schema 在 [`writing-a-provider.md`](docs/en/platforms/writing-a-provider.md) 里。
+
+### 新增一个 niche
+
+如果你的数据覆盖了 10 个默认 niche 之外的赛道（比如汽车、医疗、潮玩），**只需要编辑 `data/niches.json`**，每个 niche 加一个条目：
+
+```json
+{
+  "key": "auto",
+  "zh": "汽车",
+  "en": "Automotive",
+  "synonyms": ["新能源车", "试驾", "特斯拉", "SUV"],
+  "ctr_prior": {"mu": 0.024, "sigma": 0.010, "n": 860},
+  "bias_caption": "汽车 试驾 新能源车 改装",
+  "female_ratio": 30
+}
+```
+
+就这一处修改。注册表在 import 时由 `oransim.config.niches` 加载，所有 niche 相关组件（KOL 库、caption→category 检测、CTR 先验、结构化 schema 输出、soul prompt 渲染）都从注册表读——没有散落在各处的硬编码表要去改。不想改仓内文件，用 `ORAN_NICHES_PATH=/srv/my_niches.json` 指向你自己的 JSON 即可。
+
+### 怎么看现在跑的是 demo 还是真数据
+
+前端会持续显示提示条，出现以下任一条件时闪黄：
+- `LLM_MODE=mock`（没设 LLM key）—— LLM 回退到模板
+- 没注册自定义 `DataProvider` —— 读 `data/synthetic/`
+
+两边都解除后条消失。`GET /api/health` 的 `data_source` 字段也给 observability 用。
 
 ---
 

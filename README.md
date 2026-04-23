@@ -139,6 +139,8 @@ python -m http.server 8090 --directory frontend
 # 4. Open http://localhost:8090 → click "⚡ 极速" → "🚀 Predict"
 ```
 
+> 📌 **What you're running on** — the Quickstart path consumes `data/synthetic/` (2k scenarios / 500 notes / 100 event streams) and `data/models/world_model_demo.pkl` (LightGBM trained on the synthetic corpus). This is a **demo dataset calibrated to public-report means** — it's deterministic, reproducible, and good enough to exercise every code path, but it is **not real traffic**. To plug in your own data (CSV / JSONL / OpenAPI / DB), jump to [📦 Data](#-data--synthetic-by-default-bring-your-own-data-ready).
+
 Mock mode returns deterministic stubs — good for CI / first look, but every LLM-driven feature (soul personas, group-chat, comment-section discourse, LLM calibration of KPIs) falls back to templates. **To unlock the real pipeline, switch to api mode:**
 
 ```bash
@@ -195,6 +197,75 @@ The frontend shows a yellow banner at the top whenever the backend is still in m
 </td>
 </tr>
 </table>
+
+---
+
+## 📦 Data · synthetic by default, bring-your-own-data ready
+
+Oransim separates **framework** (the engine: world model, SCM, Hawkes, souls, platforms) from **data** (what flows through it). The OSS ships a small synthetic dataset so every code path works out-of-the-box; every path is replaceable with your own source.
+
+### What ships in the box
+
+| File | What it is | How it's used |
+|---|---|---|
+| `data/synthetic/notes_v3.json` | 500 synthetic notes · 10 niches | caption / tag / fans / engagement priors |
+| `data/synthetic/scenarios_v0_1.jsonl` | 2k scenarios · synthetic campaigns | world-model training + held-out eval |
+| `data/synthetic/event_streams_v0_1.jsonl` | 100 synthetic Hawkes event streams | diffusion forecaster fit |
+| `data/synthetic/niche_priors_calibrated.json` | Per-niche CTR / CVR prior means | fallback when world model has no signal |
+| `data/models/world_model_demo.pkl` | LightGBM quantile baseline (~3 MB) | shipped weights — retrain with `backend/scripts/gen_synthetic_data.py` |
+| `data/niches.json` | **Niche registry** (10 entries) | single source of truth for niche keys, display labels, CTR priors, synonyms |
+
+> ⚠️ **This is a demo dataset, not truth.** The synthetic generator calibrates to public-report means (CTR / engagement ranges from widely cited industry reports) but doesn't reflect any specific platform's real traffic or your particular audience. For marketing decisions you need either (a) your own data via a `DataProvider` (below), or (b) the Enterprise Edition's production-proven real-panel data — see [Enterprise](#-oranai-enterprise-edition).
+
+### Plugging in your data — three paths
+
+Oransim's `DataProvider` interface lives in `oransim/platforms/providers/`. Pick the path that matches where your data lives:
+
+| Provider | When to use | Contract | Reference |
+|---|---|---|---|
+| `CSVProvider` | batch export from BI / data warehouse | one CSV per table (`notes.csv`, `kols.csv`) | [`docs/en/platforms/writing-a-provider.md`](docs/en/platforms/writing-a-provider.md) |
+| `JSONLProvider` | streamed events (Kafka tailed to file) | one JSON object per line | same doc |
+| `OpenAPIProvider` | live REST / GraphQL | implement 4 read endpoints | same doc |
+| *Write-your-own* | PostgreSQL / ClickHouse / Snowflake / BigQuery | subclass `DataProvider` | same doc |
+
+**Minimum schema** your source needs to expose:
+
+```yaml
+notes:
+  - note_id, caption, niche, platform, publish_time,
+    author_fans_count, read_count, like_count, collection_count, comment_count
+kols:
+  - anchor_id, nick, niche, platform, fan_count,
+    interaction_rate, ad_price_cny
+```
+
+Field names can be remapped via `provider.field_map`; the exact shape is documented in [`writing-a-provider.md`](docs/en/platforms/writing-a-provider.md).
+
+### Adding a new niche
+
+If your data covers niches beyond the 10 shipping demo niches (e.g. automotive, healthcare, toys-and-collectibles), **edit `data/niches.json`** — add one entry per niche:
+
+```json
+{
+  "key": "auto",
+  "zh": "汽车",
+  "en": "Automotive",
+  "synonyms": ["新能源车", "试驾", "特斯拉", "SUV"],
+  "ctr_prior": {"mu": 0.024, "sigma": 0.010, "n": 860},
+  "bias_caption": "汽车 试驾 新能源车 改装",
+  "female_ratio": 30
+}
+```
+
+That's the only edit. The registry is loaded at import time by `oransim.config.niches` and every niche-aware component (KOL library, caption→category detection, CTR priors, structured schema outputs, soul prompt rendering) reads from there — no scattered hardcoded tables to hunt down. Point at a custom path with `ORAN_NICHES_PATH=/srv/my_niches.json` if you'd rather not edit the in-repo file.
+
+### Telling when you're on demo data vs real data
+
+The frontend shows a persistent banner whenever:
+- `LLM_MODE=mock` (no LLM key) — templates instead of real LLM
+- No custom `DataProvider` registered — reading `data/synthetic/`
+
+Both cleared when you ship a real key + a real provider. The system-status panel also exposes `GET /api/health`'s `data_source` field for observability.
 
 ---
 
