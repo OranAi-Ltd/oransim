@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from ..config.niches import en_to_zh as _niche_en_to_zh
 from ..data.creatives import Creative
 from ..data.kols import KOL
 from ..data.population import AGE_BUCKETS, CITY_TIER, OCCUPATION, Population
@@ -382,16 +383,7 @@ class SoulAgentPool:
             n in p.interests
             for n in [
                 kol.niche,
-                {
-                    "beauty": "美妆",
-                    "mom": "母婴",
-                    "tech": "数码",
-                    "food": "美食",
-                    "fashion": "穿搭",
-                    "fitness": "健身",
-                    "finance": "理财",
-                    "travel": "旅行",
-                }.get(kol.niche, ""),
+                _niche_en_to_zh().get(kol.niche, ""),
             ]
         ):
             base = min(1.0, base * 1.4)

@@ -252,16 +252,9 @@ def _extras_groupchat(scenario, req, first_plat):
     return {"group_chat": gc.to_dict()}
 
 
-_NICHE_ZH_MAP = {
-    "food": "美食",
-    "beauty": "美妆",
-    "mom": "母婴",
-    "tech": "数码",
-    "fashion": "穿搭",
-    "fitness": "健身",
-    "finance": "理财",
-    "travel": "旅行",
-}
+from ..config.niches import en_to_zh as _niche_en_to_zh
+
+_NICHE_ZH_MAP = _niche_en_to_zh()
 
 
 def _extras_world_model(scenario, req, first_plat):

@@ -38,12 +38,15 @@ def _hash_emb(text: str, dim: int = INTEREST_DIM, seed_offset: int = 0) -> np.nd
 
 _RISK_KEYWORDS = ["最", "第一", "100%", "包治", "速效", "彻底根治", "国家级", "无效退款", "顶级"]
 _AIGC_HINT_KW = ["AI 生成", "AIGC", "数字人", "虚拟主播"]
-_CATEGORY_KW = {
-    "beverage": ["奶茶", "咖啡", "饮料", "汽水", "果汁"],
-    "apparel_warm": ["羽绒", "外套", "保暖", "毛衣"],
-    "travel": ["旅行", "酒店", "机票", "vlog", "攻略"],
-    "delivery": ["外卖", "美团", "饿了么"],
-}
+# Caption → category_hint keyword table. Niche synonyms come from the niche
+# registry (data/niches.json via oransim.config.niches); season-factor-only
+# categories (apparel_warm for winter, delivery for weather events) stay local
+# since they don't map to any niche.
+from oransim.config import niches as _niche_registry
+
+_CATEGORY_KW = dict(_niche_registry.synonyms())
+_CATEGORY_KW["apparel_warm"] = ["羽绒", "外套", "保暖", "毛衣"]
+_CATEGORY_KW["delivery"] = ["外卖", "美团", "饿了么"]
 
 
 def make_creative(

@@ -17,6 +17,8 @@ import math
 import time
 import uuid
 
+from ..config.niches import en_to_zh as _niche_en_to_zh
+
 
 def _now_iso() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%S")
@@ -540,20 +542,11 @@ def build_schema_outputs(
         from .tag_lift import compute_tag_lift
 
         # Map English niche keys to Chinese (tag_lift uses Chinese labels)
-        niche_map = {
-            "beauty": "美妆",
-            "mom": "母婴",
-            "tech": "数码",
-            "food": "美食",
-            "fashion": "穿搭",
-            "fitness": "健身",
-            "finance": "理财",
-            "travel": "旅行",
-        }
+        niche_map = _niche_en_to_zh()
         target_zh = None
         if target_niches:
             for n in target_niches:
-                target_zh = niche_map.get(n, n) if n in niche_map else n
+                target_zh = niche_map.get(n, n)
                 break
         tag_lift = compute_tag_lift(target_niche=target_zh, top_k=20, min_support=8)
     except Exception as e:
@@ -564,16 +557,7 @@ def build_schema_outputs(
     try:
         from .content_type_coef import compute_content_type_coefficients
 
-        niche_map = {
-            "beauty": "美妆",
-            "mom": "母婴",
-            "tech": "数码",
-            "food": "美食",
-            "fashion": "穿搭",
-            "fitness": "健身",
-            "finance": "理财",
-            "travel": "旅行",
-        }
+        niche_map = _niche_en_to_zh()
         target_zh = None
         if target_niches:
             for n in target_niches:

@@ -42,6 +42,11 @@ from .kol_optimizer import _EN_TO_ZH, _classify_tier, _load_pool
 # appeared in all kinds of non-travel captions (约会 vlog, 口红攻略,
 # 出行妆), which used to pull every caption without strong features into
 # the travel bucket. Removed — kept only high-specificity travel words.
+# Intentionally kept local (not sourced from the niche registry): this is the
+# caption→ZH-niche short-list used by soul prompts, whose ZH keys differ from
+# the registry canonical zh labels (饮品/食饮/3C/旅游 vs 饮品/美食/数码/旅行).
+# Editing the niche registry won't break this; if you want a new niche to
+# participate in caption detection, add a new entry here too.
 _CAPTION_NICHE_KW = [
     ("饮品", ["奶茶", "咖啡", "拿铁", "美式", "手冲", "茶饮", "气泡水",
              "汽水", "饮料", "下午茶", "果汁", "冰茶"]),

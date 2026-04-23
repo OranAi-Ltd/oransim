@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "_note": "Niche registry for Oransim — single source of truth for niche keys, Chinese display labels, keyword synonyms, and CTR priors. Any hardcoded niche table in the codebase reads from here at import time. Extend this file to add your own niches (or point ORAN_NICHES_PATH at a custom JSON).",
+  "niches": [
+    {
+      "key": "beauty",
+      "zh": "美妆",
+      "en": "Beauty",
+      "synonyms": ["美妆", "口红", "粉底", "眼影", "彩妆", "香水", "腮红", "底妆", "妆前"],
+      "ctr_prior": {"mu": 0.048, "sigma": 0.020, "n": 3100},
+      "bias_caption": "美妆 口红 粉底 测评",
+      "female_ratio": 90
+    },
+    {
+      "key": "fashion",
+      "zh": "穿搭",
+      "en": "Fashion",
+      "synonyms": ["穿搭", "时尚", "OOTD", "搭配", "服装", "外套", "连衣裙", "牛仔"],
+      "ctr_prior": {"mu": 0.035, "sigma": 0.014, "n": 2750},
+      "bias_caption": "穿搭 vintage 设计师 小众",
+      "female_ratio": 85
+    },
+    {
+      "key": "food",
+      "zh": "美食",
+      "en": "Food",
+      "synonyms": ["美食", "探店", "做饭", "家常", "甜品", "小吃"],
+      "ctr_prior": {"mu": 0.044, "sigma": 0.019, "n": 1890},
+      "bias_caption": "美食 探店 做饭 家常",
+      "female_ratio": 60
+    },
+    {
+      "key": "beverage",
+      "zh": "饮品",
+      "en": "Beverage",
+      "synonyms": ["奶茶", "咖啡", "饮料", "汽水", "果汁", "茶饮"],
+      "ctr_prior": {"mu": 0.042, "sigma": 0.018, "n": 2350},
+      "bias_caption": "奶茶 咖啡 茶饮 饮品",
+      "female_ratio": 65
+    },
+    {
+      "key": "fitness",
+      "zh": "健身",
+      "en": "Fitness",
+      "synonyms": ["健身", "减脂", "瑜伽", "跑步", "运动", "塑形", "增肌"],
+      "ctr_prior": {"mu": 0.033, "sigma": 0.013, "n": 1120},
+      "bias_caption": "健身 减脂 跑步 瑜伽",
+      "female_ratio": 55
+    },
+    {
+      "key": "electronics",
+      "zh": "数码",
+      "en": "Electronics",
+      "synonyms": ["数码", "手机", "耳机", "笔记本", "平板", "电脑", "相机", "智能", "3C"],
+      "ctr_prior": {"mu": 0.029, "sigma": 0.011, "n": 1260},
+      "bias_caption": "数码 机械 评测 极客",
+      "female_ratio": 25
+    },
+    {
+      "key": "travel",
+      "zh": "旅行",
+      "en": "Travel",
+      "synonyms": ["旅行", "旅游", "酒店", "民宿", "机票", "景点", "风景", "自驾", "度假"],
+      "ctr_prior": {"mu": 0.031, "sigma": 0.012, "n": 1540},
+      "bias_caption": "旅行 风景 度假 机票",
+      "female_ratio": 52
+    },
+    {
+      "key": "home",
+      "zh": "家居",
+      "en": "Home",
+      "synonyms": ["家居", "收纳", "装修", "家具", "清洁", "整理", "沙发"],
+      "ctr_prior": {"mu": 0.036, "sigma": 0.015, "n": 1450},
+      "bias_caption": "家居 收纳 装修 家具",
+      "female_ratio": 70
+    },
+    {
+      "key": "pet",
+      "zh": "宠物",
+      "en": "Pet",
+      "synonyms": ["宠物", "猫咪", "狗狗", "铲屎官", "萌宠", "猫粮", "狗粮"],
+      "ctr_prior": {"mu": 0.046, "sigma": 0.019, "n": 920},
+      "bias_caption": "宠物 猫咪 狗狗 铲屎官",
+      "female_ratio": 68
+    },
+    {
+      "key": "parenting",
+      "zh": "母婴",
+      "en": "Parenting",
+      "synonyms": ["母婴", "育儿", "辅食", "宝宝", "奶粉", "童装", "亲子"],
+      "ctr_prior": {"mu": 0.039, "sigma": 0.016, "n": 870},
+      "bias_caption": "母婴 育儿 宝宝 辅食",
+      "female_ratio": 92
+    }
+  ]
+}

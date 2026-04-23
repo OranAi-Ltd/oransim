@@ -81,18 +81,12 @@ def _estimated_roi(fans: int, niche_match: bool = True) -> float:
     return round(efficiency * (2.0 if niche_match else 1.2), 3)
 
 
-_EN_TO_ZH = {
-    "beauty": "美妆",
-    "fashion": "穿搭",
-    "food": "美食",
-    "electronics": "数码",
-    "travel": "旅行",
-    "parenting": "母婴",
-    "fitness": "健身",
-    "finance": "理财",
-    "mom": "母婴",
-    "tech": "数码",
-}
+# EN→ZH niche map sourced from the niche registry. Legacy aliases (mom / tech)
+# kept here locally so old ``synthetic`` fixtures / user data that still uses
+# those keys continues to render correctly.
+from ..config.niches import en_to_zh as _niche_en_to_zh
+
+_EN_TO_ZH = {**_niche_en_to_zh(), "mom": "母婴", "tech": "数码"}
 
 
 def _normalize_niche(n: str) -> str:

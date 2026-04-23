@@ -21,17 +21,13 @@ class KOL:
     emb: np.ndarray  # (64,) — audience interest fingerprint
 
 
-NICHES = ["beauty", "mom", "tech", "food", "fashion", "fitness", "finance", "travel"]
-NICHE_BIAS_CAPTIONS = {
-    "beauty": "美妆 口红 粉底 测评",
-    "mom": "母婴 育儿 妈妈 辅食",
-    "tech": "数码 机械 评测 极客",
-    "food": "美食 探店 做饭 家常",
-    "fashion": "穿搭 vintage 设计师 小众",
-    "fitness": "健身 减脂 跑步 瑜伽",
-    "finance": "理财 基金 省钱 性价比",
-    "travel": "旅行 vlog 攻略 风景",
-}
+# Niche list + bias captions are driven by data/niches.json via the loader
+# in oransim.config.niches. Extending the registry there is the only edit
+# needed to support new niches throughout the codebase.
+from oransim.config import niches as _niche_registry
+
+NICHES = _niche_registry.niche_keys()
+NICHE_BIAS_CAPTIONS = _niche_registry.bias_captions()
 
 
 def generate_kol_library(n_per_platform: int = 50, seed: int = 7) -> list[KOL]:

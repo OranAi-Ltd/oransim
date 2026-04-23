@@ -8,18 +8,10 @@ Lives inside the ``oransim`` package so the API can import it as
 from __future__ import annotations
 
 _BUDGET_BUCKETS_ZH = ["小预算", "中档预算", "大预算", "超大预算"]
-_NICHE_ZH = {
-    "beauty": "美妆",
-    "fashion": "穿搭",
-    "food": "美食",
-    "electronics": "数码",
-    "travel": "旅行",
-    "parenting": "母婴",
-    "fitness": "健身",
-    "home": "家居",
-    "beverage": "饮品",
-    "pet": "宠物",
-}
+from .config.niches import en_to_zh as _niche_en_to_zh
+
+# Sourced from data/niches.json — add niches to the registry, not here.
+_NICHE_ZH = _niche_en_to_zh()
 _TIER_ZH = {
     "nano": "尾部",
     "micro": "尾部",
