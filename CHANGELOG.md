@@ -42,6 +42,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   `PredictionGraphDeps.from_api_state()` so production callers are
   unchanged.
 
+- **Niche registry as single source of truth** (`oransim.config.niches`,
+  `config/niches.yaml`) — the 15-niche list + industry→niche mapping +
+  keyword fallback sets (skincare / chaowan / finance) are loaded from
+  one YAML instead of being duplicated across 6 backend modules.
+  Adding a niche now means one edit, not six.
+- **README Data section + Quickstart data callout** (EN + 中文) — the
+  real-data story (Xiaohongshu / KOL / fan-portrait corpus) is now a
+  first-class README section with a callout in Quickstart so new users
+  can find it without digging through docs.
+
 ### Fixed
 - `SoulAgentPool` docstring now matches the two decision modes: template
   mode (Bernoulli from `click_prob`) and LLM-decider mode (LLM returns
@@ -52,6 +62,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   curve now uses `spend_window = min(14, n_days)` so short campaigns
   compress the full budget into their actual window. Regression test +
   real e2e on `/api/predict` with `brand_memory_days=5` both pass.
+- **KOL niche routing** — T2-A1 KOL mix optimizer now falls back to a
+  caption-based niche inference when the explicit industry tag is
+  missing, so creatives in under-tagged niches still match into the
+  correct pool. Adds a lazy-growth path to `SoulAgentPool` so pools can
+  expand past the initial size on demand.
+- **LLM retry wrapper + broader niche detection** — `oransim.runtime`
+  LLM call site now retries on transient 5xx / timeout with the same
+  backoff schedule used by the embedder, and niche detection accepts a
+  wider set of aliases before falling back to default.
 
 ## [0.2.0-alpha] — 2026-04-18
 
