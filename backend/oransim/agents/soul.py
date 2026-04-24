@@ -357,8 +357,7 @@ class SoulAgentPool:
         existing = set(int(i) for i in self.idx)
         rng = np.random.default_rng(self._seed ^ (cur * 2654435761 & 0xFFFFFFFF))
         all_ids = np.arange(self.pop.N, dtype=np.int64)
-        remaining = np.array([i for i in all_ids if int(i) not in existing],
-                             dtype=np.int64)
+        remaining = np.array([i for i in all_ids if int(i) not in existing], dtype=np.int64)
         if len(remaining) == 0:
             return cur
         pick = rng.choice(remaining, size=min(need, len(remaining)), replace=False)

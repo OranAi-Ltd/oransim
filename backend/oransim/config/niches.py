@@ -14,24 +14,21 @@ The shipped JSON covers the 10 niches in ``data/synthetic/notes_v3.json`` so
 the default demo runs coherent. Replace it with your own niches (keeping the
 schema) when you wire in a real ``DataProvider``.
 """
+
 from __future__ import annotations
 
 import json
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List
 
-
-_DEFAULT_PATH = (
-    Path(__file__).resolve().parent.parent.parent.parent / "data" / "niches.json"
-)
+_DEFAULT_PATH = Path(__file__).resolve().parent.parent.parent.parent / "data" / "niches.json"
 
 
 @lru_cache(maxsize=1)
-def _load() -> List[Dict]:
+def _load() -> list[dict]:
     path = Path(os.environ.get("ORAN_NICHES_PATH") or _DEFAULT_PATH)
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)["niches"]
 
 
@@ -40,47 +37,47 @@ def reload() -> None:
     _load.cache_clear()
 
 
-def niches() -> List[Dict]:
+def niches() -> list[dict]:
     """Full list of niche dicts (key / zh / en / synonyms / ctr_prior / ...)."""
     return _load()
 
 
-def niche_keys() -> List[str]:
+def niche_keys() -> list[str]:
     """Ordered list of EN keys — used by kol library + model training."""
     return [n["key"] for n in _load()]
 
 
-def niche_zh_list() -> List[str]:
+def niche_zh_list() -> list[str]:
     """Ordered list of Chinese display labels."""
     return [n["zh"] for n in _load()]
 
 
-def en_to_zh() -> Dict[str, str]:
+def en_to_zh() -> dict[str, str]:
     """EN key → Chinese display label (the map that used to be repeated in
     soul.py / schema_outputs.py / predict.py / kol_optimizer.py ...)."""
     return {n["key"]: n["zh"] for n in _load()}
 
 
-def zh_to_en() -> Dict[str, str]:
+def zh_to_en() -> dict[str, str]:
     """Chinese label → EN key (reverse map, for caption-detect fallbacks)."""
     return {n["zh"]: n["key"] for n in _load()}
 
 
-def synonyms() -> Dict[str, List[str]]:
+def synonyms() -> dict[str, list[str]]:
     """EN key → list of keyword/brand synonyms used for caption→niche match."""
     return {n["key"]: list(n.get("synonyms", [])) for n in _load()}
 
 
-def ctr_priors() -> Dict[str, Dict[str, float]]:
+def ctr_priors() -> dict[str, dict[str, float]]:
     """EN key → {mu, sigma, n} industry CTR priors (for CTR fallback / display)."""
     return {n["key"]: dict(n["ctr_prior"]) for n in _load()}
 
 
-def bias_captions() -> Dict[str, str]:
+def bias_captions() -> dict[str, str]:
     """EN key → short caption used by mock KOL embedding (kols.py NICHE_BIAS_CAPTIONS)."""
     return {n["key"]: n.get("bias_caption", n["zh"]) for n in _load()}
 
 
-def female_ratio() -> Dict[str, int]:
+def female_ratio() -> dict[str, int]:
     """EN key → approximate female fan ratio (for mock KOL demographics)."""
     return {n["key"]: int(n.get("female_ratio", 50)) for n in _load()}

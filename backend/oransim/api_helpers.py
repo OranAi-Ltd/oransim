@@ -61,7 +61,8 @@ def build_scenario(req: PredictRequest) -> tuple[Scenario, dict]:
             # Synthetic-pool label (zh) → mock library niche key (en).
             # 宠物 / 家居 have no mock counterpart; leave unconstrained.
             _POOL_ZH_TO_MOCK_EN = {
-                "饮品": "food", "食饮": "food",
+                "饮品": "food",
+                "食饮": "food",
                 "美妆": "beauty",
                 "服装": "fashion",
                 "3C": "tech",

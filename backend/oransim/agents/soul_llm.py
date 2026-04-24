@@ -248,7 +248,7 @@ def _extract_json_strict(s: str) -> dict:
     try:
         return json.loads(s[i : j + 1])
     except json.JSONDecodeError as e:
-        raise ValueError(f"JSON parse failed: {e}; content={s[i:j+1][:120]!r}")
+        raise ValueError(f"JSON parse failed: {e}; content={s[i:j+1][:120]!r}") from e
 
 
 # ---------------------------------------------------------------------------
@@ -305,7 +305,7 @@ def call_llm_json_with_retry(
             last_err = e
             if attempt >= max_retries:
                 break
-            time.sleep(0.5 * (2 ** attempt))  # 0.5s → 1s → 2s
+            time.sleep(0.5 * (2**attempt))  # 0.5s → 1s → 2s
             # On JSON parse failure, nudge the model toward a stricter format
             if isinstance(e, (ValueError, json.JSONDecodeError)):
                 for msg in reversed(body.get("messages", [])):
