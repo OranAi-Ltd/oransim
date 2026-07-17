@@ -706,7 +706,7 @@ Built by **[OranAI Ltd.](https://oran.cn)** (橙果视界（深圳）科技有�
 
 ### Core Maintainer
 
-**Mingfu Zhang（张铭夫）** · CTO & Core Architect, OranAI Ltd. · [`cto@orannai.com`](mailto:cto@orannai.com) · [@OranAi-Ltd](https://github.com/OranAi-Ltd)
+**Mingfu Zhang/Fakong Yin（张铭夫/尹法空）** · CTO & Core Architect, OranAI Ltd. · [`cto@orannai.com`](mailto:cto@orannai.com) · [@OranAi-Ltd](https://github.com/OranAi-Ltd)
 
 Sole author of this repository's causal engine — 64-node Pearl SCM, per-arm counterfactual world model, causal neural Hawkes diffusion layer, Universal Embedding Bus, 8-router FastAPI backend, 5 platform adapters (XHS · TikTok · Douyin · Instagram Reels · YouTube Shorts), the LightGBM quantile baseline pipeline, and the 9-tab production frontend. End-to-end range across marketing strategy · ad-tech product · causal ML / RL / agent-based simulation · backend + data infrastructure — rare for a single engineer.
 
