@@ -8,10 +8,12 @@ Google Gemini, Qwen DashScope). Select at runtime with env:
   LLM_PROVIDER=openai|anthropic|gemini|qwen   (default: openai)
   LLM_BASE_URL=...                   (OpenAI-compat only; per-provider
                                        overrides like ANTHROPIC_BASE_URL,
-                                       GEMINI_BASE_URL, DASHSCOPE_BASE_URL)
+                                       GEMINI_BASE_URL, DASHSCOPE_BASE_URL,
+                                       ATLASCLOUD_BASE_URL)
   LLM_API_KEY=...                    (or provider-specific:
                                        OPENAI_API_KEY, ANTHROPIC_API_KEY,
-                                       GEMINI_API_KEY, DASHSCOPE_API_KEY)
+                                       GEMINI_API_KEY, DASHSCOPE_API_KEY,
+                                       ATLASCLOUD_API_KEY)
   LLM_MODEL=gpt-5.4 | claude-sonnet-4-6 | gemini-2.5-pro | qwen-plus | ...
 
 When ``LLM_PROVIDER=openai`` (the default), behavior is bit-compatible with
@@ -26,15 +28,20 @@ import time
 import urllib.error
 import urllib.request
 
-from .llm_providers import get_provider, resolve_provider_name
+from .llm_providers import (
+    get_provider,
+    resolve_atlascloud_base_url,
+    resolve_model_name,
+    resolve_provider_name,
+)
 from .soul import Persona
 
 MODE = os.environ.get("LLM_MODE", "mock")
 # Base URL / API key are resolved by the provider registry; kept here for
 # the legacy :func:`llm_info` report and the cost estimator.
 BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1").rstrip("/")
-API_KEY = os.environ.get("LLM_API_KEY", "")
-MODEL = os.environ.get("LLM_MODEL", "gpt-5.4")
+API_KEY = os.environ.get("LLM_API_KEY", "") or os.environ.get("OPENAI_API_KEY", "")
+MODEL = resolve_model_name()
 TIMEOUT = float(os.environ.get("LLM_TIMEOUT", "15"))
 
 
@@ -146,7 +153,30 @@ def _provider_key_present() -> bool:
             or os.environ.get("QWEN_API_KEY")
             or os.environ.get("LLM_API_KEY")
         )
+    if name == "atlascloud":
+        return bool(
+            os.environ.get("ATLASCLOUD_API_KEY")
+            or os.environ.get("ATLAS_CLOUD_API_KEY")
+            or os.environ.get("LLM_API_KEY")
+        )
     return False
+
+
+def _compat_base_url() -> str:
+    if resolve_provider_name() == "atlascloud":
+        return resolve_atlascloud_base_url()
+    return os.environ.get("LLM_BASE_URL", BASE_URL).rstrip("/")
+
+
+def _compat_api_key() -> str:
+    if resolve_provider_name() == "atlascloud":
+        return (
+            os.environ.get("ATLASCLOUD_API_KEY")
+            or os.environ.get("ATLAS_CLOUD_API_KEY")
+            or os.environ.get("LLM_API_KEY")
+            or ""
+        )
+    return os.environ.get("LLM_API_KEY") or os.environ.get("OPENAI_API_KEY") or API_KEY
 
 
 def llm_available() -> bool:
@@ -159,8 +189,10 @@ def llm_info() -> dict:
     return {
         "mode": os.environ.get("LLM_MODE", MODE),
         "provider": resolve_provider_name(),
-        "base_url": os.environ.get("LLM_BASE_URL", BASE_URL),
-        "model": os.environ.get("LLM_MODEL", MODEL),
+        "base_url": _compat_base_url()
+        if resolve_provider_name() in {"openai", "atlascloud"}
+        else os.environ.get("LLM_BASE_URL", BASE_URL),
+        "model": resolve_model_name(),
         "api_key_set": _provider_key_present(),
     }
 
@@ -199,7 +231,7 @@ def soul_infer_llm(
         result = provider.generate(
             system=SYSTEM,
             user=prompt,
-            model=MODEL,
+            model=resolve_model_name(),
             temperature=0.7,
             max_tokens=250,
             stream=stream_ok,
@@ -279,8 +311,8 @@ def call_llm_json_with_retry(
         raise RuntimeError("LLM mode is not 'api' or API key missing")
     if use_stream is None:
         use_stream = os.environ.get("LLM_STREAM", "1") not in ("0", "false", "False")
-    headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
-    target = url or f"{BASE_URL}/chat/completions"
+    headers = {"Authorization": f"Bearer {_compat_api_key()}", "Content-Type": "application/json"}
+    target = url or f"{_compat_base_url()}/chat/completions"
     # clone body so we don't mutate the caller's dict while injecting hints
     body = json.loads(json.dumps(body))
     last_err: BaseException | None = None
@@ -338,8 +370,8 @@ COST_TABLE_CNY = {
 }
 
 
-def estimate_cost_cny(tokens_in: int, tokens_out: int, model: str = MODEL) -> float:
-    model_l = model.lower()
+def estimate_cost_cny(tokens_in: int, tokens_out: int, model: str | None = None) -> float:
+    model_l = (model or resolve_model_name()).lower()
     for k, (pin, pout) in COST_TABLE_CNY.items():
         if k in model_l:
             return (tokens_in / 1_000_000) * pin + (tokens_out / 1_000_000) * pout

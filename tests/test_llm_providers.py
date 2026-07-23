@@ -32,6 +32,9 @@ def test_resolve_provider_name_aliases():
     assert resolve_provider_name("google") == "gemini"
     assert resolve_provider_name("qwen") == "qwen_dashscope"
     assert resolve_provider_name("dashscope") == "qwen_dashscope"
+    assert resolve_provider_name("atlascloud") == "atlascloud"
+    assert resolve_provider_name("atlas-cloud") == "atlascloud"
+    assert resolve_provider_name("atlas") == "atlascloud"
 
 
 def test_resolve_provider_name_case_insensitive_and_defaults(monkeypatch):
@@ -67,6 +70,7 @@ def test_get_provider_routes_by_env(monkeypatch):
         ("anthropic", AnthropicProvider),
         ("gemini", GeminiProvider),
         ("qwen", QwenDashScopeProvider),
+        ("atlascloud", OpenAICompatProvider),
     ]:
         reset_provider_cache()
         monkeypatch.setenv("LLM_PROVIDER", env_val)
@@ -75,6 +79,43 @@ def test_get_provider_routes_by_env(monkeypatch):
             f"LLM_PROVIDER={env_val} should build {expected_type.__name__}, "
             f"got {type(provider).__name__}"
         )
+
+
+def test_atlascloud_provider_uses_openai_compat_preset(monkeypatch):
+    from oransim.agents.llm_providers import get_provider, reset_provider_cache
+
+    monkeypatch.setenv("LLM_PROVIDER", "atlas")
+    monkeypatch.setenv("ATLASCLOUD_API_KEY", "ak-atlas")
+    # Copied .env.example values should not override the Atlas preset defaults.
+    monkeypatch.setenv("LLM_BASE_URL", "https://api.openai.com/v1")
+    monkeypatch.setenv("LLM_MODEL", "gpt-5.4")
+
+    reset_provider_cache()
+    provider = get_provider()
+
+    assert provider.name == "atlascloud"
+    assert provider.base_url == "https://api.atlascloud.ai/v1"
+    assert provider.api_key == "ak-atlas"
+
+
+def test_atlascloud_allows_specific_overrides(monkeypatch):
+    from oransim.agents.llm_providers import (
+        get_provider,
+        reset_provider_cache,
+        resolve_model_name,
+    )
+
+    monkeypatch.setenv("LLM_PROVIDER", "atlascloud")
+    monkeypatch.setenv("ATLAS_CLOUD_API_KEY", "ak-alias")
+    monkeypatch.setenv("ATLASCLOUD_BASE_URL", "https://atlas.example/v1")
+    monkeypatch.setenv("ATLASCLOUD_MODEL", "deepseek-ai/deepseek-v4-pro")
+
+    reset_provider_cache()
+    provider = get_provider()
+
+    assert provider.base_url == "https://atlas.example/v1"
+    assert provider.api_key == "ak-alias"
+    assert resolve_model_name() == "deepseek-ai/deepseek-v4-pro"
 
 
 # --------------------------------------------------------- OpenAI-compat
@@ -214,6 +255,56 @@ def test_llm_info_reports_active_provider(monkeypatch):
     assert info["provider"] == "anthropic"
     assert info["api_key_set"] is True
     assert soul_llm.llm_available() is True
+
+
+def test_llm_info_reports_atlascloud_provider(monkeypatch):
+    from oransim.agents import soul_llm
+    from oransim.agents.llm_providers import reset_provider_cache
+
+    reset_provider_cache()
+    monkeypatch.setenv("LLM_MODE", "api")
+    monkeypatch.setenv("LLM_PROVIDER", "atlas-cloud")
+    monkeypatch.setenv("ATLAS_CLOUD_API_KEY", "ak-atlas")
+    monkeypatch.setenv("LLM_BASE_URL", "https://api.openai.com/v1")
+    monkeypatch.setenv("LLM_MODEL", "gpt-5.4")
+
+    info = soul_llm.llm_info()
+
+    assert info["provider"] == "atlascloud"
+    assert info["base_url"] == "https://api.atlascloud.ai/v1"
+    assert info["model"] == "qwen/qwen3.5-flash"
+    assert info["api_key_set"] is True
+    assert soul_llm.llm_available() is True
+
+
+def test_atlascloud_legacy_json_helper_uses_atlas_endpoint(monkeypatch):
+    from oransim.agents import soul_llm
+    from oransim.agents.llm_providers import reset_provider_cache
+
+    captured = {}
+
+    def fake_http_post(url, headers, body, timeout):
+        captured.update(url=url, headers=headers, body=body, timeout=timeout)
+        return {
+            "choices": [{"message": {"content": '{"ok": true}'}}],
+            "usage": {"prompt_tokens": 3, "completion_tokens": 2},
+        }
+
+    reset_provider_cache()
+    monkeypatch.setenv("LLM_MODE", "api")
+    monkeypatch.setenv("LLM_PROVIDER", "atlascloud")
+    monkeypatch.setenv("ATLASCLOUD_API_KEY", "ak-atlas")
+    monkeypatch.setattr(soul_llm, "_http_post", fake_http_post)
+
+    parsed, usage = soul_llm.call_llm_json_with_retry(
+        {"messages": [{"role": "user", "content": "{}"}], "model": "qwen/qwen3.5-flash"},
+        use_stream=False,
+    )
+
+    assert parsed == {"ok": True}
+    assert usage == {"prompt_tokens": 3, "completion_tokens": 2}
+    assert captured["url"] == "https://api.atlascloud.ai/v1/chat/completions"
+    assert captured["headers"]["Authorization"] == "Bearer ak-atlas"
 
 
 def test_llm_info_mock_mode_has_no_key(monkeypatch):
