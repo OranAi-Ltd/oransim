@@ -1,0 +1,11 @@
+{
+  "windows": 4,
+  "methods_per_window": {
+    "kuairand/standard": 12,
+    "kuairand/random": 12,
+    "retail/2010": 9,
+    "retail/2011": 9
+  },
+  "neural_replays": 90,
+  "history_selections": 12
+}

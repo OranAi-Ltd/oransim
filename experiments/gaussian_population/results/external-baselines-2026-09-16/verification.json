@@ -1,0 +1,31 @@
+{
+  "source_hash_matches": true,
+  "checkpoint_hashes_match": 24,
+  "candidate_fits": 48,
+  "validation_selections": 24,
+  "finite_predictions": true,
+  "metrics_recomputed": true,
+  "origin_alignment": "export_population_comparison_tables.py and plot_results.py --refresh-data",
+  "tests": "4 passed before experiment execution",
+  "publication": {
+    "pdf_pages": 24,
+    "tables": 8,
+    "figures": 4,
+    "references": 21,
+    "source_bundle_files": 22,
+    "cold_compile": true,
+    "pdf_text_matches": true,
+    "standalone_plot_pngs_match": true,
+    "reviewed_pdf_pages": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      23
+    ],
+    "log_warnings": false,
+    "pdf_sha256": "324d0dc416f7a3f051ec62c31abb08b074b99504ed925248b39ccfc7edddf7a1",
+    "bundle_sha256": "49989f023e816ce67d81800dbf8c1bbd4e33e0d2101dc0a1ca7b090d00fcf7fb"
+  }
+}

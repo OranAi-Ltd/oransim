@@ -1,0 +1,62 @@
+{
+  "method": "negative_binomial_INGARCH_1_1",
+  "config": {
+    "horizons": [
+      1,
+      3,
+      7
+    ],
+    "stationarity_margin": 1e-06,
+    "stationary_mean_lower": 0.001,
+    "stationary_mean_upper_rule": "max(10, 100*train_mean, 10*train_max)",
+    "dispersion_bounds": [
+      0.01,
+      100000.0
+    ],
+    "coefficient_logit_bounds": [
+      -12.0,
+      12.0
+    ],
+    "starts_alpha_beta": [
+      [
+        0.05,
+        0.05
+      ],
+      [
+        0.4,
+        0.1
+      ],
+      [
+        0.18,
+        0.72
+      ],
+      [
+        0.72,
+        0.18
+      ]
+    ],
+    "optimizer": "L-BFGS-B",
+    "maxiter": 2000,
+    "ftol": 1e-12,
+    "gtol": 1e-06,
+    "fallback": "Powell with the same bounds if no L-BFGS-B start converges",
+    "selection": "lowest training mean NB NLL among converged starts; finite minimum if none converge",
+    "initialization": "lambda at the first training day equals fitted stationary mean"
+  },
+  "source_sha256": "c9cc1dae81b1c752f01d54960d4cd7964ed267aee3496cb1d4b7e73ae5b4ec71",
+  "numpy": "2.4.4",
+  "scipy": "1.17.1",
+  "input_slots": {
+    "kuairand/standard": "kuairand/standard/aggregate/records.json",
+    "kuairand/random": "kuairand/random/aggregate/records.json",
+    "retail/2010": "retail/2010/records.json",
+    "retail/2011": "retail/2011/records.json"
+  },
+  "private_root": "models/gaussian_population/benchmarks",
+  "observations": "Total joint-pattern counts per day; only aggregate records consumed.",
+  "training": "Conditional NB2 MLE on training dates only; initial mean is fitted stationary mean.",
+  "evaluation": "Validation and past test counts update intensity without parameter refitting; endpoint means at horizons 1/3/7.",
+  "likelihood_scope": "NLL per daily total; one-step exact conditional NB, multi-step plug-in NB diagnostic, unlike the mean-cell NB NLL of market models.",
+  "reference": "https://doi.org/10.1111/j.1467-9892.2006.00496.x",
+  "reference_scope": "Original reference is Poisson INGARCH; this baseline uses an NB2 observation extension."
+}

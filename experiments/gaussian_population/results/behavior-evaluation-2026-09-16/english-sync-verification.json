@@ -1,0 +1,47 @@
+{
+  "english_equations": {
+    "main_unchanged": 16,
+    "appendix_unchanged": 19,
+    "new_scoring": 3
+  },
+  "chinese_math_unchanged": true,
+  "authors_method_motivation_and_bibliography_unchanged": true,
+  "english_conclusion_unchanged": true,
+  "frozen_score_tables_match": [
+    "behavior-nll.tex",
+    "behavior-response.tex",
+    "retail-behavior-counts.tex",
+    "ablation-representation.tex",
+    "ablation-dynamics.tex"
+  ],
+  "all_eight_tables_match_chinese": true,
+  "appendix_E1_settings_match": true,
+  "retail_reductions_percent": [
+    54.6,
+    54.48
+  ],
+  "research_files_unchanged": 20,
+  "stale_dependencies_absent": true,
+  "pdf_pages": 22,
+  "main_tables": 8,
+  "appendix_tables": 1,
+  "figures": 3,
+  "cited_references": 20,
+  "source_files": 21,
+  "both_final_latex_logs_clean": true,
+  "cold_build_pdf_text_matches": true,
+  "packaged_plot_png_identical": true,
+  "visually_reviewed_pages": [
+    1,
+    10,
+    11,
+    12,
+    13,
+    21,
+    22
+  ],
+  "status": "passed",
+  "fonts_embedded_no_type3": true,
+  "pdf_sha256": "60f9b43acfc05e1e45ed8c53f1862132fa4b20b23bbe7548b54ff9f2e428e424",
+  "source_zip_sha256": "1df5f92a2938c275677562292e324e5a0ef1e85baaaf8484eecff1d877582d03"
+}

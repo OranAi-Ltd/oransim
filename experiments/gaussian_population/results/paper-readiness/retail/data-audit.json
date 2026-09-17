@@ -1,0 +1,15 @@
+{
+  "raw_rows": 1067371,
+  "exact_duplicate_rows_removed": 34335,
+  "cancellation_rows_removed": 19104,
+  "nonpositive_quantity_or_price_rows_removed": 6019,
+  "non_merchandise_rows_removed": 4699,
+  "missing_invoice_or_time_rows_removed": 0,
+  "inconsistent_invoices_removed": 82,
+  "retained_line_rows": 997517,
+  "positive_merchandise_invoices": 39434,
+  "anonymous_invoices": 2904,
+  "known_customer_ids": 5849,
+  "retained_date_min": "2009-12-01",
+  "retained_date_max": "2011-12-09"
+}

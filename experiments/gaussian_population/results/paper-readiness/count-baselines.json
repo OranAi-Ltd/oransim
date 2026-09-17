@@ -1,0 +1,1692 @@
+{
+  "method": "negative_binomial_INGARCH_1_1",
+  "protocol_sha256": "beaf9b59f124bd1f1a2e717addd76c9be0c4f422d7e6122be4bdb091fd941b2f",
+  "likelihood_scope": "NLL per daily total; one-step exact conditional NB, multi-step plug-in NB diagnostic, unlike the mean-cell NB NLL of market models.",
+  "datasets": {
+    "kuairand/standard": {
+      "records_path": "kuairand/standard/aggregate/records.json",
+      "records_sha256": "4b3ac1e8a2fc962b7b7ff9e2cf1d3ff07de11e232177986b41aa1efae7dcb4dc",
+      "count_object": "sampled logged exposures",
+      "splits": {
+        "train": {
+          "start": "2022-04-13",
+          "end": "2022-04-21",
+          "days": 9,
+          "total_count": 4655
+        },
+        "validation": {
+          "start": "2022-04-22",
+          "end": "2022-04-28",
+          "days": 7,
+          "total_count": 1251
+        },
+        "test": {
+          "start": "2022-04-29",
+          "end": "2022-05-08",
+          "days": 10,
+          "total_count": 1881
+        }
+      },
+      "fit": {
+        "parameters": {
+          "stationary_mean": 1096.9648122421245,
+          "omega": 0.007836901409560759,
+          "alpha": 0.9999928555577818,
+          "beta": 2.737616197621287e-10,
+          "dispersion": 18.15384778102856
+        },
+        "training_mean_nll": 6.073060075004675,
+        "converged": true,
+        "optimizer": "L-BFGS-B",
+        "selected_start": 2,
+        "active_bound_coordinates": [
+          1
+        ],
+        "coordinate_order": [
+          "log stationary mean",
+          "alpha logit",
+          "beta logit",
+          "log dispersion"
+        ],
+        "bounds": [
+          [
+            -6.907755278982137,
+            10.853642798363039
+          ],
+          [
+            -12.0,
+            12.0
+          ],
+          [
+            -12.0,
+            12.0
+          ],
+          [
+            -4.605170185988091,
+            11.512925464970229
+          ]
+        ],
+        "iterations": 30,
+        "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+        "attempts": [
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 6.073064520524639,
+            "iterations": 26,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+          },
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 6.073060308852766,
+            "iterations": 28,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+          },
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 6.073060075004675,
+            "iterations": 30,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+          },
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 6.073060713220218,
+            "iterations": 24,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+          }
+        ]
+      },
+      "summary": {
+        "1": {
+          "origins": 10,
+          "mae": 27.201179452181428,
+          "rmse": 37.03168440503173,
+          "count_nll": 5.021598674183757
+        },
+        "3": {
+          "origins": 8,
+          "mae": 35.12944970243427,
+          "rmse": 40.649282121911206,
+          "count_nll": 5.073519996452935
+        },
+        "7": {
+          "origins": 4,
+          "mae": 27.522215208662395,
+          "rmse": 35.50784792851397,
+          "count_nll": 4.902273229728576
+        }
+      },
+      "date_level": [
+        {
+          "origin": "2022-04-29",
+          "target": "2022-04-29",
+          "horizon": 1,
+          "observed": 187,
+          "exposures": 187,
+          "predicted_exposures": 162.00667953927743,
+          "count_nll": 4.928720793335547,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-04-29",
+          "target": "2022-05-01",
+          "horizon": 3,
+          "observed": 194,
+          "exposures": 194,
+          "predicted_exposures": 162.0200384883576,
+          "count_nll": 5.069841105028054,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-04-29",
+          "target": "2022-05-05",
+          "horizon": 7,
+          "observed": 147,
+          "exposures": 147,
+          "predicted_exposures": 162.04675581389128,
+          "count_nll": 4.597612880962814,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-04-30",
+          "target": "2022-04-30",
+          "horizon": 1,
+          "observed": 262,
+          "exposures": 262,
+          "predicted_exposures": 187.006500935066,
+          "count_nll": 6.141539968211362,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-04-30",
+          "target": "2022-05-02",
+          "horizon": 3,
+          "observed": 185,
+          "exposures": 185,
+          "predicted_exposures": 187.0195026795513,
+          "count_nll": 4.742258592685818,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-04-30",
+          "target": "2022-05-06",
+          "horizon": 7,
+          "observed": 156,
+          "exposures": 156,
+          "predicted_exposures": 187.04550561120658,
+          "count_nll": 4.834373229910042,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-01",
+          "target": "2022-05-01",
+          "horizon": 1,
+          "observed": 194,
+          "exposures": 194,
+          "predicted_exposures": 262.0059651087436,
+          "count_nll": 5.476998622525272,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-05-01",
+          "target": "2022-05-03",
+          "horizon": 3,
+          "observed": 184,
+          "exposures": 184,
+          "predicted_exposures": 262.01789523944444,
+          "count_nll": 5.674043707183351,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-01",
+          "target": "2022-05-07",
+          "horizon": 7,
+          "observed": 200,
+          "exposures": 200,
+          "predicted_exposures": 262.0417549894651,
+          "count_nll": 5.3797418846856,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-02",
+          "target": "2022-05-02",
+          "horizon": 1,
+          "observed": 185,
+          "exposures": 185,
+          "predicted_exposures": 194.0064509513464,
+          "count_nll": 4.7597235679102425,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-05-02",
+          "target": "2022-05-04",
+          "horizon": 3,
+          "observed": 170,
+          "exposures": 170,
+          "predicted_exposures": 194.01935267854475,
+          "count_nll": 4.798912906086004,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-02",
+          "target": "2022-05-08",
+          "horizon": 7,
+          "observed": 196,
+          "exposures": 196,
+          "predicted_exposures": 194.0451555799134,
+          "count_nll": 4.797364923355847,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-03",
+          "target": "2022-05-03",
+          "horizon": 1,
+          "observed": 184,
+          "exposures": 184,
+          "predicted_exposures": 185.00651523271068,
+          "count_nll": 4.736355766464669,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-05-03",
+          "target": "2022-05-05",
+          "horizon": 3,
+          "observed": 147,
+          "exposures": 147,
+          "predicted_exposures": 185.01954555356343,
+          "count_nll": 4.925515626858765,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-04",
+          "target": "2022-05-04",
+          "horizon": 1,
+          "observed": 170,
+          "exposures": 170,
+          "predicted_exposures": 184.0065223746891,
+          "count_nll": 4.710989083414608,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-05-04",
+          "target": "2022-05-06",
+          "horizon": 3,
+          "observed": 156,
+          "exposures": 156,
+          "predicted_exposures": 184.01956698372567,
+          "count_nll": 4.791453372438589,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-05",
+          "target": "2022-05-05",
+          "horizon": 1,
+          "observed": 147,
+          "exposures": 147,
+          "predicted_exposures": 170.0066223966064,
+          "count_nll": 4.687285386727517,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-05-05",
+          "target": "2022-05-07",
+          "horizon": 3,
+          "observed": 200,
+          "exposures": 200,
+          "predicted_exposures": 170.01986704021607,
+          "count_nll": 5.045523966625936,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-06",
+          "target": "2022-05-06",
+          "horizon": 1,
+          "observed": 156,
+          "exposures": 156,
+          "predicted_exposures": 147.00678671494475,
+          "count_nll": 4.608159429400185,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-05-06",
+          "target": "2022-05-08",
+          "horizon": 3,
+          "observed": 196,
+          "exposures": 196,
+          "predicted_exposures": 147.0203599867817,
+          "count_nll": 5.5406106947169675,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-07",
+          "target": "2022-05-07",
+          "horizon": 1,
+          "observed": 200,
+          "exposures": 200,
+          "predicted_exposures": 156.00672240866834,
+          "count_nll": 5.3663037590849,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-05-08",
+          "target": "2022-05-08",
+          "horizon": 1,
+          "observed": 196,
+          "exposures": 196,
+          "predicted_exposures": 200.00640805567457,
+          "count_nll": 4.79991036476326,
+          "count_nll_kind": "conditional_NB"
+        }
+      ]
+    },
+    "kuairand/random": {
+      "records_path": "kuairand/random/aggregate/records.json",
+      "records_sha256": "1c3909fd40b008077cd264abb2b229bb1d44e6ff2e8726ac61dc47dbe882c5fd",
+      "count_object": "sampled logged exposures",
+      "splits": {
+        "train": {
+          "start": "2022-04-25",
+          "end": "2022-04-28",
+          "days": 4,
+          "total_count": 2256
+        },
+        "validation": {
+          "start": "2022-04-29",
+          "end": "2022-05-01",
+          "days": 3,
+          "total_count": 2033
+        },
+        "test": {
+          "start": "2022-05-02",
+          "end": "2022-05-08",
+          "days": 7,
+          "total_count": 9101
+        }
+      },
+      "fit": {
+        "parameters": {
+          "stationary_mean": 564.0011842176253,
+          "omega": 532.5444746104849,
+          "alpha": 3.533008984941557e-05,
+          "beta": 0.055738860616463985,
+          "dispersion": 900.9691071473544
+        },
+        "training_mean_nll": 4.8326382835327735,
+        "converged": true,
+        "optimizer": "L-BFGS-B",
+        "selected_start": 1,
+        "active_bound_coordinates": [],
+        "coordinate_order": [
+          "log stationary mean",
+          "alpha logit",
+          "beta logit",
+          "log dispersion"
+        ],
+        "bounds": [
+          [
+            -6.907755278982137,
+            10.940224437486151
+          ],
+          [
+            -12.0,
+            12.0
+          ],
+          [
+            -12.0,
+            12.0
+          ],
+          [
+            -4.605170185988091,
+            11.512925464970229
+          ]
+        ],
+        "iterations": 52,
+        "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+        "attempts": [
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 4.832641866222886,
+            "iterations": 27,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+          },
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 4.8326382835327735,
+            "iterations": 52,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+          },
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 4.8326405651631745,
+            "iterations": 23,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+          },
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 4.8326408682061555,
+            "iterations": 19,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+          }
+        ]
+      },
+      "summary": {
+        "1": {
+          "origins": 7,
+          "mae": 736.1180370184364,
+          "rmse": 746.960251006167,
+          "count_nll": 197.26650038728675
+        },
+        "3": {
+          "origins": 5,
+          "mae": 759.7987471702447,
+          "rmse": 765.6946499184093,
+          "count_nll": 206.28265535784794
+        },
+        "7": {
+          "origins": 1,
+          "mae": 865.9988157821897,
+          "rmse": 865.9988157821897,
+          "count_nll": 252.844369154187
+        }
+      },
+      "date_level": [
+        {
+          "origin": "2022-05-02",
+          "target": "2022-05-02",
+          "horizon": 1,
+          "observed": 1071,
+          "exposures": 1071,
+          "predicted_exposures": 564.007328439778,
+          "count_nll": 105.55439449180801,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-05-02",
+          "target": "2022-05-04",
+          "horizon": 3,
+          "observed": 1381,
+          "exposures": 1381,
+          "predicted_exposures": 564.001203330828,
+          "count_nll": 230.3166082272212,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-02",
+          "target": "2022-05-08",
+          "horizon": 7,
+          "observed": 1430,
+          "exposures": 1430,
+          "predicted_exposures": 564.0011842178103,
+          "count_nll": 252.844369154187,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-03",
+          "target": "2022-05-03",
+          "horizon": 1,
+          "observed": 1411,
+          "exposures": 1411,
+          "predicted_exposures": 564.0194390032826,
+          "count_nll": 244.0133092928238,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-05-03",
+          "target": "2022-05-05",
+          "horizon": 3,
+          "observed": 1205,
+          "exposures": 1205,
+          "predicted_exposures": 564.0012410038888,
+          "count_nll": 155.35868140169805,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-04",
+          "target": "2022-05-04",
+          "horizon": 1,
+          "observed": 1381,
+          "exposures": 1381,
+          "predicted_exposures": 564.0321262628427,
+          "count_nll": 230.28906096641208,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-05-04",
+          "target": "2022-05-06",
+          "horizon": 3,
+          "observed": 1389,
+          "exposures": 1389,
+          "predicted_exposures": 564.0012804709128,
+          "count_nll": 233.9487211423741,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-05",
+          "target": "2022-05-05",
+          "horizon": 1,
+          "observed": 1205,
+          "exposures": 1205,
+          "predicted_exposures": 564.0317735335394,
+          "count_nll": 155.33734140449815,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-05-05",
+          "target": "2022-05-07",
+          "horizon": 3,
+          "observed": 1214,
+          "exposures": 1214,
+          "predicted_exposures": 564.0012793736564,
+          "count_nll": 158.9449683974426,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-06",
+          "target": "2022-05-06",
+          "horizon": 1,
+          "observed": 1389,
+          "exposures": 1389,
+          "predicted_exposures": 564.0255357769964,
+          "count_nll": 233.92690179884698,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-05-06",
+          "target": "2022-05-08",
+          "horizon": 3,
+          "observed": 1430,
+          "exposures": 1430,
+          "predicted_exposures": 564.0012599694907,
+          "count_nll": 252.84429762050377,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2022-05-07",
+          "target": "2022-05-07",
+          "horizon": 1,
+          "observed": 1214,
+          "exposures": 1214,
+          "predicted_exposures": 564.0316888280862,
+          "count_nll": 158.923415993341,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2022-05-08",
+          "target": "2022-05-08",
+          "horizon": 1,
+          "observed": 1430,
+          "exposures": 1430,
+          "predicted_exposures": 564.0258490264196,
+          "count_nll": 252.82107876327723,
+          "count_nll_kind": "conditional_NB"
+        }
+      ]
+    },
+    "retail/2010": {
+      "records_path": "retail/2010/records.json",
+      "records_sha256": "a5b32041c613ab24f7d97f31a8500c52a0249f47f146ddbb64b55caef337d5ee",
+      "count_object": "positive transaction events in the fixed historical customer/product population",
+      "splits": {
+        "train": {
+          "start": "2010-01-01",
+          "end": "2010-02-28",
+          "days": 59,
+          "total_count": 2237
+        },
+        "validation": {
+          "start": "2010-03-01",
+          "end": "2010-03-14",
+          "days": 14,
+          "total_count": 682
+        },
+        "test": {
+          "start": "2010-03-15",
+          "end": "2010-03-31",
+          "days": 17,
+          "total_count": 960
+        }
+      },
+      "fit": {
+        "parameters": {
+          "stationary_mean": 37.80291506963837,
+          "omega": 32.1112954145632,
+          "alpha": 0.15053882949725755,
+          "beta": 2.1508100792368424e-05,
+          "dispersion": 0.8190901610884435
+        },
+        "training_mean_nll": 4.6363297788717235,
+        "converged": true,
+        "optimizer": "L-BFGS-B",
+        "selected_start": 0,
+        "active_bound_coordinates": [],
+        "coordinate_order": [
+          "log stationary mean",
+          "alpha logit",
+          "beta logit",
+          "log dispersion"
+        ],
+        "bounds": [
+          [
+            -6.907755278982137,
+            8.240523703572501
+          ],
+          [
+            -12.0,
+            12.0
+          ],
+          [
+            -12.0,
+            12.0
+          ],
+          [
+            -4.605170185988091,
+            11.512925464970229
+          ]
+        ],
+        "iterations": 49,
+        "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+        "attempts": [
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 4.6363297788717235,
+            "iterations": 49,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+          },
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 4.636329817671437,
+            "iterations": 30,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+          },
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 4.638339377618781,
+            "iterations": 24,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+          },
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 4.6383393775871875,
+            "iterations": 24,
+            "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL"
+          }
+        ]
+      },
+      "summary": {
+        "1": {
+          "origins": 17,
+          "mae": 25.9015675407132,
+          "rmse": 28.5891291855795,
+          "count_nll": 5.128713719117869
+        },
+        "3": {
+          "origins": 15,
+          "mae": 29.52037563396903,
+          "rmse": 31.550551892171963,
+          "count_nll": 5.155396683580842
+        },
+        "7": {
+          "origins": 11,
+          "mae": 30.34303509154718,
+          "rmse": 31.782368296471464,
+          "count_nll": 5.283441330099186
+        }
+      },
+      "date_level": [
+        {
+          "origin": "2010-03-15",
+          "target": "2010-03-15",
+          "horizon": 1,
+          "observed": 56,
+          "exposures": 56,
+          "predicted_exposures": 35.72491799283777,
+          "count_nll": 5.244019616089166,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-15",
+          "target": "2010-03-17",
+          "horizon": 3,
+          "observed": 48,
+          "exposures": 48,
+          "predicted_exposures": 37.755810168997286,
+          "count_nll": 5.021395749329679,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-15",
+          "target": "2010-03-21",
+          "horizon": 7,
+          "observed": 55,
+          "exposures": 55,
+          "predicted_exposures": 37.80289086445306,
+          "count_nll": 5.1956094313109755,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-16",
+          "target": "2010-03-16",
+          "horizon": 1,
+          "observed": 45,
+          "exposures": 45,
+          "predicted_exposures": 40.54223824154662,
+          "count_nll": 4.936842411181685,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-16",
+          "target": "2010-03-18",
+          "horizon": 3,
+          "observed": 83,
+          "exposures": 83,
+          "predicted_exposures": 37.86501118482405,
+          "count_nll": 5.86823851909524,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-16",
+          "target": "2010-03-22",
+          "horizon": 7,
+          "observed": 56,
+          "exposures": 56,
+          "predicted_exposures": 37.80294697816495,
+          "count_nll": 5.220280614148993,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-17",
+          "target": "2010-03-17",
+          "horizon": 1,
+          "observed": 48,
+          "exposures": 48,
+          "predicted_exposures": 38.886414728486244,
+          "count_nll": 5.015415131555894,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-17",
+          "target": "2010-03-19",
+          "horizon": 3,
+          "observed": 54,
+          "exposures": 54,
+          "predicted_exposures": 37.82747628983664,
+          "count_nll": 5.170655657451084,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-17",
+          "target": "2010-03-23",
+          "horizon": 7,
+          "observed": 67,
+          "exposures": 67,
+          "predicted_exposures": 37.80292769059452,
+          "count_nll": 5.488304594582358,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-18",
+          "target": "2010-03-18",
+          "horizon": 1,
+          "observed": 83,
+          "exposures": 83,
+          "predicted_exposures": 39.337995603359,
+          "count_nll": 5.833016334765745,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-18",
+          "target": "2010-03-20",
+          "horizon": 3,
+          "observed": 0,
+          "exposures": 0,
+          "predicted_exposures": 37.837712912630664,
+          "count_nll": 3.157006013458392,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-18",
+          "target": "2010-03-24",
+          "horizon": 7,
+          "observed": 68,
+          "exposures": 68,
+          "predicted_exposures": 37.80293295075532,
+          "count_nll": 5.512404462290256,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-19",
+          "target": "2010-03-19",
+          "horizon": 1,
+          "observed": 54,
+          "exposures": 54,
+          "predicted_exposures": 44.606864348409985,
+          "count_nll": 5.128819367424483,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-19",
+          "target": "2010-03-21",
+          "horizon": 3,
+          "observed": 55,
+          "exposures": 55,
+          "predicted_exposures": 37.95714981728147,
+          "count_nll": 5.194133797707387,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-19",
+          "target": "2010-03-25",
+          "horizon": 7,
+          "observed": 79,
+          "exposures": 79,
+          "predicted_exposures": 37.80299432425084,
+          "count_nll": 5.775173090992558,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-20",
+          "target": "2010-03-20",
+          "horizon": 1,
+          "observed": 0,
+          "exposures": 0,
+          "predicted_exposures": 40.24135161634955,
+          "count_nll": 3.206415492771895,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-20",
+          "target": "2010-03-22",
+          "horizon": 3,
+          "observed": 56,
+          "exposures": 56,
+          "predicted_exposures": 37.85819056185861,
+          "count_nll": 5.219718315689629,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-20",
+          "target": "2010-03-26",
+          "horizon": 7,
+          "observed": 61,
+          "exposures": 61,
+          "predicted_exposures": 37.80294347333975,
+          "count_nll": 5.342824222825059,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-21",
+          "target": "2010-03-21",
+          "horizon": 1,
+          "observed": 55,
+          "exposures": 55,
+          "predicted_exposures": 32.112160929609786,
+          "count_nll": 5.271367895276454,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-21",
+          "target": "2010-03-23",
+          "horizon": 3,
+          "observed": 67,
+          "exposures": 67,
+          "predicted_exposures": 37.673914691663065,
+          "count_nll": 5.490429661125058,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-21",
+          "target": "2010-03-27",
+          "horizon": 7,
+          "observed": 0,
+          "exposures": 0,
+          "predicted_exposures": 37.80284878188465,
+          "count_nll": 3.1562669520383646,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-22",
+          "target": "2010-03-22",
+          "horizon": 1,
+          "observed": 56,
+          "exposures": 56,
+          "predicted_exposures": 40.3916217085063,
+          "count_nll": 5.197252385939,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-22",
+          "target": "2010-03-24",
+          "horizon": 3,
+          "observed": 68,
+          "exposures": 68,
+          "predicted_exposures": 37.86159694670843,
+          "count_nll": 5.511413129524821,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-22",
+          "target": "2010-03-28",
+          "horizon": 7,
+          "observed": 58,
+          "exposures": 58,
+          "predicted_exposures": 37.80294522373462,
+          "count_nll": 5.269455471881743,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-23",
+          "target": "2010-03-23",
+          "horizon": 1,
+          "observed": 67,
+          "exposures": 67,
+          "predicted_exposures": 40.5423386134805,
+          "count_nll": 5.448354147554973,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-23",
+          "target": "2010-03-25",
+          "horizon": 3,
+          "observed": 79,
+          "exposures": 79,
+          "predicted_exposures": 37.865013460096726,
+          "count_nll": 5.77374311105867,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-23",
+          "target": "2010-03-29",
+          "horizon": 7,
+          "observed": 85,
+          "exposures": 85,
+          "predicted_exposures": 37.80294697933411,
+          "count_nll": 5.916967143858129,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-24",
+          "target": "2010-03-24",
+          "horizon": 1,
+          "observed": 68,
+          "exposures": 68,
+          "predicted_exposures": 42.19826897958471,
+          "count_nll": 5.450309273430465,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-24",
+          "target": "2010-03-26",
+          "horizon": 3,
+          "observed": 61,
+          "exposures": 61,
+          "predicted_exposures": 37.90255077727331,
+          "count_nll": 5.341534098130168,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-24",
+          "target": "2010-03-30",
+          "horizon": 7,
+          "observed": 70,
+          "exposures": 70,
+          "predicted_exposures": 37.80296626814919,
+          "count_nll": 5.560488896630859,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-25",
+          "target": "2010-03-25",
+          "horizon": 1,
+          "observed": 79,
+          "exposures": 79,
+          "predicted_exposures": 42.348843424999195,
+          "count_nll": 5.686267009291025,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-25",
+          "target": "2010-03-27",
+          "horizon": 3,
+          "observed": 0,
+          "exposures": 0,
+          "predicted_exposures": 37.90596406132916,
+          "count_nll": 3.1584508962986795,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-25",
+          "target": "2010-03-31",
+          "horizon": 7,
+          "observed": 75,
+          "exposures": 75,
+          "predicted_exposures": 37.80296802208927,
+          "count_nll": 5.680079750531755,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-26",
+          "target": "2010-03-26",
+          "horizon": 1,
+          "observed": 61,
+          "exposures": 61,
+          "predicted_exposures": 44.00477378803937,
+          "count_nll": 5.282203142982302,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-26",
+          "target": "2010-03-28",
+          "horizon": 3,
+          "observed": 58,
+          "exposures": 58,
+          "predicted_exposures": 37.94350137843628,
+          "count_nll": 5.267874215982015,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-27",
+          "target": "2010-03-27",
+          "horizon": 1,
+          "observed": 0,
+          "exposures": 0,
+          "predicted_exposures": 41.295110473005884,
+          "count_nll": 3.2271710901725825,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-27",
+          "target": "2010-03-29",
+          "horizon": 3,
+          "observed": 85,
+          "exposures": 85,
+          "predicted_exposures": 37.88207760520272,
+          "count_nll": 5.914878002269286,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-28",
+          "target": "2010-03-28",
+          "horizon": 1,
+          "observed": 58,
+          "exposures": 58,
+          "predicted_exposures": 32.11218359396149,
+          "count_nll": 5.356467970711572,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-28",
+          "target": "2010-03-30",
+          "horizon": 3,
+          "observed": 70,
+          "exposures": 70,
+          "predicted_exposures": 37.673915205428,
+          "count_nll": 5.562832519371119,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-29",
+          "target": "2010-03-29",
+          "horizon": 1,
+          "observed": 85,
+          "exposures": 85,
+          "predicted_exposures": 40.84323819748555,
+          "count_nll": 5.844740087279913,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-29",
+          "target": "2010-03-31",
+          "horizon": 3,
+          "observed": 75,
+          "exposures": 75,
+          "predicted_exposures": 37.87183437681781,
+          "count_nll": 5.678646567221391,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2010-03-30",
+          "target": "2010-03-30",
+          "horizon": 1,
+          "observed": 70,
+          "exposures": 70,
+          "predicted_exposures": 44.90797438231393,
+          "count_nll": 5.463536839481469,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2010-03-31",
+          "target": "2010-03-31",
+          "horizon": 1,
+          "observed": 75,
+          "exposures": 75,
+          "predicted_exposures": 42.64997936461063,
+          "count_nll": 5.59593502909515,
+          "count_nll_kind": "conditional_NB"
+        }
+      ]
+    },
+    "retail/2011": {
+      "records_path": "retail/2011/records.json",
+      "records_sha256": "8a6cb91b9807c03a0a65b09587e216bf35cc36adb23ba04ab6d6d5e5e1b3e200",
+      "count_object": "positive transaction events in the fixed historical customer/product population",
+      "splits": {
+        "train": {
+          "start": "2011-01-01",
+          "end": "2011-02-28",
+          "days": 59,
+          "total_count": 2159
+        },
+        "validation": {
+          "start": "2011-03-01",
+          "end": "2011-03-14",
+          "days": 14,
+          "total_count": 565
+        },
+        "test": {
+          "start": "2011-03-15",
+          "end": "2011-03-31",
+          "days": 17,
+          "total_count": 869
+        }
+      },
+      "fit": {
+        "parameters": {
+          "stationary_mean": 36.284645606551656,
+          "omega": 24.2870112278033,
+          "alpha": 0.33064909285625166,
+          "beta": 4.112602699467398e-06,
+          "dispersion": 0.8358804150435906
+        },
+        "training_mean_nll": 4.587089376322887,
+        "converged": true,
+        "optimizer": "L-BFGS-B",
+        "selected_start": 3,
+        "active_bound_coordinates": [
+          2
+        ],
+        "coordinate_order": [
+          "log stationary mean",
+          "alpha logit",
+          "beta logit",
+          "log dispersion"
+        ],
+        "bounds": [
+          [
+            -6.907755278982137,
+            8.20503317259718
+          ],
+          [
+            -12.0,
+            12.0
+          ],
+          [
+            -12.0,
+            12.0
+          ],
+          [
+            -4.605170185988091,
+            11.512925464970229
+          ]
+        ],
+        "iterations": 38,
+        "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+        "attempts": [
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 4.587089409995192,
+            "iterations": 39,
+            "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL"
+          },
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 4.587089489396817,
+            "iterations": 29,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+          },
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 4.603459669315972,
+            "iterations": 25,
+            "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH"
+          },
+          {
+            "method": "L-BFGS-B",
+            "converged": true,
+            "training_mean_nll": 4.587089376322887,
+            "iterations": 38,
+            "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL"
+          }
+        ]
+      },
+      "summary": {
+        "1": {
+          "origins": 17,
+          "mae": 20.525040189469998,
+          "rmse": 23.459103488403933,
+          "count_nll": 5.012552915513048
+        },
+        "3": {
+          "origins": 15,
+          "mae": 24.95826569985262,
+          "rmse": 26.376985868597014,
+          "count_nll": 5.014287147877538
+        },
+        "7": {
+          "origins": 11,
+          "mae": 23.992940886060385,
+          "rmse": 25.746667273719993,
+          "count_nll": 5.08808779011159
+        }
+      },
+      "date_level": [
+        {
+          "origin": "2011-03-15",
+          "target": "2011-03-15",
+          "horizon": 1,
+          "observed": 51,
+          "exposures": 51,
+          "predicted_exposures": 40.81958751110823,
+          "count_nll": 5.066521305240203,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-15",
+          "target": "2011-03-17",
+          "horizon": 3,
+          "observed": 62,
+          "exposures": 62,
+          "predicted_exposures": 36.780457799128286,
+          "count_nll": 5.3725352523032015,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-15",
+          "target": "2011-03-21",
+          "horizon": 7,
+          "observed": 53,
+          "exposures": 53,
+          "predicted_exposures": 36.29057224114114,
+          "count_nll": 5.149673434268324,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-16",
+          "target": "2011-03-16",
+          "horizon": 1,
+          "observed": 52,
+          "exposures": 52,
+          "predicted_exposures": 41.150282838217926,
+          "count_nll": 5.088176526210852,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-16",
+          "target": "2011-03-18",
+          "horizon": 3,
+          "observed": 62,
+          "exposures": 62,
+          "predicted_exposures": 36.816613229266075,
+          "count_nll": 5.371985296297492,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-16",
+          "target": "2011-03-22",
+          "horizon": 7,
+          "observed": 52,
+          "exposures": 52,
+          "predicted_exposures": 36.291004420958544,
+          "count_nll": 5.123796086546668,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-17",
+          "target": "2011-03-17",
+          "horizon": 1,
+          "observed": 62,
+          "exposures": 62,
+          "predicted_exposures": 41.48093329109267,
+          "count_nll": 5.314642089370282,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-17",
+          "target": "2011-03-19",
+          "horizon": 3,
+          "observed": 0,
+          "exposures": 0,
+          "predicted_exposures": 36.85276375323454,
+          "count_nll": 3.183558016229784,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-17",
+          "target": "2011-03-23",
+          "horizon": 7,
+          "observed": 63,
+          "exposures": 63,
+          "predicted_exposures": 36.29143654213061,
+          "count_nll": 5.405538734510877,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-18",
+          "target": "2011-03-18",
+          "horizon": 1,
+          "observed": 62,
+          "exposures": 62,
+          "predicted_exposures": 44.78742557948914,
+          "count_nll": 5.287049174253197,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-18",
+          "target": "2011-03-20",
+          "horizon": 3,
+          "observed": 60,
+          "exposures": 60,
+          "predicted_exposures": 37.21426765466278,
+          "count_nll": 5.316287442599084,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-18",
+          "target": "2011-03-24",
+          "horizon": 7,
+          "observed": 66,
+          "exposures": 66,
+          "predicted_exposures": 36.29575773785455,
+          "count_nll": 5.481358236458583,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-19",
+          "target": "2011-03-19",
+          "horizon": 1,
+          "observed": 0,
+          "exposures": 0,
+          "predicted_exposures": 44.787439177778246,
+          "count_nll": 3.3432614512009766,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-19",
+          "target": "2011-03-21",
+          "horizon": 3,
+          "observed": 53,
+          "exposures": 53,
+          "predicted_exposures": 37.2142691413847,
+          "count_nll": 5.1405891023678745,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-19",
+          "target": "2011-03-25",
+          "horizon": 7,
+          "observed": 56,
+          "exposures": 56,
+          "predicted_exposures": 36.295757755625914,
+          "count_nll": 5.226892594374354,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-20",
+          "target": "2011-03-20",
+          "horizon": 1,
+          "observed": 60,
+          "exposures": 60,
+          "predicted_exposures": 24.287195420746567,
+          "count_nll": 5.666783683532568,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-20",
+          "target": "2011-03-22",
+          "horizon": 3,
+          "observed": 52,
+          "exposures": 52,
+          "predicted_exposures": 34.97294587430676,
+          "count_nll": 5.137685481038075,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-20",
+          "target": "2011-03-26",
+          "horizon": 7,
+          "observed": 0,
+          "exposures": 0,
+          "predicted_exposures": 36.268966353155825,
+          "count_nll": 3.1705088934380483,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-21",
+          "target": "2011-03-21",
+          "horizon": 1,
+          "observed": 53,
+          "exposures": 53,
+          "predicted_exposures": 44.126056682763846,
+          "count_nll": 5.097420160213102,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-21",
+          "target": "2011-03-23",
+          "horizon": 3,
+          "observed": 63,
+          "exposures": 63,
+          "predicted_exposures": 37.14195917316759,
+          "count_nll": 5.391983182621789,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-21",
+          "target": "2011-03-27",
+          "horizon": 7,
+          "observed": 32,
+          "exposures": 32,
+          "predicted_exposures": 36.29489340665423,
+          "count_nll": 4.589515484178941,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-22",
+          "target": "2011-03-22",
+          "horizon": 1,
+          "observed": 52,
+          "exposures": 52,
+          "predicted_exposures": 41.81159462212447,
+          "count_nll": 5.084863196270894,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-22",
+          "target": "2011-03-24",
+          "horizon": 3,
+          "observed": 66,
+          "exposures": 66,
+          "predicted_exposures": 36.8889154665287,
+          "count_nll": 5.470711000483835,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-22",
+          "target": "2011-03-28",
+          "horizon": 7,
+          "observed": 59,
+          "exposures": 59,
+          "predicted_exposures": 36.29186867751914,
+          "count_nll": 5.303755592939151,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-23",
+          "target": "2011-03-23",
+          "horizon": 1,
+          "observed": 63,
+          "exposures": 63,
+          "predicted_exposures": 41.480936010805294,
+          "count_nll": 5.337201144708905,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-23",
+          "target": "2011-03-25",
+          "horizon": 3,
+          "observed": 56,
+          "exposures": 56,
+          "predicted_exposures": 36.852764050584916,
+          "count_nll": 5.220281508842891,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-23",
+          "target": "2011-03-29",
+          "horizon": 7,
+          "observed": 61,
+          "exposures": 61,
+          "predicted_exposures": 36.29143654568495,
+          "count_nll": 5.354737264181752,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-24",
+          "target": "2011-03-24",
+          "horizon": 1,
+          "observed": 66,
+          "exposures": 66,
+          "predicted_exposures": 45.11807467235657,
+          "count_nll": 5.3683819939484545,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-24",
+          "target": "2011-03-26",
+          "horizon": 3,
+          "observed": 0,
+          "exposures": 0,
+          "predicted_exposures": 37.25041802993955,
+          "count_nll": 3.192331219132203,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-24",
+          "target": "2011-03-30",
+          "horizon": 7,
+          "observed": 75,
+          "exposures": 75,
+          "predicted_exposures": 36.296189857249246,
+          "count_nll": 5.707120179865259,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-25",
+          "target": "2011-03-25",
+          "horizon": 1,
+          "observed": 56,
+          "exposures": 56,
+          "predicted_exposures": 46.11003690903161,
+          "count_nll": 5.153965389379959,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-25",
+          "target": "2011-03-27",
+          "horizon": 3,
+          "observed": 32,
+          "exposures": 32,
+          "predicted_exposures": 37.35887079115903,
+          "count_nll": 4.59260790542392,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-25",
+          "target": "2011-03-31",
+          "horizon": 7,
+          "observed": 65,
+          "exposures": 65,
+          "predicted_exposures": 36.29748623498177,
+          "count_nll": 5.456069190465538,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-26",
+          "target": "2011-03-26",
+          "horizon": 1,
+          "observed": 0,
+          "exposures": 0,
+          "predicted_exposures": 42.80355006001565,
+          "count_nll": 3.30609998834994,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-26",
+          "target": "2011-03-28",
+          "horizon": 3,
+          "observed": 59,
+          "exposures": 59,
+          "predicted_exposures": 36.997367484426654,
+          "count_nll": 5.294155182302489,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-27",
+          "target": "2011-03-27",
+          "horizon": 1,
+          "observed": 32,
+          "exposures": 32,
+          "predicted_exposures": 24.287187261798824,
+          "count_nll": 4.6171615130191554,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-27",
+          "target": "2011-03-29",
+          "horizon": 3,
+          "observed": 61,
+          "exposures": 61,
+          "predicted_exposures": 34.97294498227642,
+          "count_nll": 5.3762666703844735,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-28",
+          "target": "2011-03-28",
+          "horizon": 1,
+          "observed": 59,
+          "exposures": 59,
+          "predicted_exposures": 34.86788208275525,
+          "count_nll": 5.3252878511479995,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-28",
+          "target": "2011-03-30",
+          "horizon": 3,
+          "observed": 75,
+          "exposures": 75,
+          "predicted_exposures": 36.12974866544855,
+          "count_nll": 5.71114231159787,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-29",
+          "target": "2011-03-29",
+          "horizon": 1,
+          "observed": 61,
+          "exposures": 61,
+          "predicted_exposures": 43.79545110406813,
+          "count_nll": 5.272841143343919,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-29",
+          "target": "2011-03-31",
+          "horizon": 3,
+          "observed": 65,
+          "exposures": 65,
+          "predicted_exposures": 37.10581355536233,
+          "count_nll": 5.442187646538095,
+          "count_nll_kind": "plug_in_NB_at_endpoint_mean"
+        },
+        {
+          "origin": "2011-03-30",
+          "target": "2011-03-30",
+          "horizon": 1,
+          "observed": 75,
+          "exposures": 75,
+          "predicted_exposures": 44.456786005325085,
+          "count_nll": 5.562624338920042,
+          "count_nll_kind": "conditional_NB"
+        },
+        {
+          "origin": "2011-03-31",
+          "target": "2011-03-31",
+          "horizon": 1,
+          "observed": 65,
+          "exposures": 65,
+          "predicted_exposures": 49.085876025120314,
+          "count_nll": 5.321118614611368,
+          "count_nll_kind": "conditional_NB"
+        }
+      ]
+    }
+  },
+  "missing": [],
+  "complete": true,
+  "generated_utc": "2026-09-12T12:36:53.803858+00:00"
+}

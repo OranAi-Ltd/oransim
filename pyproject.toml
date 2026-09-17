@@ -52,6 +52,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+research = [
+    "torch>=2.2", "pandas>=2.0", "matplotlib>=3.8",
+    "pyarrow>=14", "openpyxl>=3.1", "pytest>=8", "scikit-uplift>=0.5.1",
+]
+causal-research = ["econml>=0.15"]
 dev = [
     "pytest>=8.0",
     "pytest-cov>=5.0",

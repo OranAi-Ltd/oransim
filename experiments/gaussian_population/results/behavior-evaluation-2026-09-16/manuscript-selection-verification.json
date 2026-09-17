@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "scope": "Chinese manuscript result selection",
+  "main_tables": 8,
+  "main_figures": 3,
+  "appendix_behavior_tables": 1,
+  "main_formulas_unchanged": 16,
+  "appendix_A_D_formulas_unchanged": 19,
+  "conclusion_text_unchanged": true,
+  "retained_table_values_unchanged": true,
+  "selected_tables_match_frozen_scores": true,
+  "experiment_artifacts_hash_unchanged": 108,
+  "english_files_hash_unchanged": 37,
+  "links_and_citation_keys_valid": true,
+  "original_supplements_archived": true
+}

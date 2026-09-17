@@ -1,0 +1,662 @@
+{
+  "source_hashes_match": true,
+  "snapshots": [
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-joint_gaussian-train.json",
+      "sha256": "795dfb9f20956e32113d0cbf527c1713328a146f5eb44a27946abee5482ea50f"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-joint_gaussian-final.json",
+      "sha256": "bbe88e83ece40dc4a3a82e0ba69ae8d5cb5111f3d8a90ab82b287a494707c590"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-fixed_gaussian-train.json",
+      "sha256": "56a6793b9d4b21221bcc76cd8cb8f936bfca61b85b781134507d3a2e764a957a"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-fixed_gaussian-final.json",
+      "sha256": "22dc910df4169ab089f4f36d1baaafd32d23d2150c3d492809c63af5d57f530d"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-joint_discrete-train.json",
+      "sha256": "379c8522b9d199577a9bc00b228ad590492f1a493ef7d0e43028cf5ae6433efa"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-joint_discrete-final.json",
+      "sha256": "67c11b94512fe23ff824bd013e25514be7e6bc2c28cf50f973a89e89624de35d"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-separated-train.json",
+      "sha256": "161a9cd05bb54c37b73dbaaabc9831980dd1f3713f37c8e966d02c5b6744ac4f"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-separated-final.json",
+      "sha256": "f013c49eef3a174687738ed52bca19b5e1f061842f4e33a55ebacf86fa52de87"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-static_mixture-train.json",
+      "sha256": "a6009651d34f57eeabdbcae1165275c76bf20edd7a42b14f41d81970979fdb6c"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-static_mixture-final.json",
+      "sha256": "e4714994d6a96df4dc19ca3252257fe10994ac6f6978551e066cba4b5c7a5bc8"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-direct-train.json",
+      "sha256": "764d0f7416f146c2522d25e30bbc1bfdbeb85496369ce4dccea4cd9f23a2e73a"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-direct-final.json",
+      "sha256": "c7ec046a3c06cc268d885ce20ae1190c1edf48b4c7f64bd1e57bcc2934232c91"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-gru-train.json",
+      "sha256": "5c62419d2f44c64b84c66aeb3718bad35297cd89bf0f6a3c2002fe4f0d020910"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260917-gru-final.json",
+      "sha256": "3acdc43aeba79e538ab5dbde8252c614b4750e525c000085bd0b811881fc4349"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-joint_gaussian-train.json",
+      "sha256": "780bc4d5af2421ae9259751a8bcb1bdf4fcf7a3070fa5abdc2d97148980fff92"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-joint_gaussian-final.json",
+      "sha256": "c27f0461055cf964bfbf1aded9270c5467f0299ac9b764c71b980d1de279e4cd"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-fixed_gaussian-train.json",
+      "sha256": "95387539ca6b7911674c4f76c781f7b597cd338243195eea0bb808d88057d4f9"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-fixed_gaussian-final.json",
+      "sha256": "38c4f08e449a46809bd62deb3b94e7e7667d3db08da3b4556149e6729f7ccc19"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-joint_discrete-train.json",
+      "sha256": "67de0358705d2987fbc355a31af896382693539d57eb64e4276a78bd3983f69e"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-joint_discrete-final.json",
+      "sha256": "f7a6c03bc14a50fe8026f79a01e9edf7fd586c9edc80ca951b37c7b04476abad"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-separated-train.json",
+      "sha256": "4ffda81f5f528f08330ceeb22ebda6891ecbec68fee52699678c68b4a3bdc19e"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-separated-final.json",
+      "sha256": "6a749b70a8dd0e7efda4ad83fac059a7daa09f24a4ab66cab130a106359a94d7"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-static_mixture-train.json",
+      "sha256": "c2b4da1377d644b92eb6fd419dd56949d5c0bd0418cceaf36b366de3c74e8ef6"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-static_mixture-final.json",
+      "sha256": "9145dd37ad6d3c881eca6d24acc1ac98ebcddf2205a39f7f1e1f7cadae6cc5bf"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-direct-train.json",
+      "sha256": "ece7b8851ffb56e0f546fcba9ce36b19b49396c40cc1e9c7e65c5a2c7cf8012f"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-direct-final.json",
+      "sha256": "884311fa7fc9b63cd477ff1c28b92fb0719c24a10fc3310a1b9b5bce3a96cac6"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-gru-train.json",
+      "sha256": "58531e0dd9e48d7935a5e0663d23548334d79317fca52456450bcc6e4a1cc6ce"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260916-gru-final.json",
+      "sha256": "987e98a9de701d081214506fa44a6fbbfcb4a7050b50976ccf605b1a829ad2c1"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-joint_gaussian-train.json",
+      "sha256": "c029b78a431a75181201081e9551a9936fcfafae5a45bad552885e797553b8c2"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-joint_gaussian-final.json",
+      "sha256": "36ead9929cad131b655a23d672dbfb9e6578ea56433d7c62b85b5be7d57faed8"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-fixed_gaussian-train.json",
+      "sha256": "c241213590ad7f325b816594c32f97f930b74db5236e57741d89305db2f82170"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-fixed_gaussian-final.json",
+      "sha256": "7cb551c7d014735971dd6db664890a24f0330a5f3c87f2b54115cf39714c96d5"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-joint_discrete-train.json",
+      "sha256": "49ba9bccae481a1cd9515df0af37e4b20428586c4f41552b69c9f1bd264e8b80"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-joint_discrete-final.json",
+      "sha256": "c80fcc014ab7c260257d4e47b246e53c87746b4c43d45a2d515babfd83cbffde"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-separated-train.json",
+      "sha256": "60d734439e7c99c851273f0f08f39a4ee59f919f154cf7f3974abd009623ba51"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-separated-final.json",
+      "sha256": "004b54eea81952dbf259917f6a4587df73678b6b5d232fe12daf9faa31759790"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-static_mixture-train.json",
+      "sha256": "2417ddb1e1bc7fe116fd8f0b81e4666b11b542eeb998c3157ba29aae9920ce17"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-static_mixture-final.json",
+      "sha256": "2f9d1ea60e16f2624ce9acd84cda20f7afa9ae81d61f4ff75f39729e8a6cc888"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-direct-train.json",
+      "sha256": "8d6eba4ac3556749a35112ab9283149e7cfe526f8ad66bba72eeafb883398c02"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-direct-final.json",
+      "sha256": "fac3196fb2bd3f0d3a340315fcbba214688add12b8263d1512641c17227ad762"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-gru-train.json",
+      "sha256": "dffcae887fbaad9aaeeedddf3aa62efcada03b3a3ddc34381373c2c02dfa4539"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-gru-final.json",
+      "sha256": "05e1e5437e90cec9292babc69d2a7ed654243a3bd3acface3d773c892a64f9f7"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/event/20260916-joint_gaussian-train.json",
+      "sha256": "00cb6415fc29db7a240501e17fde744b030b1b0a56f931eaaff3c92afd8f1826"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/event/20260916-joint_gaussian-final.json",
+      "sha256": "ca0f20dd0501b504fd30aadc5b5a4df42f286020d490868f4bea6b343ab6bbc5"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/event/20260915-joint_gaussian-train.json",
+      "sha256": "ff65665691de076bca44bae092fdc2718e95b4da34c61da298fd0dc38fa1ddc1"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/event/20260915-joint_gaussian-final.json",
+      "sha256": "f08e461c0fe2d385971bad7f12a4982dbf1538aaf97e3d6dd98ebf06440e75fd"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/event/20260917-joint_gaussian-train.json",
+      "sha256": "d3a778ee886ad1ba08b6f71717b1f921129d50c583ea8d601dcb25fc7978e704"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/standard/event/20260917-joint_gaussian-final.json",
+      "sha256": "caa5e890e4938c324fbc4d137a0e003f1eab776ed8a87e159b6d7c7817e5037f"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-joint_gaussian-train.json",
+      "sha256": "c58cf7ebbf51a3a2b98976ca8bb7804684e50e37c0468c962e29fe1bc22628b2"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-joint_gaussian-final.json",
+      "sha256": "2e6d41d86046e937a2fcb2e3a8e169852cecb417eecb3836c827fa9c6b7f1db8"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-fixed_gaussian-train.json",
+      "sha256": "197747a29158adfc91599b03dec40f6b9992685938486343e391e1c3e04bad91"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-fixed_gaussian-final.json",
+      "sha256": "930c41ade1677f7921a4d9cd447273c14fb0ed540d1ea71c5341c12bc4da0bf1"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-joint_discrete-train.json",
+      "sha256": "5c8ef577bae9e624381047b95e962d1e7f6363cb9cfc18b0d0d76710a32ed9e3"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-joint_discrete-final.json",
+      "sha256": "d51844d771f8bf34c8932a3311688f2e96b212445edd5a0bd68a13eaaaa72f68"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-separated-train.json",
+      "sha256": "38dd6ed265cc126d40f62afb1a20cf9dbf616bd2be23cc115ba684d7cfd2d60e"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-separated-final.json",
+      "sha256": "d66f653c4d97ce8c3d2c020d5d679ca6dc2469ad824a09f04e98da486cc70daa"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-static_mixture-train.json",
+      "sha256": "cccd7ed4359ea698ed18a92dc1664d078d0a6c61a141a32aa6d8c109786e1ab3"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-static_mixture-final.json",
+      "sha256": "faca28135ebc80c55e12d480c47f4f748f92d1afa498407426a53a1422ae9f8e"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-direct-train.json",
+      "sha256": "4de3c5094f4f61b8d929d9f60bf738d8e249085944c4326545371dee578356f2"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-direct-final.json",
+      "sha256": "de372b4bbfc49ee1873a2036eb8cdb5036abf32ac1f8d60e018caa436742fa08"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-gru-train.json",
+      "sha256": "34bb95c170b46819e27f0284990cc6b9773d4429e047ece23fb5c362905e16e8"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-gru-final.json",
+      "sha256": "a5f9f407bd09995f4dd1ac96c1af4ce3d3d0bc4d247b2464fa36300975008fd4"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-joint_gaussian-train.json",
+      "sha256": "6f1fc9c60cd1c863eec97abbe0239921d80361e7b5c73e5b717e687210d5c4f5"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-joint_gaussian-final.json",
+      "sha256": "dc877758c5adef11f4f6916173fcfc5d98353037c0886992bea43b835fecb78e"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-fixed_gaussian-train.json",
+      "sha256": "22e79dbbc11a3bfd2ca491e6f7d17cd0a71cb37e687f72ede999caa4426e2a87"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-fixed_gaussian-final.json",
+      "sha256": "2a8a72762929c9dc8571a50a24bea96db35808f0d655ff23d1dd773fba62508f"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-joint_discrete-train.json",
+      "sha256": "dcd63e1809318b0259489f10066ea0a4de83f6f871c55f5179784ce4d0def5ca"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-joint_discrete-final.json",
+      "sha256": "e36b134b56cdce415b5f21f475e4367b0fc2d2b5a95cc14ca41fefdf6b6aae02"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-separated-train.json",
+      "sha256": "2890fc069b15fc24ab4437921d93199466ff63ca0becf8dcc34bae65e9ad33c7"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-separated-final.json",
+      "sha256": "dadf49c1b9bdff3727759625d958564c3cf9b4b357bcfbfb15294dd6a35e464b"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-static_mixture-train.json",
+      "sha256": "7c89dbc1d959bd23ff1e61b4709e008f05913632cab4e8880e1d2e4d34b9746e"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-static_mixture-final.json",
+      "sha256": "0bd6886e66e8cd5e310b085e0686c18b59cb103882433fd081177b0aa002745a"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-direct-train.json",
+      "sha256": "eb0c1332a2a27567227d8b0b9abb519ffe1ceabe750fa38d308205eeeb6881cb"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-direct-final.json",
+      "sha256": "806f0c450f413fb2fe87e339ebaa27ae0fb0297acfb02a8d720f3170ce0dda32"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-gru-train.json",
+      "sha256": "33f45471fc7a3001ec6f4c5fd11ba2b0d73995cd10ec4ac4e1b6fe1d287c34b0"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260916-gru-final.json",
+      "sha256": "cc6545997a0233c3f2bd71aee5ef13ad95e25718544e17d334c718737f1d4234"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-joint_gaussian-train.json",
+      "sha256": "4281c934c57b687c79bfb515aa517d5771db7950d6a96850cc506ab3911deecc"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-joint_gaussian-final.json",
+      "sha256": "8cd353e2fc12664808506637b9b0645b59117dbb8166574ccde0593a284fdccf"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-fixed_gaussian-train.json",
+      "sha256": "ea9cac762ab831f3a2ed023ea315a777441ec128f2accc0b4f1f107b9ed570e2"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-fixed_gaussian-final.json",
+      "sha256": "06041fa00a76a434602791e206189ce114d47c9824a8da3b508899868123752f"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-joint_discrete-train.json",
+      "sha256": "6e05d3969f57da20643a0beba035617f553bc02324e1c872b6dd584eed4ce1b1"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-joint_discrete-final.json",
+      "sha256": "67906eca34622f349336899071cd0ee5849ce314bfcf37ae8f09d852ab77c7c5"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-separated-train.json",
+      "sha256": "a47fd8ce93ea36d8c4da19918ec469301f1085d1fb987ec8278092aa7d3a3bbb"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-separated-final.json",
+      "sha256": "c939a20a91425b3462d1100ae6e04b62a6d99810b420c3b572ea011b89faf06d"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-static_mixture-train.json",
+      "sha256": "9a432e7cbfbaadd2eb081f3d465eb3138162d2bd2da12af2ef701eea6e657bb5"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-static_mixture-final.json",
+      "sha256": "7d2666d90f0025bd6f84900c4bdf2a69aa65660e29c7cdf14dd43326cef5fa17"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-direct-train.json",
+      "sha256": "99a141a496ad220b59c514caaa8ecb62e8110a5a651f0e7589b81eb2bb5331c6"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-direct-final.json",
+      "sha256": "7b164930336160bd4b7a4e2d4c7de6124b16a56fb3dec25e0000f23dad32686c"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-gru-train.json",
+      "sha256": "f82025c2cf01b241c5c97e4e4db0eb87ea5c72dee3de03fc76bc6799c3d9ce43"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260917-gru-final.json",
+      "sha256": "1b2f5c3bc2dc82f74886495abe77d96774befaa6d04a7feecbdcb4bafacc65c9"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/event/20260916-joint_gaussian-train.json",
+      "sha256": "4970dfbc7febb763521bd7b2f2f5e7ec1cda811d8c44033c7750d1e5fe22d159"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/event/20260916-joint_gaussian-final.json",
+      "sha256": "778e3fe5542e97552db134fdb82af630bb891d40035e00770f3a6cd0c10964d0"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/event/20260915-joint_gaussian-train.json",
+      "sha256": "25bf8a8b7aa55e3d8fd0705964e1e5947559e41140ea84ce97badc14bdd1743d"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/event/20260915-joint_gaussian-final.json",
+      "sha256": "f2c6fdf2147c5fd2cb02aeedfd9db28697bbead20d361be8e65516d80ae2374e"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/event/20260917-joint_gaussian-train.json",
+      "sha256": "714c6ac50e9cff16fd48aadca8131ae237ef589132b3fc0b50487c611fae72d0"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand/random/event/20260917-joint_gaussian-final.json",
+      "sha256": "fe09de42fb4a1a3ca540d6db39e670b56f0904b4db2fe8526d48cc65e7001113"
+    }
+  ],
+  "quadrature": [
+    {
+      "policy": "standard",
+      "regime": "aggregate",
+      "model": "20260917-joint_gaussian",
+      "high_order_test_nll": 1.1234577909775711,
+      "delta": 2.0007686622802723e-05,
+      "high_order_exposure_mae": 38.178741032343154,
+      "max_absolute_daily_prediction_change": 5.684341886080802e-14
+    },
+    {
+      "policy": "standard",
+      "regime": "aggregate",
+      "model": "20260917-fixed_gaussian",
+      "high_order_test_nll": 1.2480918804553436,
+      "delta": 1.4323533803484167e-07,
+      "high_order_exposure_mae": 38.666831686506555,
+      "max_absolute_daily_prediction_change": 1.1368683772161603e-13
+    },
+    {
+      "policy": "standard",
+      "regime": "aggregate",
+      "model": "20260917-separated",
+      "high_order_test_nll": 1.1285111419989893,
+      "delta": -0.0017462800869856299,
+      "high_order_exposure_mae": 35.68443781681145,
+      "max_absolute_daily_prediction_change": 1.5717263295300654e-06
+    },
+    {
+      "policy": "standard",
+      "regime": "aggregate",
+      "model": "20260917-static_mixture",
+      "high_order_test_nll": 1.1220454669743694,
+      "delta": -5.585795222984302e-05,
+      "high_order_exposure_mae": 31.441561480610268,
+      "max_absolute_daily_prediction_change": 6.5170200969078e-07
+    },
+    {
+      "policy": "standard",
+      "regime": "aggregate",
+      "model": "20260916-joint_gaussian",
+      "high_order_test_nll": 1.122379962100193,
+      "delta": -0.000250699373977481,
+      "high_order_exposure_mae": 35.419364541638025,
+      "max_absolute_daily_prediction_change": 1.582545843348271e-05
+    },
+    {
+      "policy": "standard",
+      "regime": "aggregate",
+      "model": "20260916-fixed_gaussian",
+      "high_order_test_nll": 1.2571162851269269,
+      "delta": 2.3946842286903802e-08,
+      "high_order_exposure_mae": 38.82717051249972,
+      "max_absolute_daily_prediction_change": 8.526512829121202e-14
+    },
+    {
+      "policy": "standard",
+      "regime": "aggregate",
+      "model": "20260916-separated",
+      "high_order_test_nll": 1.142996519096525,
+      "delta": -0.00010810426715535115,
+      "high_order_exposure_mae": 34.40162932591018,
+      "max_absolute_daily_prediction_change": 2.7601084866546444e-06
+    },
+    {
+      "policy": "standard",
+      "regime": "aggregate",
+      "model": "20260916-static_mixture",
+      "high_order_test_nll": 1.1213674688454123,
+      "delta": -0.00010465571912043892,
+      "high_order_exposure_mae": 37.228150451061275,
+      "max_absolute_daily_prediction_change": 0.19600737943514446
+    },
+    {
+      "policy": "standard",
+      "regime": "aggregate",
+      "model": "20260915-joint_gaussian",
+      "high_order_test_nll": 1.1237213251616185,
+      "delta": 0.0002222131112343817,
+      "high_order_exposure_mae": 34.491268088675575,
+      "max_absolute_daily_prediction_change": 0.017229025014330546
+    },
+    {
+      "policy": "standard",
+      "regime": "aggregate",
+      "model": "20260915-fixed_gaussian",
+      "high_order_test_nll": 1.2731356296159284,
+      "delta": -8.261222470551388e-07,
+      "high_order_exposure_mae": 38.44129972270317,
+      "max_absolute_daily_prediction_change": 8.526512829121202e-14
+    },
+    {
+      "policy": "standard",
+      "regime": "aggregate",
+      "model": "20260915-separated",
+      "high_order_test_nll": 1.163526309176654,
+      "delta": -0.0004157775854571888,
+      "high_order_exposure_mae": 35.934753930386705,
+      "max_absolute_daily_prediction_change": 0.0004468815973268647
+    },
+    {
+      "policy": "standard",
+      "regime": "aggregate",
+      "model": "20260915-static_mixture",
+      "high_order_test_nll": 1.1241002946839285,
+      "delta": -0.0001052904713321201,
+      "high_order_exposure_mae": 37.31995923517945,
+      "max_absolute_daily_prediction_change": 1.1686280517110106
+    },
+    {
+      "policy": "standard",
+      "regime": "event",
+      "model": "20260916-joint_gaussian",
+      "high_order_test_nll": 1.1253314398326821,
+      "delta": -8.874834041394664e-05,
+      "high_order_exposure_mae": 30.722440700519922,
+      "max_absolute_daily_prediction_change": 7.879128531840252e-06
+    },
+    {
+      "policy": "standard",
+      "regime": "event",
+      "model": "20260915-joint_gaussian",
+      "high_order_test_nll": 1.1441799742900804,
+      "delta": 0.0003572112465177746,
+      "high_order_exposure_mae": 30.992063495664787,
+      "max_absolute_daily_prediction_change": 0.07924778579473468
+    },
+    {
+      "policy": "standard",
+      "regime": "event",
+      "model": "20260917-joint_gaussian",
+      "high_order_test_nll": 1.103238686933396,
+      "delta": -0.00017012975358499105,
+      "high_order_exposure_mae": 31.435603906395784,
+      "max_absolute_daily_prediction_change": 1.7053025658242404e-13
+    },
+    {
+      "policy": "random",
+      "regime": "aggregate",
+      "model": "20260915-joint_gaussian",
+      "high_order_test_nll": 0.8069003378967652,
+      "delta": -6.2513882959081e-11,
+      "high_order_exposure_mae": 202.9252181644942,
+      "max_absolute_daily_prediction_change": 9.094947017729282e-13
+    },
+    {
+      "policy": "random",
+      "regime": "aggregate",
+      "model": "20260915-fixed_gaussian",
+      "high_order_test_nll": 0.8076057430385212,
+      "delta": -7.785250222269724e-11,
+      "high_order_exposure_mae": 202.92620435335675,
+      "max_absolute_daily_prediction_change": 6.821210263296962e-13
+    },
+    {
+      "policy": "random",
+      "regime": "aggregate",
+      "model": "20260915-separated",
+      "high_order_test_nll": 0.8068002308156998,
+      "delta": -6.407252506335226e-11,
+      "high_order_exposure_mae": 203.24186277122672,
+      "max_absolute_daily_prediction_change": 1.1368683772161603e-12
+    },
+    {
+      "policy": "random",
+      "regime": "aggregate",
+      "model": "20260915-static_mixture",
+      "high_order_test_nll": 0.6644381797572494,
+      "delta": 5.861444201360477e-05,
+      "high_order_exposure_mae": 787.5238325841095,
+      "max_absolute_daily_prediction_change": 1.1368683772161603e-13
+    },
+    {
+      "policy": "random",
+      "regime": "aggregate",
+      "model": "20260916-joint_gaussian",
+      "high_order_test_nll": 0.7991057764693201,
+      "delta": -5.475309095004377e-11,
+      "high_order_exposure_mae": 202.5423956537364,
+      "max_absolute_daily_prediction_change": 6.821210263296962e-13
+    },
+    {
+      "policy": "random",
+      "regime": "aggregate",
+      "model": "20260916-fixed_gaussian",
+      "high_order_test_nll": 0.7996679676570728,
+      "delta": -6.616307501872143e-11,
+      "high_order_exposure_mae": 202.54936658510525,
+      "max_absolute_daily_prediction_change": 9.094947017729282e-13
+    },
+    {
+      "policy": "random",
+      "regime": "aggregate",
+      "model": "20260916-separated",
+      "high_order_test_nll": 0.7981974116881096,
+      "delta": -6.143174857697886e-11,
+      "high_order_exposure_mae": 202.54239328467364,
+      "max_absolute_daily_prediction_change": 4.547473508864641e-13
+    },
+    {
+      "policy": "random",
+      "regime": "aggregate",
+      "model": "20260916-static_mixture",
+      "high_order_test_nll": 0.6625101515327617,
+      "delta": 0.00011111296811094906,
+      "high_order_exposure_mae": 787.071689541305,
+      "max_absolute_daily_prediction_change": 1.1368683772161603e-13
+    },
+    {
+      "policy": "random",
+      "regime": "aggregate",
+      "model": "20260917-joint_gaussian",
+      "high_order_test_nll": 0.6712446158565036,
+      "delta": 2.7695843881847537e-05,
+      "high_order_exposure_mae": 208.23048520348655,
+      "max_absolute_daily_prediction_change": 6.821210263296962e-13
+    },
+    {
+      "policy": "random",
+      "regime": "aggregate",
+      "model": "20260917-fixed_gaussian",
+      "high_order_test_nll": 0.7861377202257985,
+      "delta": 5.900291366600641e-11,
+      "high_order_exposure_mae": 202.93562380203542,
+      "max_absolute_daily_prediction_change": 4.547473508864641e-13
+    },
+    {
+      "policy": "random",
+      "regime": "aggregate",
+      "model": "20260917-separated",
+      "high_order_test_nll": 0.6680331748993671,
+      "delta": 1.915634163229818e-05,
+      "high_order_exposure_mae": 194.01417420046977,
+      "max_absolute_daily_prediction_change": 6.821210263296962e-13
+    },
+    {
+      "policy": "random",
+      "regime": "aggregate",
+      "model": "20260917-static_mixture",
+      "high_order_test_nll": 0.6591286943645877,
+      "delta": 8.802459936951834e-05,
+      "high_order_exposure_mae": 779.8902546491905,
+      "max_absolute_daily_prediction_change": 1.1368683772161603e-13
+    },
+    {
+      "policy": "random",
+      "regime": "event",
+      "model": "20260916-joint_gaussian",
+      "high_order_test_nll": 0.6612780452940055,
+      "delta": 1.2179781473387052e-06,
+      "high_order_exposure_mae": 163.1013639361276,
+      "max_absolute_daily_prediction_change": 3.5697667044587433e-11
+    },
+    {
+      "policy": "random",
+      "regime": "event",
+      "model": "20260915-joint_gaussian",
+      "high_order_test_nll": 0.6733560784139373,
+      "delta": 9.234553455250705e-09,
+      "high_order_exposure_mae": 164.40573133517904,
+      "max_absolute_daily_prediction_change": 2.9558577807620168e-12
+    },
+    {
+      "policy": "random",
+      "regime": "event",
+      "model": "20260917-joint_gaussian",
+      "high_order_test_nll": 0.6586008992367649,
+      "delta": 6.5947443367297964e-06,
+      "high_order_exposure_mae": 170.7383972483701,
+      "max_absolute_daily_prediction_change": 4.547473508864641e-13
+    }
+  ],
+  "all_snapshots_ignored": true
+}

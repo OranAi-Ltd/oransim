@@ -1,0 +1,602 @@
+{
+  "scope": "Numerical consistency checks; proofs and assumptions are in theory.md. No real-data performance claim.",
+  "covariance_identity": {
+    "identity_max_error": 1.0408340855860843e-16,
+    "covariance": [
+      0.04187563928070048,
+      0.05046415976466729,
+      0.054256282597071034,
+      0.0600733376708171
+    ],
+    "exposure_conditioned_click_rate": [
+      0.41557988745993896,
+      0.49471184078406183,
+      0.5348671767025895,
+      0.6149806836821418
+    ],
+    "unweighted_click_rate": [
+      0.2890132626088945,
+      0.3634324286993006,
+      0.403921391292667,
+      0.4901908861445048
+    ]
+  },
+  "aggregation_sufficiency": {
+    "same_context_nll_difference": 0.0,
+    "same_context_gradient_max_difference": 5.551115123125783e-17,
+    "different_context_mean_probability": 0.42513075032606124,
+    "probability_at_mean_feature": 0.3775406687981454,
+    "fixed_context_exact_one_success_probability": 0.6759728631680574,
+    "iid_mixture_one_success_probability": 0.4887891909065228
+  },
+  "identifiability_examples": {
+    "finite_measurements": {
+      "support": [
+        -3.0,
+        -1.3,
+        0.0,
+        1.1,
+        3.0
+      ],
+      "population_a": [
+        0.0,
+        0.43810787822709085,
+        0.0,
+        0.5618921217729091,
+        0.0
+      ],
+      "population_b": [
+        0.1375134633320621,
+        0.0,
+        0.7471330532912688,
+        0.0,
+        0.11535348337666905
+      ],
+      "same_measurement_max_error": 2.220446049250313e-16,
+      "new_context_numerator_difference": -0.05192475852319594
+    },
+    "known_support_full_rank": 3,
+    "known_support_weight_recovery_max_error": 4.996003610813204e-16,
+    "latent_translation": 0.83,
+    "translation_output_max_error": 1.4210854715202004e-14
+  },
+  "exponential_tilt_equivalence": {
+    "eight_step_probability_max_difference": 2.220446049250313e-16,
+    "eight_step_count_max_difference": 3.552713678800501e-14,
+    "eight_step_state_max_difference": 2.7755575615628914e-16,
+    "numerical_scope": "81-point reference; chosen states have negligible lognormal clipped tails. This check is not an exact full-Gaussian identity under clamp.",
+    "clipped_lognormal_tail_example": {
+      "log_mean": 8.0,
+      "log_sd": 2.0,
+      "analytic_absolute_rate_error": 15037.236747031493,
+      "numerical_reference_error": 15037.236747031495
+    }
+  },
+  "quadrature_probability_gradient_bounds": {
+    "reference_nodes": 101,
+    "reference_is_exact_integral": false,
+    "rows": [
+      {
+        "nodes": 3,
+        "probability_error": 0.0003721480926716647,
+        "probability_bound": 0.0003802524558172714,
+        "gradient_l2_error": 0.002241672973669325,
+        "gradient_l2_bound": 0.00237320247997359,
+        "log_probability_error": 0.001124579788495783,
+        "log_probability_bound": 0.001149716399746354
+      },
+      {
+        "nodes": 7,
+        "probability_error": 4.623424704641721e-06,
+        "probability_bound": 4.6234247086587755e-06,
+        "gradient_l2_error": 2.8283773764091747e-05,
+        "gradient_l2_bound": 3.070382065509588e-05,
+        "log_probability_error": 1.3963396074068157e-05,
+        "log_probability_bound": 1.3963493574879481e-05
+      },
+      {
+        "nodes": 15,
+        "probability_error": 9.988778859604253e-09,
+        "probability_bound": 9.98877895500365e-09,
+        "gradient_l2_error": 1.0678747351214842e-07,
+        "gradient_l2_bound": 1.101635723048748e-07,
+        "log_probability_error": 3.016773408859308e-08,
+        "log_probability_bound": 3.0167734860669235e-08
+      },
+      {
+        "nodes": 31,
+        "probability_error": 8.850142840799435e-13,
+        "probability_bound": 8.851540484988951e-13,
+        "gradient_l2_error": 1.2375527750489937e-11,
+        "gradient_l2_bound": 1.2739099093243477e-11,
+        "log_probability_error": 2.672972954087527e-12,
+        "log_probability_bound": 2.673308996657464e-12
+      }
+    ]
+  },
+  "recursive_error_bound": {
+    "scope": "Scalar state submodel with constant exposure and inactive other-state readout; not a full-model stability assertion.",
+    "analytic_lipschitz_constant": 0.7345312760535097,
+    "reference_nodes": 101,
+    "approximate_nodes": 3,
+    "rows": [
+      {
+        "day": 1,
+        "state_shift_error": 0.01066896635808634,
+        "conditional_bound": 0.01066896635808634,
+        "local_quadrature_residual": 0.01066896635808634
+      },
+      {
+        "day": 2,
+        "state_shift_error": 0.017928294145913792,
+        "conditional_bound": 0.019232258590991043,
+        "local_quadrature_residual": 0.01139556911781392
+      },
+      {
+        "day": 3,
+        "state_shift_error": 0.01879803876310815,
+        "conditional_bound": 0.022218877500885907,
+        "local_quadrature_residual": 0.008092182056654185
+      },
+      {
+        "day": 4,
+        "state_shift_error": 0.016487669218597345,
+        "conditional_bound": 0.02177055566991792,
+        "local_quadrature_residual": 0.005450095226715579
+      },
+      {
+        "day": 5,
+        "state_shift_error": 0.01344463896413739,
+        "conditional_bound": 0.019854491273022863,
+        "local_quadrature_residual": 0.0038633372364040852
+      },
+      {
+        "day": 6,
+        "state_shift_error": 0.01073561071204332,
+        "conditional_bound": 0.017554002634524758,
+        "local_quadrature_residual": 0.0029702578243580025
+      },
+      {
+        "day": 7,
+        "state_shift_error": 0.00865247843982786,
+        "conditional_bound": 0.015367669449770235,
+        "local_quadrature_residual": 0.0024737054947860937
+      },
+      {
+        "day": 8,
+        "state_shift_error": 0.0071672061508640805,
+        "conditional_bound": 0.013485490577601181,
+        "local_quadrature_residual": 0.0021974567266929146
+      },
+      {
+        "day": 9,
+        "state_shift_error": 0.006155234370571083,
+        "conditional_bound": 0.011948867024633986,
+        "local_quadrature_residual": 0.002043352422461009
+      },
+      {
+        "day": 10,
+        "state_shift_error": 0.005486166279490057,
+        "conditional_bound": 0.01073400589981121,
+        "local_quadrature_residual": 0.001957189356813105
+      },
+      {
+        "day": 11,
+        "state_shift_error": 0.005053141151544871,
+        "conditional_bound": 0.009793403293088462,
+        "local_quadrature_residual": 0.0019089402423342339
+      },
+      {
+        "day": 12,
+        "state_shift_error": 0.004777307656990137,
+        "conditional_bound": 0.009075457796278837,
+        "local_quadrature_residual": 0.0018818967784999252
+      }
+    ]
+  },
+  "v3_snapshot_tilt_clipping_audit": {
+    "scope": "Read-only replay from initial state with fitted v3 parameters. Train/validation/test all use observed day-end feedback. Comparator has analytic tilt parameters, no refitting. Finite quadrature differences remain.",
+    "private_source_sha256": {
+      "models/gaussian_population/controlled/standard/records.json": "c2ed62c8a4686b12b64c50c43afae8d6a93dd65b7295ea506349eb2142f8435f",
+      "models/gaussian_population/controlled/standard/20260912-joint_gaussian-train.json": "867ba7e63c52b5b605cbc9950a33ff3d08f6c19e8d31ecba545f6f80b8b1997d",
+      "models/gaussian_population/controlled/standard/20260913-joint_gaussian-train.json": "4ebd134bcd678e43297b9727ad302b3fb47ec4ae1d73fb2a282b770bc2a4c8d9",
+      "models/gaussian_population/controlled/standard/20260914-joint_gaussian-train.json": "502cbd849208e7e24c3198a26cee8f34188a276c9c3c05e47511e2b5d781c2e3",
+      "models/gaussian_population/controlled/random/records.json": "b8a22debb1eea3dfe473c1bc0a1b630d16e387950113dee9e424ff0d56efddb0",
+      "models/gaussian_population/controlled/random/20260912-joint_gaussian-train.json": "999049c6a0dd5245b60fbec86eb81d75283af24bde40d844e23e598df6e36a0d",
+      "models/gaussian_population/controlled/random/20260913-joint_gaussian-train.json": "1ce18305a3e6583ed99fa15249575c8d9825b4eb8527d361729fb53b685526d7",
+      "models/gaussian_population/controlled/random/20260914-joint_gaussian-train.json": "ce3bf2819c926f1915171c486ea672ec7263e9e6ad976f298256abbd7acfb28f"
+    },
+    "rows": [
+      {
+        "policy": "standard",
+        "seed": 20260912,
+        "quadrature": 7,
+        "events": 1962,
+        "tilted_test_event_nll": 1.0750718185386419,
+        "reparameterized_separated_test_event_nll": 1.0741066753944315,
+        "test_event_nll_difference": -0.0009651431442103084,
+        "max_event_log_probability_difference": 0.18585340125100203,
+        "max_cohort_exposure_difference": 6.398461493972718e-08,
+        "max_cohort_joint_probability_difference": 0.017857181009551845,
+        "clipping": {
+          "node_entries": 27468,
+          "clipped_node_entries": 0,
+          "contexts": 1962,
+          "max_relative_analytic_clipping_error": 1.7511888736510204e-13,
+          "max_conditional_probability_clipping_bound": 3.502377747302654e-13,
+          "mean_population_probability_at_clipped_nodes": 0.0,
+          "mean_exposure_probability_at_clipped_nodes": 0.0
+        }
+      },
+      {
+        "policy": "standard",
+        "seed": 20260912,
+        "quadrature": 25,
+        "events": 1962,
+        "tilted_test_event_nll": 1.0745550798404166,
+        "reparameterized_separated_test_event_nll": 1.0745522444950475,
+        "test_event_nll_difference": -2.8353453691031105e-06,
+        "max_event_log_probability_difference": 0.006894168979683979,
+        "max_cohort_exposure_difference": 4.263256414560601e-14,
+        "max_cohort_joint_probability_difference": 0.0005605208706090659,
+        "clipping": {
+          "node_entries": 98100,
+          "clipped_node_entries": 63,
+          "contexts": 1962,
+          "max_relative_analytic_clipping_error": 1.7511888696583096e-13,
+          "max_conditional_probability_clipping_bound": 3.5023777393172326e-13,
+          "mean_population_probability_at_clipped_nodes": 3.8130531886123326e-20,
+          "mean_exposure_probability_at_clipped_nodes": 1.4754576954240518e-16
+        }
+      },
+      {
+        "policy": "standard",
+        "seed": 20260912,
+        "quadrature": 61,
+        "events": 1962,
+        "tilted_test_event_nll": 1.074557752882055,
+        "reparameterized_separated_test_event_nll": 1.074557777310184,
+        "test_event_nll_difference": 2.4428129088459085e-08,
+        "max_event_log_probability_difference": 2.8029969572962443e-05,
+        "max_cohort_exposure_difference": 2.842170943040401e-14,
+        "max_cohort_joint_probability_difference": 2.5821617919974393e-06,
+        "clipping": {
+          "node_entries": 239364,
+          "clipped_node_entries": 5489,
+          "contexts": 1962,
+          "max_relative_analytic_clipping_error": 1.7511888696584297e-13,
+          "max_conditional_probability_clipping_bound": 3.502377739317473e-13,
+          "mean_population_probability_at_clipped_nodes": 2.661371432974566e-18,
+          "mean_exposure_probability_at_clipped_nodes": 8.240380848836e-15
+        }
+      },
+      {
+        "policy": "standard",
+        "seed": 20260913,
+        "quadrature": 7,
+        "events": 1962,
+        "tilted_test_event_nll": 1.0724082893226745,
+        "reparameterized_separated_test_event_nll": 1.0720835204811487,
+        "test_event_nll_difference": -0.0003247688415256925,
+        "max_event_log_probability_difference": 0.04600772651628504,
+        "max_cohort_exposure_difference": 1.4496314264533794e-06,
+        "max_cohort_joint_probability_difference": 0.0051513252061994586,
+        "clipping": {
+          "node_entries": 27468,
+          "clipped_node_entries": 0,
+          "contexts": 1962,
+          "max_relative_analytic_clipping_error": 1.28489496198054e-07,
+          "max_conditional_probability_clipping_bound": 2.5697902541521346e-07,
+          "mean_population_probability_at_clipped_nodes": 0.0,
+          "mean_exposure_probability_at_clipped_nodes": 0.0
+        }
+      },
+      {
+        "policy": "standard",
+        "seed": 20260913,
+        "quadrature": 25,
+        "events": 1962,
+        "tilted_test_event_nll": 1.0729014157494305,
+        "reparameterized_separated_test_event_nll": 1.072911489265017,
+        "test_event_nll_difference": 1.0073515586443751e-05,
+        "max_event_log_probability_difference": 0.004770365644318986,
+        "max_cohort_exposure_difference": 1.3057221615042636e-07,
+        "max_cohort_joint_probability_difference": 0.00036647386730381815,
+        "clipping": {
+          "node_entries": 98100,
+          "clipped_node_entries": 1644,
+          "contexts": 1962,
+          "max_relative_analytic_clipping_error": 1.2848948476901617e-07,
+          "max_conditional_probability_clipping_bound": 2.5697900255713195e-07,
+          "mean_population_probability_at_clipped_nodes": 2.6395997968564003e-12,
+          "mean_exposure_probability_at_clipped_nodes": 8.332283655409672e-09
+        }
+      },
+      {
+        "policy": "standard",
+        "seed": 20260913,
+        "quadrature": 61,
+        "events": 1962,
+        "tilted_test_event_nll": 1.072907408855304,
+        "reparameterized_separated_test_event_nll": 1.0729074524632465,
+        "test_event_nll_difference": 4.360794251378e-08,
+        "max_event_log_probability_difference": 5.930219054572916e-05,
+        "max_cohort_exposure_difference": 1.315064590556858e-07,
+        "max_cohort_joint_probability_difference": 3.536468782927571e-06,
+        "clipping": {
+          "node_entries": 239364,
+          "clipped_node_entries": 18134,
+          "contexts": 1962,
+          "max_relative_analytic_clipping_error": 1.2848948474458997e-07,
+          "max_conditional_probability_clipping_bound": 2.5697900250827953e-07,
+          "mean_population_probability_at_clipped_nodes": 1.3757724855120953e-12,
+          "mean_exposure_probability_at_clipped_nodes": 4.371606936805662e-09
+        }
+      },
+      {
+        "policy": "standard",
+        "seed": 20260914,
+        "quadrature": 7,
+        "events": 1962,
+        "tilted_test_event_nll": 1.0713067246406442,
+        "reparameterized_separated_test_event_nll": 1.0710407468860241,
+        "test_event_nll_difference": -0.0002659777546200581,
+        "max_event_log_probability_difference": 0.0387118058515048,
+        "max_cohort_exposure_difference": 1.1696065485011786e-06,
+        "max_cohort_joint_probability_difference": 0.0046798971860692595,
+        "clipping": {
+          "node_entries": 27468,
+          "clipped_node_entries": 0,
+          "contexts": 1962,
+          "max_relative_analytic_clipping_error": 6.737167957583138e-08,
+          "max_conditional_probability_clipping_bound": 1.347433682295498e-07,
+          "mean_population_probability_at_clipped_nodes": 0.0,
+          "mean_exposure_probability_at_clipped_nodes": 0.0
+        }
+      },
+      {
+        "policy": "standard",
+        "seed": 20260914,
+        "quadrature": 25,
+        "events": 1962,
+        "tilted_test_event_nll": 1.071869088583223,
+        "reparameterized_separated_test_event_nll": 1.071873750767236,
+        "test_event_nll_difference": 4.662184013235948e-06,
+        "max_event_log_probability_difference": 0.003783678789482714,
+        "max_cohort_exposure_difference": 7.90688012841656e-08,
+        "max_cohort_joint_probability_difference": 0.0004489100245620159,
+        "clipping": {
+          "node_entries": 98100,
+          "clipped_node_entries": 1424,
+          "contexts": 1962,
+          "max_relative_analytic_clipping_error": 6.737167530524452e-08,
+          "max_conditional_probability_clipping_bound": 1.3474335968837492e-07,
+          "mean_population_probability_at_clipped_nodes": 1.5909670162608317e-12,
+          "mean_exposure_probability_at_clipped_nodes": 4.444150930275216e-09
+        }
+      },
+      {
+        "policy": "standard",
+        "seed": 20260914,
+        "quadrature": 61,
+        "events": 1962,
+        "tilted_test_event_nll": 1.0718764726454093,
+        "reparameterized_separated_test_event_nll": 1.0718764627315838,
+        "test_event_nll_difference": -9.91382554529361e-09,
+        "max_event_log_probability_difference": 5.7460422838939706e-05,
+        "max_cohort_exposure_difference": 7.685187597417098e-08,
+        "max_cohort_joint_probability_difference": 6.665518871962206e-06,
+        "clipping": {
+          "node_entries": 239364,
+          "clipped_node_entries": 17094,
+          "contexts": 1962,
+          "max_relative_analytic_clipping_error": 6.737167528718427e-08,
+          "max_conditional_probability_clipping_bound": 1.3474335965225442e-07,
+          "mean_population_probability_at_clipped_nodes": 7.857123532191921e-13,
+          "mean_exposure_probability_at_clipped_nodes": 2.4390607443021656e-09
+        }
+      },
+      {
+        "policy": "random",
+        "seed": 20260912,
+        "quadrature": 7,
+        "events": 11763,
+        "tilted_test_event_nll": 0.6497308563114592,
+        "reparameterized_separated_test_event_nll": 0.6497304298098444,
+        "test_event_nll_difference": -4.2650161480222537e-07,
+        "max_event_log_probability_difference": 0.001735012412186876,
+        "max_cohort_exposure_difference": 2.8421709430404007e-13,
+        "max_cohort_joint_probability_difference": 9.871157740531933e-05,
+        "clipping": {
+          "node_entries": 164682,
+          "clipped_node_entries": 0,
+          "contexts": 11763,
+          "max_relative_analytic_clipping_error": 5.591925968170744e-109,
+          "max_conditional_probability_clipping_bound": 1.1183851936341488e-108,
+          "mean_population_probability_at_clipped_nodes": 0.0,
+          "mean_exposure_probability_at_clipped_nodes": 0.0
+        }
+      },
+      {
+        "policy": "random",
+        "seed": 20260912,
+        "quadrature": 25,
+        "events": 11763,
+        "tilted_test_event_nll": 0.649731920310367,
+        "reparameterized_separated_test_event_nll": 0.6497319202426517,
+        "test_event_nll_difference": -6.771525548907836e-11,
+        "max_event_log_probability_difference": 1.3731296366614743e-07,
+        "max_cohort_exposure_difference": 1.7053025658242404e-13,
+        "max_cohort_joint_probability_difference": 7.631100598648466e-09,
+        "clipping": {
+          "node_entries": 588150,
+          "clipped_node_entries": 0,
+          "contexts": 11763,
+          "max_relative_analytic_clipping_error": 5.591925968170744e-109,
+          "max_conditional_probability_clipping_bound": 1.1183851936341488e-108,
+          "mean_population_probability_at_clipped_nodes": 0.0,
+          "mean_exposure_probability_at_clipped_nodes": 0.0
+        }
+      },
+      {
+        "policy": "random",
+        "seed": 20260912,
+        "quadrature": 61,
+        "events": 11763,
+        "tilted_test_event_nll": 0.6497319202969534,
+        "reparameterized_separated_test_event_nll": 0.6497319202969546,
+        "test_event_nll_difference": 1.237092172776235e-15,
+        "max_event_log_probability_difference": 9.796607969292381e-13,
+        "max_cohort_exposure_difference": 2.2737367544323206e-13,
+        "max_cohort_joint_probability_difference": 5.4761750689635846e-14,
+        "clipping": {
+          "node_entries": 1435086,
+          "clipped_node_entries": 0,
+          "contexts": 11763,
+          "max_relative_analytic_clipping_error": 5.591925968170744e-109,
+          "max_conditional_probability_clipping_bound": 1.1183851936341488e-108,
+          "mean_population_probability_at_clipped_nodes": 0.0,
+          "mean_exposure_probability_at_clipped_nodes": 0.0
+        }
+      },
+      {
+        "policy": "random",
+        "seed": 20260913,
+        "quadrature": 7,
+        "events": 11763,
+        "tilted_test_event_nll": 0.6494314616982513,
+        "reparameterized_separated_test_event_nll": 0.6494355472502569,
+        "test_event_nll_difference": 4.08555200562726e-06,
+        "max_event_log_probability_difference": 0.0030429063797035028,
+        "max_cohort_exposure_difference": 2.2737367544323206e-13,
+        "max_cohort_joint_probability_difference": 0.00012741440316893504,
+        "clipping": {
+          "node_entries": 164682,
+          "clipped_node_entries": 0,
+          "contexts": 11763,
+          "max_relative_analytic_clipping_error": 4.574644303291789e-193,
+          "max_conditional_probability_clipping_bound": 9.149288606583577e-193,
+          "mean_population_probability_at_clipped_nodes": 0.0,
+          "mean_exposure_probability_at_clipped_nodes": 0.0
+        }
+      },
+      {
+        "policy": "random",
+        "seed": 20260913,
+        "quadrature": 25,
+        "events": 11763,
+        "tilted_test_event_nll": 0.6494318940382003,
+        "reparameterized_separated_test_event_nll": 0.6494318942633045,
+        "test_event_nll_difference": 2.2510422985227405e-10,
+        "max_event_log_probability_difference": 6.357760202746476e-07,
+        "max_cohort_exposure_difference": 2.2737367544323206e-13,
+        "max_cohort_joint_probability_difference": 2.9266098905411653e-08,
+        "clipping": {
+          "node_entries": 588150,
+          "clipped_node_entries": 0,
+          "contexts": 11763,
+          "max_relative_analytic_clipping_error": 4.574644303163671e-193,
+          "max_conditional_probability_clipping_bound": 9.149288606327343e-193,
+          "mean_population_probability_at_clipped_nodes": 0.0,
+          "mean_exposure_probability_at_clipped_nodes": 0.0
+        }
+      },
+      {
+        "policy": "random",
+        "seed": 20260913,
+        "quadrature": 61,
+        "events": 11763,
+        "tilted_test_event_nll": 0.64943189391638,
+        "reparameterized_separated_test_event_nll": 0.6494318939163859,
+        "test_event_nll_difference": 5.953506081485631e-15,
+        "max_event_log_probability_difference": 2.19841922444175e-11,
+        "max_cohort_exposure_difference": 1.7053025658242404e-13,
+        "max_cohort_joint_probability_difference": 9.681699886243678e-13,
+        "clipping": {
+          "node_entries": 1435086,
+          "clipped_node_entries": 0,
+          "contexts": 11763,
+          "max_relative_analytic_clipping_error": 4.574644303163671e-193,
+          "max_conditional_probability_clipping_bound": 9.149288606327343e-193,
+          "mean_population_probability_at_clipped_nodes": 0.0,
+          "mean_exposure_probability_at_clipped_nodes": 0.0
+        }
+      },
+      {
+        "policy": "random",
+        "seed": 20260914,
+        "quadrature": 7,
+        "events": 11763,
+        "tilted_test_event_nll": 0.6518080690866968,
+        "reparameterized_separated_test_event_nll": 0.6518085789259253,
+        "test_event_nll_difference": 5.098392284646243e-07,
+        "max_event_log_probability_difference": 0.0011539672632290277,
+        "max_cohort_exposure_difference": 2.2737367544323206e-13,
+        "max_cohort_joint_probability_difference": 5.868127049424299e-05,
+        "clipping": {
+          "node_entries": 164682,
+          "clipped_node_entries": 0,
+          "contexts": 11763,
+          "max_relative_analytic_clipping_error": 1.5809473583450337e-119,
+          "max_conditional_probability_clipping_bound": 3.1618947166900675e-119,
+          "mean_population_probability_at_clipped_nodes": 0.0,
+          "mean_exposure_probability_at_clipped_nodes": 0.0
+        }
+      },
+      {
+        "policy": "random",
+        "seed": 20260914,
+        "quadrature": 25,
+        "events": 11763,
+        "tilted_test_event_nll": 0.6518089532529008,
+        "reparameterized_separated_test_event_nll": 0.6518089533034845,
+        "test_event_nll_difference": 5.058377112569066e-11,
+        "max_event_log_probability_difference": 4.856172930445268e-08,
+        "max_cohort_exposure_difference": 3.410605131648481e-13,
+        "max_cohort_joint_probability_difference": 1.749411365770115e-09,
+        "clipping": {
+          "node_entries": 588150,
+          "clipped_node_entries": 0,
+          "contexts": 11763,
+          "max_relative_analytic_clipping_error": 1.5809473583450337e-119,
+          "max_conditional_probability_clipping_bound": 3.1618947166900675e-119,
+          "mean_population_probability_at_clipped_nodes": 0.0,
+          "mean_exposure_probability_at_clipped_nodes": 0.0
+        }
+      },
+      {
+        "policy": "random",
+        "seed": 20260914,
+        "quadrature": 61,
+        "events": 11763,
+        "tilted_test_event_nll": 0.6518089532799748,
+        "reparameterized_separated_test_event_nll": 0.6518089532799746,
+        "test_event_nll_difference": -1.5463652159702937e-16,
+        "max_event_log_probability_difference": 1.7497114868092467e-13,
+        "max_cohort_exposure_difference": 3.410605131648481e-13,
+        "max_cohort_joint_probability_difference": 8.93729534823251e-15,
+        "clipping": {
+          "node_entries": 1435086,
+          "clipped_node_entries": 0,
+          "contexts": 11763,
+          "max_relative_analytic_clipping_error": 1.5809473583450337e-119,
+          "max_conditional_probability_clipping_bound": 3.1618947166900675e-119,
+          "mean_population_probability_at_clipped_nodes": 0.0,
+          "mean_exposure_probability_at_clipped_nodes": 0.0
+        }
+      }
+    ]
+  },
+  "source_sha256": {
+    "backend/scripts/check_population_aggregation_theory.py": "5d92538ad91a3c8df11effc3d9c62919970fdfe6eda370b6c41d465966efaa92",
+    "backend/oransim/world_model/differentiable_market.py": "e1f4a601d75f1a38c5c390ff86bd537abba3e076d05d1d7c4d7e38ae81ab609a",
+    "backend/oransim/world_model/population_comparisons.py": "a163c85f4da2e3aa38ad076e0c471fdeebfa89ae07fc300364b8f6ba021701cf"
+  },
+  "environment": {
+    "torch": "2.11.0+cu130",
+    "numpy": "2.4.4",
+    "dtype": "float64",
+    "threads": 1
+  },
+  "all_checks_passed": true
+}

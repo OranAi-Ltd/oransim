@@ -1,0 +1,38 @@
+{
+  "20260912-dynamic": {
+    "joint_kl": 0.029615946446732194,
+    "marginal_probability_mae": 0.05470116585541074,
+    "selected_epoch": 24,
+    "epochs": 49
+  },
+  "20260912-no_dynamics": {
+    "joint_kl": 0.25193318895223066,
+    "marginal_probability_mae": 0.17086387181630672,
+    "selected_epoch": 123,
+    "epochs": 148
+  },
+  "20260913-dynamic": {
+    "joint_kl": 0.006502251957054977,
+    "marginal_probability_mae": 0.016952607954744413,
+    "selected_epoch": 18,
+    "epochs": 43
+  },
+  "20260913-no_dynamics": {
+    "joint_kl": 0.25918391995153695,
+    "marginal_probability_mae": 0.1637995569324464,
+    "selected_epoch": 18,
+    "epochs": 43
+  },
+  "20260914-dynamic": {
+    "joint_kl": 0.06577530772299515,
+    "marginal_probability_mae": 0.08408012196512721,
+    "selected_epoch": 28,
+    "epochs": 53
+  },
+  "20260914-no_dynamics": {
+    "joint_kl": 0.2620604020132469,
+    "marginal_probability_mae": 0.16353187238451275,
+    "selected_epoch": 22,
+    "epochs": 47
+  }
+}

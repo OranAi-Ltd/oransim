@@ -1,0 +1,136 @@
+{
+  "generated_utc": "2026-09-12T12:58:54.774203+00:00",
+  "tests": {
+    "command": "PYTHONPATH=backend python3 -m pytest -q tests/research/test_differentiable_market.py tests/research/test_population_comparisons.py tests/research/test_population_count_baselines.py tests/research/test_population_gru_projection.py",
+    "result": "20 passed in 6.30s",
+    "scope": "Core differentiable market plus new comparisons, count baseline and projected GRU. Does not certify novelty or causal identification."
+  },
+  "environment": {
+    "python": "3.12.3",
+    "torch": "2.11.0+cu130",
+    "numpy": "2.4.4",
+    "pandas": "3.0.2",
+    "scipy": "1.17.1",
+    "training_dtype": "float64",
+    "cuda_available": false
+  },
+  "protocols": {
+    "experiments/gaussian_population/results/paper-readiness/kuairand/protocol.json": {
+      "sha256": "db675f48ebd19d4b23f8c2bebf92d91d2052427fd0b40d46f1cfa8040cafe017",
+      "source_hashes_match": true
+    },
+    "experiments/gaussian_population/results/paper-readiness/retail/protocol.json": {
+      "sha256": "3521b97a16c39e4792795996b4544bfecd7956d3479a23886fa73f8d48f3edd3",
+      "source_hashes_match": true
+    },
+    "experiments/gaussian_population/results/paper-readiness/kuairand-gru-projection/protocol.json": {
+      "sha256": "72c9c9d4bfa7ddff65832576c8beb0dab348be0fd69ef7218506e0b670c85c72",
+      "source_hashes_match": true
+    },
+    "experiments/gaussian_population/results/paper-readiness/count-baseline-protocol.json": {
+      "sha256": "beaf9b59f124bd1f1a2e717addd76c9be0c4f422d7e6122be4bdb091fd941b2f",
+      "source_hashes_match": true
+    }
+  },
+  "source_sha256": {
+    "backend/scripts/evaluate_population_readiness.py": "e4cd842e8b7101a34fe83f3951ded95da9dfa559842ccc1fb4353b4217cfa71b",
+    "backend/oransim/world_model/population_comparisons.py": "a163c85f4da2e3aa38ad076e0c471fdeebfa89ae07fc300364b8f6ba021701cf",
+    "backend/oransim/world_model/differentiable_market.py": "e1f4a601d75f1a38c5c390ff86bd537abba3e076d05d1d7c4d7e38ae81ab609a",
+    "backend/scripts/train_differentiable_market.py": "4a5bf088ad33894f9b22fbd132262a60606c022e786c41691c94e5c852d10ed3",
+    "backend/scripts/train_population_panel.py": "7844149c3dea90009f54f1578f8276f2de75da39bdeb304aa28fc63a48c7b16e",
+    "backend/oransim/world_model/population_panel.py": "ba02f2107edf34bcf7c40bb372b2202b8cd84b4747b15ae39568ccf39ffde945",
+    "backend/scripts/evaluate_retail_aggregation.py": "c380096903b92ca6e9ee705f29ac65ce959336309cd11764a0724a092d26eb9f",
+    "backend/scripts/evaluate_population_gru_projection.py": "24d78c6c036827837f26d9f243899d441909119c8568f72ffc6545500b02013c",
+    "backend/oransim/world_model/population_gru_projection.py": "03ef5a7293e528f243bf03d6a7284c5ea6692febece13636fed03c659103b9c7",
+    "backend/scripts/evaluate_population_count_baselines.py": "c9cc1dae81b1c752f01d54960d4cd7964ed267aee3496cb1d4b7e73ae5b4ec71",
+    "backend/scripts/summarize_population_readiness.py": "e1bd9e9c7713ab15c634b50df5d9b8a340b95e1a1d40fee40475f16b88ccb47e"
+  },
+  "private_snapshots": {
+    "count": 168,
+    "unique": true,
+    "hashes_match": true,
+    "mode": "0600",
+    "all_git_ignored": true,
+    "restoration_evidence": "Per-experiment artifact-audit.json / snapshot-checks.json"
+  },
+  "aggregate_information_checks": {
+    "standard": {
+      "reconstruction_max_error": 0.0,
+      "individual_history_and_event_outcome_perturbation_max_error": 0.0,
+      "current_and_later_label_perturbation_past_input_max_error": 0.0,
+      "aggregate_event_batches_absent": true
+    },
+    "random": {
+      "reconstruction_max_error": 0.0,
+      "individual_history_and_event_outcome_perturbation_max_error": 0.0,
+      "current_and_later_label_perturbation_past_input_max_error": 0.0,
+      "aggregate_event_batches_absent": true
+    }
+  },
+  "figures": {
+    "behavior-comparison.png": "visually inspected: labels and three-seed SD, including supplementary projected GRU",
+    "count-horizons.png": "visually inspected: four independent scales, all simple/INGARCH count baselines, valid origins shown"
+  },
+  "result_sha256": {
+    "count-baseline-protocol.json": "beaf9b59f124bd1f1a2e717addd76c9be0c4f422d7e6122be4bdb091fd941b2f",
+    "theory-checks.json": "fd0320c368018bd8701db737b1560ff9a3488388cd53bbca14a0b5bba3b99b77",
+    "summary.json": "3f28fb95a1de3e03120b9f5af3842ddcb23bba086b44912cda275245e7818b82",
+    "count-baselines.json": "51c4f286f5b96e319c7aa7c727b3b18bf82b640e975771133bee0d2b23b05689",
+    "kuairand/artifact-audit.json": "fa482c3daf250e6ba123888cbc209e35deca9a24cebfdb8516b1049d4b572d35",
+    "kuairand/protocol.json": "db675f48ebd19d4b23f8c2bebf92d91d2052427fd0b40d46f1cfa8040cafe017",
+    "kuairand/results.json": "2288e67adb82661b11c2093ce9ce4749f0ede3f3be5720a64514666cbe30f025",
+    "kuairand/orchestration.json": "1057d6a77de79bf8572b84fe57d88b9414049b23ad2946952f47567934ba6cbd",
+    "kuairand-gru-projection/protocol.json": "72c9c9d4bfa7ddff65832576c8beb0dab348be0fd69ef7218506e0b670c85c72",
+    "kuairand-gru-projection/summary.json": "88a7d4438f634b3fb959dbc100182a1c7a1bc31a7407be805bab3787a9a437a1",
+    "kuairand-gru-projection/results.json": "7d23728510162fb01687b91ab51987436a00802113f2c6dfd2365e265da43435",
+    "kuairand-gru-projection/snapshot-checks.json": "aba790c99b55f589ad79568f4ecf44796b04272d915f4817ec3daf5a914867e8",
+    "retail/artifact-audit.json": "b5a3f3322f116eb0b9f1c5daff3ae2d70690a32e3b2c6be4fc292a072673646a",
+    "retail/protocol.json": "3521b97a16c39e4792795996b4544bfecd7956d3479a23886fa73f8d48f3edd3",
+    "retail/preparation-checks.json": "cd04004cb541214b7030ea6ccdcebcaf025ca974c3bf632e817fb59270fea522",
+    "retail/source-audit.json": "f607534445ddb6ac515c760f6320560d3e00149c40fceaeb6265332911bc1adf",
+    "retail/summary.json": "6dc8897e64d5cef428b674e77c156450ab8a09fb5d6b54534742fed322f612a1",
+    "retail/results.json": "da1586303249633b4fd72030273df1e0c1a8081826c2b56509b157909f24faeb",
+    "retail/data-audit.json": "04897c7df5143579432d19e481bd1cf47792fd3be17a3a8fba9ebea4e9993cfc",
+    "kuairand/standard/aggregate/20260915-results.json": "b1c49cdccba26e5b78bf25b234876a18ac0806119b3ab12814d8959853f62ae7",
+    "kuairand/standard/aggregate/20260916-selection.json": "6012d623e2614f731e2c04125eef06137614f0f6a6635abad24f2f34ba6cee81",
+    "kuairand/standard/aggregate/20260915-selection.json": "820345d622ac8b111081f121c0da6b22d5d7bb314c0d4c9004a217b15db0e7c1",
+    "kuairand/standard/aggregate/20260917-results.json": "1aeb3fcd498bfb9c0da6d1051fbeea9e86cf548ce9815a7ab0d6b04579698bc7",
+    "kuairand/standard/aggregate/20260916-results.json": "903ba487e265ace3ac4ab361c5c6122bb5f47f36f4aed52d6333c7e18735c312",
+    "kuairand/standard/aggregate/20260917-selection.json": "e01a5a4bc9b8bf0e72a6c2f473e1029f697169fb16b9427949eddea598903b16",
+    "kuairand/standard/event/20260915-results.json": "f966d6ccb0796a743a4e7188ddef4ef62bc8d996908aa642820a425541c57fe3",
+    "kuairand/standard/event/20260916-selection.json": "0a08849599cf175e1f37f878cbcc4493aca82d92e8f7533a2ee47b439ea7bbd6",
+    "kuairand/standard/event/20260915-selection.json": "1a51f98483c407a136b965d1a44cbaeb10b1f4b86115d3a940b5571cc8bcc258",
+    "kuairand/standard/event/20260917-results.json": "31002fc1d15a20433d48ef9e0f640b0977264badf7696043f071f7aa4c75d7eb",
+    "kuairand/standard/event/20260916-results.json": "0850517dff26489d96b2770c67f01f067b1999179a502e8a786f12a19ac59068",
+    "kuairand/standard/event/20260917-selection.json": "c4c865d0dd4a00eeea331428f2df3d18d50b5b4a13aaf3b2dde86e90beea78fe",
+    "kuairand/random/aggregate/20260915-results.json": "1d1aa15a5c40fae46bafaa54a9b18b8b853f7effeb6a2e4c33afcdafd24f5e27",
+    "kuairand/random/aggregate/20260916-selection.json": "a8438285cfdb62e7d297afe7e102613fc7e62a1736b6d1018cf82ecb33ce0501",
+    "kuairand/random/aggregate/20260915-selection.json": "1d629f70b57c4a5555e0e00befc6294db726b8f3cc93c018caee05a293d96aac",
+    "kuairand/random/aggregate/20260917-results.json": "258718ee621e77d4a195452200bcf2da27e5681304e8ce3df55773e886966be7",
+    "kuairand/random/aggregate/20260916-results.json": "cc6e485acf0bd26167ac684794f0d33efeb188b6b4f696499af723de2ada1152",
+    "kuairand/random/aggregate/20260917-selection.json": "a0feda3bedef3c17b2ab5c0ed214624f83458963153da9e9381f5091055dbf9d",
+    "kuairand/random/event/20260915-results.json": "97eb545b37e4203ea7148c9a3a711f3eb86d64e51ec59a4d00fe0aacb3ccca31",
+    "kuairand/random/event/20260916-selection.json": "87460cf3237ba806e93723582d4491d880147f86bfed67a04070f2aeadf5da3a",
+    "kuairand/random/event/20260915-selection.json": "19ed21b4c04e32aa870c20da4dd86b61f9808df1586b30972f99fd335ba005bb",
+    "kuairand/random/event/20260917-results.json": "ddac6641f32766e6266246ee52c44e6bbb75194b1dd73308f0543a30f744f474",
+    "kuairand/random/event/20260916-results.json": "399888c803bf6056688e9e0a8211fa88c29507de965f9896909eccdfdeed296d",
+    "kuairand/random/event/20260917-selection.json": "c7b8bcb310b4e9ca82d2938e71449aab1161eb6d79f34fed3fe6c970ea447d6e",
+    "kuairand-gru-projection/standard/20260916-selection.json": "2777bec82fa10709d6c4c0093710a9dfeb620f34e1670db29e7e785fbea397fd",
+    "kuairand-gru-projection/standard/20260915-selection.json": "136ad505789efbd5d99feb56454ab25d1a9bdcfce3481e762580560cee84eadc",
+    "kuairand-gru-projection/standard/20260917-selection.json": "1b753fba1f086301e7d2101b9dc609561ae4a7dfb4c8737f54b5f47c7709e5bd",
+    "kuairand-gru-projection/random/20260916-selection.json": "93104a0e66abf9847d7b621daa1f2465402ff773262c72e993035d1c3ecc5b6c",
+    "kuairand-gru-projection/random/20260915-selection.json": "6076b12e5d57c40ad1fa54d2f96db5018172524db70f460be35998ebbdbabcb1",
+    "kuairand-gru-projection/random/20260917-selection.json": "c4f6104ab1301263bd036f0b778dc6a5e193d203def02bbff4bdf6125b7f5e3e",
+    "retail/2011/20260916-selection.json": "d75ad26e07df96b928de7702d8e6518ddc8b4f50eb639db764745e42399f2726",
+    "retail/2011/20260915-selection.json": "c4d2ccb282dc2a0268b09e3ffc28ce217bc51a3396ef175351dc5c58300f43ea",
+    "retail/2011/20260917-selection.json": "f544b303275d05d9cc55a19fe208295ac01a8e6a425d1bbd1aeebb53026d33fe",
+    "retail/2010/20260916-selection.json": "95f87e13fb5c3e689f301aa48510bcb25499911d1589ad56248e3b15b10ab701",
+    "retail/2010/20260915-selection.json": "792099597d84c97261abe3e366e70ff10cd0cb5db25c972d767598de1384d8c1",
+    "retail/2010/20260917-selection.json": "53a0b30fcfcfa7d87b858fb38d669ea2dbd21c0015e973e5893f5a453a798335"
+  },
+  "documentation": {
+    "local_links_checked": true,
+    "trailing_whitespace_checked": true,
+    "sha256": {}
+  }
+}

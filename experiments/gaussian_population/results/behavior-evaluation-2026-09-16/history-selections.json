@@ -1,0 +1,418 @@
+{
+  "kuairand/standard": {
+    "training_history": {
+      "selected": {
+        "tau": 100.0,
+        "half_life": null,
+        "validation_nll": 1.0974625075496645
+      },
+      "candidates": [
+        {
+          "tau": 1.0,
+          "half_life": null,
+          "validation_nll": 1.1318044852951428
+        },
+        {
+          "tau": 10.0,
+          "half_life": null,
+          "validation_nll": 1.1118838195167693
+        },
+        {
+          "tau": 100.0,
+          "half_life": null,
+          "validation_nll": 1.0974625075496645
+        }
+      ]
+    },
+    "last_history": {
+      "selected": {
+        "tau": 10.0,
+        "half_life": null,
+        "validation_nll": 1.1230279096536868
+      },
+      "candidates": [
+        {
+          "tau": 1.0,
+          "half_life": null,
+          "validation_nll": 1.1731181176621854
+        },
+        {
+          "tau": 10.0,
+          "half_life": null,
+          "validation_nll": 1.1230279096536868
+        },
+        {
+          "tau": 100.0,
+          "half_life": null,
+          "validation_nll": 1.1231738604460824
+        }
+      ]
+    },
+    "ewma_history": {
+      "selected": {
+        "tau": 10.0,
+        "half_life": 3.0,
+        "validation_nll": 1.0975116043170847
+      },
+      "candidates": [
+        {
+          "tau": 1.0,
+          "half_life": 1.0,
+          "validation_nll": 1.1220278784914204
+        },
+        {
+          "tau": 1.0,
+          "half_life": 3.0,
+          "validation_nll": 1.1094029098613918
+        },
+        {
+          "tau": 1.0,
+          "half_life": 7.0,
+          "validation_nll": 1.1168635195118037
+        },
+        {
+          "tau": 10.0,
+          "half_life": 1.0,
+          "validation_nll": 1.105269739392331
+        },
+        {
+          "tau": 10.0,
+          "half_life": 3.0,
+          "validation_nll": 1.0975116043170847
+        },
+        {
+          "tau": 10.0,
+          "half_life": 7.0,
+          "validation_nll": 1.102260815645439
+        },
+        {
+          "tau": 100.0,
+          "half_life": 1.0,
+          "validation_nll": 1.1207654927031818
+        },
+        {
+          "tau": 100.0,
+          "half_life": 3.0,
+          "validation_nll": 1.1128991101536834
+        },
+        {
+          "tau": 100.0,
+          "half_life": 7.0,
+          "validation_nll": 1.1078569862640035
+        }
+      ]
+    }
+  },
+  "kuairand/random": {
+    "training_history": {
+      "selected": {
+        "tau": 100.0,
+        "half_life": null,
+        "validation_nll": 0.6044409801297767
+      },
+      "candidates": [
+        {
+          "tau": 1.0,
+          "half_life": null,
+          "validation_nll": 0.6229144296176881
+        },
+        {
+          "tau": 10.0,
+          "half_life": null,
+          "validation_nll": 0.6098168347182427
+        },
+        {
+          "tau": 100.0,
+          "half_life": null,
+          "validation_nll": 0.6044409801297767
+        }
+      ]
+    },
+    "last_history": {
+      "selected": {
+        "tau": 100.0,
+        "half_life": null,
+        "validation_nll": 0.6200706256264596
+      },
+      "candidates": [
+        {
+          "tau": 1.0,
+          "half_life": null,
+          "validation_nll": 0.650244810001187
+        },
+        {
+          "tau": 10.0,
+          "half_life": null,
+          "validation_nll": 0.6241643509536062
+        },
+        {
+          "tau": 100.0,
+          "half_life": null,
+          "validation_nll": 0.6200706256264596
+        }
+      ]
+    },
+    "ewma_history": {
+      "selected": {
+        "tau": 10.0,
+        "half_life": 3.0,
+        "validation_nll": 0.6009002480741397
+      },
+      "candidates": [
+        {
+          "tau": 1.0,
+          "half_life": 1.0,
+          "validation_nll": 0.6116457441527361
+        },
+        {
+          "tau": 1.0,
+          "half_life": 3.0,
+          "validation_nll": 0.6082360410213115
+        },
+        {
+          "tau": 1.0,
+          "half_life": 7.0,
+          "validation_nll": 0.6109438814927753
+        },
+        {
+          "tau": 10.0,
+          "half_life": 1.0,
+          "validation_nll": 0.6042478260630068
+        },
+        {
+          "tau": 10.0,
+          "half_life": 3.0,
+          "validation_nll": 0.6009002480741397
+        },
+        {
+          "tau": 10.0,
+          "half_life": 7.0,
+          "validation_nll": 0.6021762901214427
+        },
+        {
+          "tau": 100.0,
+          "half_life": 1.0,
+          "validation_nll": 0.6151000004913703
+        },
+        {
+          "tau": 100.0,
+          "half_life": 3.0,
+          "validation_nll": 0.6133392354925952
+        },
+        {
+          "tau": 100.0,
+          "half_life": 7.0,
+          "validation_nll": 0.6133825059558309
+        }
+      ]
+    }
+  },
+  "retail/2010": {
+    "training_history": {
+      "selected": {
+        "tau": 10.0,
+        "half_life": null,
+        "validation_nll": 1.7552577719657998
+      },
+      "candidates": [
+        {
+          "tau": 1.0,
+          "half_life": null,
+          "validation_nll": 1.7553214946503426
+        },
+        {
+          "tau": 10.0,
+          "half_life": null,
+          "validation_nll": 1.7552577719657998
+        },
+        {
+          "tau": 100.0,
+          "half_life": null,
+          "validation_nll": 1.7558539385535952
+        }
+      ]
+    },
+    "last_history": {
+      "selected": {
+        "tau": 100.0,
+        "half_life": null,
+        "validation_nll": 1.776619951665872
+      },
+      "candidates": [
+        {
+          "tau": 1.0,
+          "half_life": null,
+          "validation_nll": 2.0036584264778785
+        },
+        {
+          "tau": 10.0,
+          "half_life": null,
+          "validation_nll": 1.8274880230584916
+        },
+        {
+          "tau": 100.0,
+          "half_life": null,
+          "validation_nll": 1.776619951665872
+        }
+      ]
+    },
+    "ewma_history": {
+      "selected": {
+        "tau": 1.0,
+        "half_life": 7.0,
+        "validation_nll": 1.7596686083044129
+      },
+      "candidates": [
+        {
+          "tau": 1.0,
+          "half_life": 1.0,
+          "validation_nll": 1.82896607025634
+        },
+        {
+          "tau": 1.0,
+          "half_life": 3.0,
+          "validation_nll": 1.7761443190381763
+        },
+        {
+          "tau": 1.0,
+          "half_life": 7.0,
+          "validation_nll": 1.7596686083044129
+        },
+        {
+          "tau": 10.0,
+          "half_life": 1.0,
+          "validation_nll": 1.7838860418062705
+        },
+        {
+          "tau": 10.0,
+          "half_life": 3.0,
+          "validation_nll": 1.7663526157181952
+        },
+        {
+          "tau": 10.0,
+          "half_life": 7.0,
+          "validation_nll": 1.7602050844394936
+        },
+        {
+          "tau": 100.0,
+          "half_life": 1.0,
+          "validation_nll": 1.7737234024256292
+        },
+        {
+          "tau": 100.0,
+          "half_life": 3.0,
+          "validation_nll": 1.772940858789609
+        },
+        {
+          "tau": 100.0,
+          "half_life": 7.0,
+          "validation_nll": 1.772776779427126
+        }
+      ]
+    }
+  },
+  "retail/2011": {
+    "training_history": {
+      "selected": {
+        "tau": 100.0,
+        "half_life": null,
+        "validation_nll": 1.6547594609964085
+      },
+      "candidates": [
+        {
+          "tau": 1.0,
+          "half_life": null,
+          "validation_nll": 1.6557094522470759
+        },
+        {
+          "tau": 10.0,
+          "half_life": null,
+          "validation_nll": 1.6553647471330784
+        },
+        {
+          "tau": 100.0,
+          "half_life": null,
+          "validation_nll": 1.6547594609964085
+        }
+      ]
+    },
+    "last_history": {
+      "selected": {
+        "tau": 100.0,
+        "half_life": null,
+        "validation_nll": 1.678597617321706
+      },
+      "candidates": [
+        {
+          "tau": 1.0,
+          "half_life": null,
+          "validation_nll": 2.003674470991562
+        },
+        {
+          "tau": 10.0,
+          "half_life": null,
+          "validation_nll": 1.7482741055855597
+        },
+        {
+          "tau": 100.0,
+          "half_life": null,
+          "validation_nll": 1.678597617321706
+        }
+      ]
+    },
+    "ewma_history": {
+      "selected": {
+        "tau": 1.0,
+        "half_life": 7.0,
+        "validation_nll": 1.6582061983106826
+      },
+      "candidates": [
+        {
+          "tau": 1.0,
+          "half_life": 1.0,
+          "validation_nll": 1.7471614197871173
+        },
+        {
+          "tau": 1.0,
+          "half_life": 3.0,
+          "validation_nll": 1.675561986287971
+        },
+        {
+          "tau": 1.0,
+          "half_life": 7.0,
+          "validation_nll": 1.6582061983106826
+        },
+        {
+          "tau": 10.0,
+          "half_life": 1.0,
+          "validation_nll": 1.686716949432181
+        },
+        {
+          "tau": 10.0,
+          "half_life": 3.0,
+          "validation_nll": 1.6657053744956931
+        },
+        {
+          "tau": 10.0,
+          "half_life": 7.0,
+          "validation_nll": 1.6609326886817948
+        },
+        {
+          "tau": 100.0,
+          "half_life": 1.0,
+          "validation_nll": 1.6726627148538364
+        },
+        {
+          "tau": 100.0,
+          "half_life": 3.0,
+          "validation_nll": 1.6706148871893338
+        },
+        {
+          "tau": 100.0,
+          "half_life": 7.0,
+          "validation_nll": 1.6704947608260436
+        }
+      ]
+    }
+  }
+}

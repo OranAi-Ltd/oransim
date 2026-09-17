@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "epochs": 300,
+  "seeds": [
+    20260912,
+    20260913,
+    20260914
+  ],
+  "variants": [
+    "fixed_gaussian",
+    "joint_gaussian",
+    "joint_discrete",
+    "direct",
+    "no_dynamics"
+  ],
+  "user_hash_divisor": 64,
+  "features": [
+    "weekday_sin",
+    "weekday_cos",
+    "log_prior_exposures",
+    "log_prior_campaign_exposures",
+    "log_gap_days",
+    "prior_is_click",
+    "prior_long_view",
+    "prior_is_like",
+    "prior_is_follow",
+    "prior_is_comment",
+    "prior_is_forward",
+    "prior_is_hate"
+  ],
+  "heads": [
+    "is_click",
+    "long_view",
+    "is_like",
+    "is_follow",
+    "is_comment",
+    "is_forward",
+    "is_hate"
+  ],
+  "individual_event_history": true,
+  "loss": "mean daily joint NLL + 0.05 mean cell NB NLL + 0.15 two-step loss; regularization 0.001 normalized by trainable parameter count",
+  "cohorts": "campaign x historical user group; prior individual histories averaged over fixed historical users for macro forecasts",
+  "behavior_training": "per-event histories with day-end outcome release",
+  "selection": "validation composite objective selects epoch and variant before test; test is reported for every prespecified variant",
+  "scope": "Retrospective previously examined KuaiRand dates; no new unseen external holdout. Counts refer to recorded sample exposures, not platform population.",
+  "forecast": "History features and population mass freeze at each origin; weekday is known; recurrent memory evolves from generated feedback.",
+  "source_sha256": {
+    "backend/scripts/train_differentiable_market.py": "4a5bf088ad33894f9b22fbd132262a60606c022e786c41691c94e5c852d10ed3",
+    "backend/oransim/world_model/differentiable_market.py": "e1f4a601d75f1a38c5c390ff86bd537abba3e076d05d1d7c4d7e38ae81ab609a",
+    "backend/scripts/train_population_panel.py": "7844149c3dea90009f54f1578f8276f2de75da39bdeb304aa28fc63a48c7b16e"
+  },
+  "data_sha256": {
+    "log_standard_4_22_to_5_08_pure.csv": "429e3b948828942e572f2c3a5be5a25799ffe75591d22d18cf417b9b534d31fd",
+    "video_features_basic_pure.csv": "a6f7ee02684c5777422306cdc416e170302288aa89aca9dfea995edbd625bcc2",
+    "log_standard_4_08_to_4_21_pure.csv": "5bb6eb0b3d9f47e5436cb5dc82ee1899b845ebf9750a5560b801e929e18bd41c",
+    "log_random_4_22_to_5_08_pure.csv": "60b80994da969cd53da4d50c37ba3dafd6fb185df804c92c8410df34845a9d2c"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "snapshots": [
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand-gru-projection/standard/20260915-train.json",
+      "sha256": "84c7f55ebc87c1bed31af556af485c57f0f1b19519c45eb113ebebab121c39a1",
+      "three_step_restoration_passed": true
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand-gru-projection/standard/20260915-final.json",
+      "sha256": "e5f6b2bddd26d9845cc04c91418fdc790669fb844db1b5ee231f5718e24834b1",
+      "three_step_restoration_passed": true
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand-gru-projection/standard/20260916-train.json",
+      "sha256": "b5114081ced889e90c621ff6dfb888d24c70932d05557b52041a01c4c1b62e83",
+      "three_step_restoration_passed": true
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand-gru-projection/standard/20260916-final.json",
+      "sha256": "889187648117df3c52ec16f1b197f9691103b374b33d946960e5233f6a275733",
+      "three_step_restoration_passed": true
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand-gru-projection/standard/20260917-train.json",
+      "sha256": "494a42519b6247099ca74a19897e9c15d50564e72f562f2f998f0d13ac06f2ec",
+      "three_step_restoration_passed": true
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand-gru-projection/standard/20260917-final.json",
+      "sha256": "8746e49227b97a68b084b085872394155af2246abd6da29311cd360c2f009c43",
+      "three_step_restoration_passed": true
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand-gru-projection/random/20260915-train.json",
+      "sha256": "0a7126b458835c8f737198e4e769f480858abba357b1ab4eec287e0c65b6b0cb",
+      "three_step_restoration_passed": true
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand-gru-projection/random/20260915-final.json",
+      "sha256": "23f958c962a849af503b35e9002a07eeacb973dfabf054339645110d2259245c",
+      "three_step_restoration_passed": true
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand-gru-projection/random/20260916-train.json",
+      "sha256": "af8fe9f294a85f005a72d3c5222cd8743f81a75bbca4bd907ef0d1e20bb068ee",
+      "three_step_restoration_passed": true
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand-gru-projection/random/20260916-final.json",
+      "sha256": "c69e9d15522004131a6ea47ad67e7b2432f8215b1650d3194dbb77ae6751d958",
+      "three_step_restoration_passed": true
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand-gru-projection/random/20260917-train.json",
+      "sha256": "0b8630c9bb427aa4b2b1f8f69802a97878771911e3abe42c658083fca82459cf",
+      "three_step_restoration_passed": true
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/kuairand-gru-projection/random/20260917-final.json",
+      "sha256": "681340239680c09230a0e5e581cc4de7e46ef5d5d7246664eba658c43ef34d45",
+      "three_step_restoration_passed": true
+    }
+  ],
+  "all_restorations_passed": true
+}

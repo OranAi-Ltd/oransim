@@ -1,0 +1,26 @@
+{
+  "future_label_perturbation": "multiply all test-period basket values, quantities and sku counts by 100 before adapter preparation",
+  "preserved": [
+    "all train/validation daily cohort features",
+    "all train/validation joint pattern labels",
+    "first test-day cohort features"
+  ],
+  "windows": [
+    "2010",
+    "2011"
+  ],
+  "matched_parameters": {
+    "joint_gaussian": 114,
+    "joint_discrete": 114,
+    "population_each": 20
+  },
+  "status": "passed",
+  "raw_data_ignored": true,
+  "prepared_records_ignored": true,
+  "inconsistent_invoice_time_audit": {
+    "invoices": 82,
+    "cross_calendar_day": 0,
+    "maximum_time_spread_seconds": 540,
+    "interpretation": "Exclusion uses only same-calendar-day record inconsistencies, so it does not consume later-day information."
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "scope": "Post-audit enhanced baseline; specified after inspection of some primary-family test results.",
+  "policies": {
+    "standard": {
+      "joint_nll": {
+        "mean": 1.2290195731627818,
+        "seed_sd": 0.007624567345843633
+      },
+      "count_nll": {
+        "mean": 1.51223343980631,
+        "seed_sd": 0.06896270845911763
+      },
+      "exposure_mae": {
+        "mean": 112.6296609344351,
+        "seed_sd": 34.0542975871098
+      },
+      "exposure_rmse": {
+        "mean": 124.2404023477269,
+        "seed_sd": 36.439799009598204
+      },
+      "multi_step": {
+        "1": {
+          "origins": 10,
+          "cohort_joint_nll": {
+            "mean": 1.2290195731627818,
+            "seed_sd": 0.007624567345843633
+          },
+          "exposure_mae": {
+            "mean": 112.6296609344351,
+            "seed_sd": 34.0542975871098
+          }
+        },
+        "3": {
+          "origins": 8,
+          "cohort_joint_nll": {
+            "mean": 1.2262888697524534,
+            "seed_sd": 0.008113991160915976
+          },
+          "exposure_mae": {
+            "mean": 122.00143956966927,
+            "seed_sd": 34.58656340444887
+          }
+        },
+        "7": {
+          "origins": 4,
+          "cohort_joint_nll": {
+            "mean": 1.2563049717503663,
+            "seed_sd": 0.02639566963734938
+          },
+          "exposure_mae": {
+            "mean": 153.6797135385821,
+            "seed_sd": 47.799345133021895
+          }
+        }
+      }
+    },
+    "random": {
+      "joint_nll": {
+        "mean": 0.7970018458365652,
+        "seed_sd": 0.009368860596713659
+      },
+      "count_nll": {
+        "mean": 6.638842261702854,
+        "seed_sd": 0.3226208720212599
+      },
+      "exposure_mae": {
+        "mean": 766.626048671203,
+        "seed_sd": 16.977909761707064
+      },
+      "exposure_rmse": {
+        "mean": 777.4678995182436,
+        "seed_sd": 16.7070238370608
+      },
+      "multi_step": {
+        "1": {
+          "origins": 7,
+          "cohort_joint_nll": {
+            "mean": 0.7970018458365652,
+            "seed_sd": 0.009368860596713659
+          },
+          "exposure_mae": {
+            "mean": 766.626048671203,
+            "seed_sd": 16.977909761707064
+          }
+        },
+        "3": {
+          "origins": 5,
+          "cohort_joint_nll": {
+            "mean": 0.815189795542942,
+            "seed_sd": 0.003916753312542547
+          },
+          "exposure_mae": {
+            "mean": 792.9223471170757,
+            "seed_sd": 3.464561290918005
+          }
+        },
+        "7": {
+          "origins": 1,
+          "cohort_joint_nll": {
+            "mean": 0.861744881855373,
+            "seed_sd": 0.00378409387322976
+          },
+          "exposure_mae": {
+            "mean": 913.3052033580949,
+            "seed_sd": 18.569854996667694
+          }
+        }
+      }
+    }
+  },
+  "runs": 6,
+  "restored_snapshots": 12,
+  "architecture": {
+    "behavior_projection": "All H rows and all four columns of the H x 4 hidden-to-logit matrix are trainable, including the first/click row.",
+    "covariate_readout": "The original behavior and exposure readouts of weekday and lagged cohort features remain trainable and present.",
+    "hidden_state": "Same four-dimensional per-group GRU, state inputs and initialization as the original GRU comparator.",
+    "initialization": "Exactly legacy GRU output: first row e1, other rows copied. No data-dependent extra initialization.",
+    "exposure": "Original exposure model, count likelihood, intensity feature and latent loadings retained.",
+    "comparison_scope": "A deterministic full-model alternative under the same observed inputs. It is not a parameter-matched Gaussian representation ablation.",
+    "additional_trainable_parameters_vs_original_gru": 4,
+    "selection": "Only validation selects each run epoch. No entry into the original family selection; no retuning after supplementary test scores."
+  },
+  "finalizer_sha256": "801d0368e371a1396091ed6a50a687084b72f8feb99b024472bac3d7a861d40b"
+}

@@ -61,3 +61,19 @@ htmlcov/
 
 # MkDocs
 site/
+
+# Local research inputs and generated evaluations
+outputs/
+data/kuairand/raw/
+data/kuairand/processed/
+data/x5/raw/
+data/x5/processed/
+data/online_retail_ii/
+# Development-only material must not enter this public repository
+AGENTS.md
+CLAUDE.md
+.codex/
+.claude/
+paper/
+api_keys.json
+credentials.json

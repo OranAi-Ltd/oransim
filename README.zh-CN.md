@@ -731,3 +731,8 @@ Apache License 2.0 —— 详见 [LICENSE](LICENSE) 和 [NOTICE](NOTICE)。
 <div align="center">
 在深圳用 ☕ 浇灌 · Built by <a href="https://oran.cn">OranAI</a>. Oransim 对你有用？点个 ⭐ 支持开源 —— 它是我们持续投入的动力。
 </div>
+
+
+## 研究代码与模型权重
+
+OranSim 投放前评估与可微高斯集体动力学研究的公开实验位于 [experiments/](experiments/README.md)，包含模型权重、聚合输入、冻结结果及复现命令。

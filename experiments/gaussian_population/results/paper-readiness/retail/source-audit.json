@@ -1,0 +1,40 @@
+{
+  "source": "https://archive.ics.uci.edu/dataset/502/online+retail+ii",
+  "download": "https://archive.ics.uci.edu/static/public/502/online%2Bretail%2Bii.zip",
+  "doi": "10.24432/C5CG6D",
+  "license": "CC BY 4.0",
+  "creator": "Daqing Chen",
+  "retrieved": "2026-09-12",
+  "source_sha256": {
+    "online-retail-ii.zip": "572e36277c2390fbfde10664750731e0a86f55e33470d91919085f0408e67bfb",
+    "online_retail_II.xlsx": "bcbe73b35f5b7babf197fb0cb983a11f5d9ff929078d4aa53d171b1f2df2e980"
+  },
+  "rows": 1067371,
+  "columns": [
+    "Invoice",
+    "StockCode",
+    "Description",
+    "Quantity",
+    "InvoiceDate",
+    "Price",
+    "Customer ID",
+    "Country"
+  ],
+  "sheet_rows": {
+    "Year 2009-2010": 525461,
+    "Year 2010-2011": 541910
+  },
+  "date_min": "2009-12-01 07:45:00",
+  "date_max": "2011-12-09 12:50:00",
+  "nulls": {
+    "Invoice": 0,
+    "StockCode": 0,
+    "Description": 4382,
+    "Quantity": 0,
+    "InvoiceDate": 0,
+    "Price": 0,
+    "Customer ID": 243007,
+    "Country": 0
+  },
+  "exact_duplicates": 34335
+}

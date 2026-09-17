@@ -733,3 +733,8 @@ Contributors appear on [`CONTRIBUTORS.md`](CONTRIBUTORS.md) (auto-generated).
 <div align="center">
 Built with ☕ in Shenzhen by <a href="https://oran.cn">OranAI</a>. If Oransim helps your work, please ⭐ star the repo — it powers our open-source commitment.
 </div>
+
+
+## Research code and model checkpoints
+
+Public experiments for the OranSim pre-launch evaluation and differentiable Gaussian collective-dynamics studies are available in [experiments/](experiments/README.md), including trained checkpoints, aggregate inputs, frozen results and reproduction commands.

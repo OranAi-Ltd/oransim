@@ -1,0 +1,27 @@
+{
+  "seeds": [
+    20260912,
+    20260913,
+    20260914
+  ],
+  "train_markets": 20,
+  "validation_markets": 8,
+  "test_markets": 40,
+  "opportunities_per_market": 4000,
+  "teachers": [
+    "gaussian",
+    "discrete"
+  ],
+  "candidates": [
+    "fixed_gaussian",
+    "joint_gaussian",
+    "joint_discrete",
+    "point"
+  ],
+  "source_sha256": {
+    "backend/scripts/evaluate_differentiable_recovery.py": "5cc072a418bfc379ac4960e885b7dd352a13ddb61503b300756abed391664fce",
+    "backend/oransim/world_model/differentiable_market.py": "e1f4a601d75f1a38c5c390ff86bd537abba3e076d05d1d7c4d7e38ae81ab609a",
+    "backend/oransim/world_model/market_choice_learning.py": "16908a78ac5940acb997c2cc4fade80cbc68337bf2e932bf9dcaa62d6f68e25c"
+  },
+  "scope": "Known synthetic market generators; aggregate-only training; tests on fresh randomized attributes/prices. No real sales or causal effect claim."
+}

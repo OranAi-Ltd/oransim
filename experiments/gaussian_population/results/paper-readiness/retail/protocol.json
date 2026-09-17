@@ -1,0 +1,75 @@
+{
+  "dataset": "UCI Online Retail II",
+  "windows": {
+    "2010": {
+      "warmup_start": "2009-12-01",
+      "warmup_end": "2009-12-31",
+      "train_end": "2010-02-28",
+      "validation_end": "2010-03-14",
+      "test_end": "2010-03-31"
+    },
+    "2011": {
+      "warmup_start": "2010-12-01",
+      "warmup_end": "2010-12-31",
+      "train_end": "2011-02-28",
+      "validation_end": "2011-03-14",
+      "test_end": "2011-03-31"
+    }
+  },
+  "seeds": [
+    20260915,
+    20260916,
+    20260917
+  ],
+  "variants": [
+    "fixed_gaussian",
+    "joint_gaussian",
+    "joint_discrete",
+    "direct",
+    "no_dynamics"
+  ],
+  "epochs": 120,
+  "patience": 20,
+  "features": [
+    "weekday_0",
+    "weekday_1",
+    "weekday_2",
+    "weekday_3",
+    "weekday_4",
+    "weekday_5",
+    "weekday_6",
+    "log_lag_arrivals_per_anchor",
+    "lag_high_value_rate",
+    "lag_high_quantity_rate",
+    "lag_many_skus_rate"
+  ],
+  "heads": [
+    "high_value",
+    "high_quantity",
+    "many_skus"
+  ],
+  "lag_ema_retention": 0.85,
+  "loss": "mean daily mark NLL + .05 mean cell NB NLL + .15 two-step loss + .001 normalized regularization",
+  "supervision": "daily cohort joint counts only; no event batches or individual dynamic histories",
+  "marks": "basket value, positive merchandise units and unique SKUs greater than warmup medians",
+  "groups": "warmup single invoice; repeat below/at repeat-spend median; repeat above median; unknown/missing customer",
+  "population": "fixed warmup customer stocks; unknown stream uses one reference unit",
+  "event_semantics": "positive merchandise invoice; not exposure, visit or purchase opportunity",
+  "future_inputs": "known weekday; lag aggregate features and population anchors frozen at origin",
+  "selection": "validation composite selects epoch and model before all test evaluation",
+  "data_sha256": {
+    "raw.parquet": "6d3d10af7f2296186113c2bc5a3b8987062f723bf0aadcc4c6059484b84305b6"
+  },
+  "workbook_sha256": "bcbe73b35f5b7babf197fb0cb983a11f5d9ff929078d4aa53d171b1f2df2e980",
+  "environment": {
+    "python": "3.12.3",
+    "torch": "2.11.0+cu130",
+    "numpy": "2.4.4",
+    "pandas": "3.0.2",
+    "torch_threads": 1
+  },
+  "source_sha256": {
+    "backend/scripts/evaluate_retail_aggregation.py": "c380096903b92ca6e9ee705f29ac65ce959336309cd11764a0724a092d26eb9f",
+    "backend/oransim/world_model/differentiable_market.py": "e1f4a601d75f1a38c5c390ff86bd537abba3e076d05d1d7c4d7e38ae81ab609a"
+  }
+}

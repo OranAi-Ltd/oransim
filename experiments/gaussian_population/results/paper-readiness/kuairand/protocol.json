@@ -1,0 +1,51 @@
+{
+  "bucket": 1,
+  "modulus": 64,
+  "excluded_v3_bucket": 0,
+  "seeds": [
+    20260915,
+    20260916,
+    20260917
+  ],
+  "regimes": {
+    "aggregate": [
+      "joint_gaussian",
+      "fixed_gaussian",
+      "joint_discrete",
+      "separated",
+      "static_mixture",
+      "direct",
+      "gru"
+    ],
+    "event": [
+      "joint_gaussian"
+    ]
+  },
+  "epochs": 300,
+  "patience": 20,
+  "selection": "same validation daily mark NLL + .05 mean-cell NB NLL, no test-dependent choices",
+  "training": "Adam .025, clip10, normalized L2 .001, two-step weight .15; inherited v3 training",
+  "aggregate_visibility": "Historical fixed group priors; thereafter only cohort joint pattern counts, weekday and prior cohort count/mark EMA. No per-user history features or event likelihood.",
+  "event_visibility": "Same events and dates; individual history is additional observed information. Cross-regime differences include history granularity.",
+  "sample_scope": "Hash bucket disjoint from v3. Previously studied calendar dates. This is population-sample replication, not a pristine temporal holdout.",
+  "comparisons": {
+    "primary": "aggregate joint_gaussian versus fixed_gaussian",
+    "mechanism": "joint versus separated expectation with identical parameters; static mixture and deterministic GRU alternatives",
+    "information": "event joint_gaussian versus aggregate joint_gaussian",
+    "uncertainty": "Seed mean/SD plus exploratory paired circular 3-day block-bootstrap over test dates; no multiple-comparison significance claim"
+  },
+  "source_sha256": {
+    "backend/scripts/evaluate_population_readiness.py": "e4cd842e8b7101a34fe83f3951ded95da9dfa559842ccc1fb4353b4217cfa71b",
+    "backend/oransim/world_model/population_comparisons.py": "a163c85f4da2e3aa38ad076e0c471fdeebfa89ae07fc300364b8f6ba021701cf",
+    "backend/oransim/world_model/differentiable_market.py": "e1f4a601d75f1a38c5c390ff86bd537abba3e076d05d1d7c4d7e38ae81ab609a",
+    "backend/scripts/train_differentiable_market.py": "4a5bf088ad33894f9b22fbd132262a60606c022e786c41691c94e5c852d10ed3",
+    "backend/scripts/train_population_panel.py": "7844149c3dea90009f54f1578f8276f2de75da39bdeb304aa28fc63a48c7b16e",
+    "backend/oransim/world_model/population_panel.py": "ba02f2107edf34bcf7c40bb372b2202b8cd84b4747b15ae39568ccf39ffde945"
+  },
+  "data_sha256": {
+    "log_standard_4_22_to_5_08_pure.csv": "429e3b948828942e572f2c3a5be5a25799ffe75591d22d18cf417b9b534d31fd",
+    "video_features_basic_pure.csv": "a6f7ee02684c5777422306cdc416e170302288aa89aca9dfea995edbd625bcc2",
+    "log_standard_4_08_to_4_21_pure.csv": "5bb6eb0b3d9f47e5436cb5dc82ee1899b845ebf9750a5560b801e929e18bd41c",
+    "log_random_4_22_to_5_08_pure.csv": "60b80994da969cd53da4d50c37ba3dafd6fb185df804c92c8410df34845a9d2c"
+  }
+}

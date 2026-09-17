@@ -1,0 +1,8 @@
+{
+  "workers": 3,
+  "torch_threads_per_worker": 1,
+  "job": "one policy/regime/seed; all variants selected before test",
+  "source_sha256": "980a2ba5f39c6bcd961bd8c858bc87eb62d9023f80fc75ba88c93e412773b1d5",
+  "protocol_sha256": "db675f48ebd19d4b23f8c2bebf92d91d2052427fd0b40d46f1cfa8040cafe017",
+  "restart": "Initial incomplete serial fits are superseded by complete deterministic jobs under identical model/training parameters."
+}

@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "scope": "Chinese manuscript and appendix integration; no English target changes",
+  "main_tables": 8,
+  "main_figures": 3,
+  "appendix_behavior_tables": 22,
+  "appendix_arrival_tables": 3,
+  "original_main_display_formulas_unchanged": 16,
+  "original_appendix_display_formulas_unchanged": 19,
+  "original_sections_4_4_through_5_unchanged": true,
+  "generated_table_fragments_matched": true,
+  "all_main_comparative_claims_recalculated": true,
+  "original_arrival_tables_preserved": true,
+  "local_links_valid": true,
+  "citation_keys_valid": true,
+  "english_files_hash_unchanged": 37,
+  "new_figure_visual_review": "retail-behavior-trajectories.png inspected; labels and complete date series visible"
+}

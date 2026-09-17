@@ -1,0 +1,114 @@
+{
+  "standard": {
+    "20260912-fixed_gaussian": {
+      "high_order_joint_nll": 1.1120137293122063,
+      "high_minus_trained_quadrature_nll": -2.7726421159002257e-10,
+      "max_cholesky_diagonal": 0.4501,
+      "high_order_seconds": 0.8891479099984281
+    },
+    "20260913-fixed_gaussian": {
+      "high_order_joint_nll": 1.1115358835423739,
+      "high_minus_trained_quadrature_nll": -2.238151886047035e-10,
+      "max_cholesky_diagonal": 0.4501,
+      "high_order_seconds": 0.8524751059885602
+    },
+    "20260914-fixed_gaussian": {
+      "high_order_joint_nll": 1.1112759098584546,
+      "high_minus_trained_quadrature_nll": -2.203324189764544e-10,
+      "max_cholesky_diagonal": 0.4501,
+      "high_order_seconds": 0.8578926679911092
+    },
+    "20260912-joint_gaussian": {
+      "high_order_joint_nll": 1.0745550798404166,
+      "high_minus_trained_quadrature_nll": -0.0005167386982252165,
+      "max_cholesky_diagonal": 2.891018660400736,
+      "high_order_seconds": 0.8939055080118123
+    },
+    "20260913-joint_gaussian": {
+      "high_order_joint_nll": 1.0729014157494305,
+      "high_minus_trained_quadrature_nll": 0.0004931264267562518,
+      "max_cholesky_diagonal": 2.926596889174782,
+      "high_order_seconds": 0.8762233429879416
+    },
+    "20260914-joint_gaussian": {
+      "high_order_joint_nll": 1.071869088583223,
+      "high_minus_trained_quadrature_nll": 0.0005623639425786919,
+      "max_cholesky_diagonal": 2.9374319059483516,
+      "high_order_seconds": 0.878070773993386
+    },
+    "20260912-no_dynamics": {
+      "high_order_joint_nll": 1.0705533064835433,
+      "high_minus_trained_quadrature_nll": 0.0003549436389860272,
+      "max_cholesky_diagonal": 3.5784758939479167,
+      "high_order_seconds": 0.8771707869891543
+    },
+    "20260913-no_dynamics": {
+      "high_order_joint_nll": 1.0707230501168652,
+      "high_minus_trained_quadrature_nll": 0.0003200036897563763,
+      "max_cholesky_diagonal": 3.4211086927969108,
+      "high_order_seconds": 0.8743464239814784
+    },
+    "20260914-no_dynamics": {
+      "high_order_joint_nll": 1.0706203058860102,
+      "high_minus_trained_quadrature_nll": -0.00027449433873316664,
+      "max_cholesky_diagonal": 3.4875045945574468,
+      "high_order_seconds": 0.8466264409944415
+    }
+  },
+  "random": {
+    "20260912-fixed_gaussian": {
+      "high_order_joint_nll": 0.6859772802659206,
+      "high_minus_trained_quadrature_nll": -6.241296368614258e-11,
+      "max_cholesky_diagonal": 0.4501,
+      "high_order_seconds": 0.5287543839949649
+    },
+    "20260913-fixed_gaussian": {
+      "high_order_joint_nll": 0.6891413195952106,
+      "high_minus_trained_quadrature_nll": -6.872594271456478e-09,
+      "max_cholesky_diagonal": 0.4501,
+      "high_order_seconds": 0.5090617930109147
+    },
+    "20260914-fixed_gaussian": {
+      "high_order_joint_nll": 0.6924314281585828,
+      "high_minus_trained_quadrature_nll": 1.7510248806473783e-10,
+      "max_cholesky_diagonal": 0.4501,
+      "high_order_seconds": 0.50706701099989
+    },
+    "20260912-joint_gaussian": {
+      "high_order_joint_nll": 0.6497319203103672,
+      "high_minus_trained_quadrature_nll": 1.0639989080907242e-06,
+      "max_cholesky_diagonal": 1.1632698093395335,
+      "high_order_seconds": 0.5126301150012296
+    },
+    "20260913-joint_gaussian": {
+      "high_order_joint_nll": 0.6494318940382003,
+      "high_minus_trained_quadrature_nll": 4.323399490635538e-07,
+      "max_cholesky_diagonal": 1.2055665500268389,
+      "high_order_seconds": 0.5177342079987284
+    },
+    "20260914-joint_gaussian": {
+      "high_order_joint_nll": 0.6518089532529008,
+      "high_minus_trained_quadrature_nll": 8.841662039182907e-07,
+      "max_cholesky_diagonal": 1.1666034792423996,
+      "high_order_seconds": 0.5038732799876016
+    },
+    "20260912-no_dynamics": {
+      "high_order_joint_nll": 0.6186703203589092,
+      "high_minus_trained_quadrature_nll": 9.955950251994139e-06,
+      "max_cholesky_diagonal": 1.7502318086815054,
+      "high_order_seconds": 0.5148066989786457
+    },
+    "20260913-no_dynamics": {
+      "high_order_joint_nll": 0.6180965802975925,
+      "high_minus_trained_quadrature_nll": 8.98019411821327e-06,
+      "max_cholesky_diagonal": 1.8289798547593115,
+      "high_order_seconds": 0.5149771159922238
+    },
+    "20260914-no_dynamics": {
+      "high_order_joint_nll": 0.6181490726998657,
+      "high_minus_trained_quadrature_nll": -2.8154913478406485e-07,
+      "max_cholesky_diagonal": 1.8102627623895264,
+      "high_order_seconds": 0.5133728169894312
+    }
+  }
+}

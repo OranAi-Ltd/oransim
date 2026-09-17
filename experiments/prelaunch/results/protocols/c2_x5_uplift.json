@@ -1,0 +1,196 @@
+{
+  "card": "C2",
+  "dataset": "X5 RetailHero",
+  "seed": 42,
+  "rows": 200039,
+  "test_rows": 50010,
+  "treatment_rate": 0.4998075375301816,
+  "outcome_rate": 0.6198891216212838,
+  "metrics_note": "AUUC, Qini, and uplift@k are computed with scikit-uplift metrics on held-out treatment/control outcomes; no PEHE is reported.",
+  "outcome_auc_sanity": 0.7515568171553079,
+  "baselines": {
+    "causal_forest_dml": {
+      "library": "econml.dml.CausalForestDML",
+      "train_rows": 60000,
+      "test_rows": 20000,
+      "seed_runs": [
+        {
+          "seed": 42,
+          "auuc": 0.020540806595496047,
+          "qini": 0.01404261117835665,
+          "uplift_at_10": 0.09149527793782414,
+          "uplift_at_30": 0.055009812915823075
+        },
+        {
+          "seed": 137,
+          "auuc": 0.03035597483085621,
+          "qini": 0.020446644294236784,
+          "uplift_at_10": 0.08663090831255826,
+          "uplift_at_30": 0.05680239224167649
+        },
+        {
+          "seed": 256,
+          "auuc": 0.023510586399310678,
+          "qini": 0.015982231583168638,
+          "uplift_at_10": 0.13149038461538465,
+          "uplift_at_30": 0.05150041164410479
+        }
+      ],
+      "auuc_mean": 0.02480245594188765,
+      "auuc_std": 0.005033495510913296,
+      "qini_mean": 0.016823829018587356,
+      "qini_std": 0.003283919109813742,
+      "uplift_at_10_mean": 0.10320552362192235,
+      "uplift_at_10_std": 0.024615859603666416,
+      "uplift_at_30_mean": 0.05443753893386812,
+      "uplift_at_30_std": 0.002696919112074669
+    },
+    "r_learner_dml": {
+      "library": "econml.dr.DRLearner",
+      "note": "DRLearner is used as the sprint DML residualization baseline for the R-learner row.",
+      "seed_runs": [
+        {
+          "seed": 42,
+          "auuc": 0.01978868919460369,
+          "qini": 0.013893509324685284,
+          "uplift_at_10": 0.1379387061519387,
+          "uplift_at_30": 0.06084969589713152
+        },
+        {
+          "seed": 137,
+          "auuc": 0.020722692328567403,
+          "qini": 0.014484508170643232,
+          "uplift_at_10": 0.11224930293692681,
+          "uplift_at_30": 0.0643166621998229
+        },
+        {
+          "seed": 256,
+          "auuc": 0.019931496922626277,
+          "qini": 0.013840725935952113,
+          "uplift_at_10": 0.14157678140398255,
+          "uplift_at_30": 0.0661113858363489
+        }
+      ],
+      "auuc_mean": 0.02014762614859912,
+      "auuc_std": 0.000503114644294147,
+      "qini_mean": 0.014072914477093542,
+      "qini_std": 0.0003574262832514503,
+      "uplift_at_10_mean": 0.13058826349761601,
+      "uplift_at_10_std": 0.015985837598317124,
+      "uplift_at_30_mean": 0.06375924797776777,
+      "uplift_at_30_std": 0.002674766945983772
+    },
+    "s_learner": {
+      "library": "econml.metalearners.SLearner",
+      "seed_runs": [
+        {
+          "seed": 42,
+          "auuc": 0.008521166495502313,
+          "qini": 0.0055258211763311565,
+          "uplift_at_10": 0.0666859381943869,
+          "uplift_at_30": 0.05194805794863033
+        },
+        {
+          "seed": 137,
+          "auuc": 0.012923730844111556,
+          "qini": 0.008610220646174664,
+          "uplift_at_10": 0.05357523192446462,
+          "uplift_at_30": 0.05381813908939059
+        },
+        {
+          "seed": 256,
+          "auuc": 0.01605487025221216,
+          "qini": 0.010401973155162633,
+          "uplift_at_10": 0.08242649316751116,
+          "uplift_at_30": 0.05900738371318137
+        }
+      ],
+      "auuc_mean": 0.012499922530608677,
+      "auuc_std": 0.0037846906331180665,
+      "qini_mean": 0.008179338325889485,
+      "qini_std": 0.0024664669490216742,
+      "uplift_at_10_mean": 0.06756255442878756,
+      "uplift_at_10_std": 0.014445593128890242,
+      "uplift_at_30_mean": 0.05492452691706743,
+      "uplift_at_30_std": 0.003657402162934387
+    },
+    "t_learner": {
+      "library": "econml.metalearners.TLearner",
+      "seed_runs": [
+        {
+          "seed": 42,
+          "auuc": 0.009316568868854475,
+          "qini": 0.006424848800176756,
+          "uplift_at_10": 0.0740716956887354,
+          "uplift_at_30": 0.05772223242187535
+        },
+        {
+          "seed": 137,
+          "auuc": 0.018186600505740128,
+          "qini": 0.012387596749142605,
+          "uplift_at_10": 0.07662321342716027,
+          "uplift_at_30": 0.059016167870657
+        },
+        {
+          "seed": 256,
+          "auuc": 0.019139199926204227,
+          "qini": 0.01279117831296729,
+          "uplift_at_10": 0.10680867115580639,
+          "uplift_at_30": 0.06492417068450662
+        }
+      ],
+      "auuc_mean": 0.01554745643359961,
+      "auuc_std": 0.0054170869752422105,
+      "qini_mean": 0.010534541287428882,
+      "qini_std": 0.0035648139887653643,
+      "uplift_at_10_mean": 0.08583452675723402,
+      "uplift_at_10_std": 0.018208888231616385,
+      "uplift_at_30_mean": 0.06055419032567966,
+      "uplift_at_30_std": 0.003839415774411977
+    },
+    "x_learner": {
+      "library": "econml.metalearners.XLearner",
+      "seed_runs": [
+        {
+          "seed": 42,
+          "auuc": 0.017892223875688635,
+          "qini": 0.012182862595048312,
+          "uplift_at_10": 0.10427146240188934,
+          "uplift_at_30": 0.06225753381764243
+        },
+        {
+          "seed": 137,
+          "auuc": 0.023563432446520274,
+          "qini": 0.016191645472046746,
+          "uplift_at_10": 0.09282770845246358,
+          "uplift_at_30": 0.07145207117332031
+        },
+        {
+          "seed": 256,
+          "auuc": 0.022580316237932583,
+          "qini": 0.01518528556216014,
+          "uplift_at_10": 0.11637568363483386,
+          "uplift_at_30": 0.06683087088034134
+        }
+      ],
+      "auuc_mean": 0.021345324186713827,
+      "auuc_std": 0.003030603188871596,
+      "qini_mean": 0.014519931209751731,
+      "qini_std": 0.002085571228567984,
+      "uplift_at_10_mean": 0.10449161816306225,
+      "uplift_at_10_std": 0.011775531207413316,
+      "uplift_at_30_mean": 0.06684682529043469,
+      "uplift_at_30_std": 0.004597289440924952
+    },
+    "dragonnet_tarnet": {
+      "status": "deferred",
+      "reason": "CPU sprint gate; neural baseline not required unless compute permits"
+    }
+  },
+  "seeds": [
+    42,
+    137,
+    256
+  ],
+  "seed_runs_source": "backend/scripts/run_oranbench_baselines.py --cards C2 --seeds"
+}

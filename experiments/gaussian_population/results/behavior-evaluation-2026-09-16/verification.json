@@ -1,0 +1,10 @@
+{
+  "legacy_model_window_nll_means_matched": 26,
+  "deepar_seed_horizon_nll_and_arrival_mae_pairs_matched": 36,
+  "all_reported_means_match_runs": true,
+  "all_metric_values_finite": true,
+  "frozen_model_hashes_unchanged": 90,
+  "chinese_main_appendix_outline_unchanged": true,
+  "english_files_unchanged": 37,
+  "manuscript_integration": "pending author decision"
+}

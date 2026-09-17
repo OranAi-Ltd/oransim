@@ -1,0 +1,1892 @@
+{
+  "aggregate": {
+    "methods": {
+      "causal_forest_dml": {
+        "auuc": {
+          "mean": 0.0112390479176422,
+          "std": 0.004846756122871228
+        },
+        "fractions": {
+          "0.05": {
+            "cumulative_gain": {
+              "mean": 222.55182123688135,
+              "std": 34.80886034515323
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 890.2072849475254,
+              "std": 139.2354413806129
+            },
+            "uplift": {
+              "mean": 0.08902072849475255,
+              "std": 0.013923544138061295
+            }
+          },
+          "0.10": {
+            "cumulative_gain": {
+              "mean": 368.6562034335248,
+              "std": 45.68686586615546
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 737.1649738722753,
+              "std": 91.35546064018284
+            },
+            "uplift": {
+              "mean": 0.07371649738722752,
+              "std": 0.009135546064018285
+            }
+          },
+          "0.20": {
+            "cumulative_gain": {
+              "mean": 575.642486349025,
+              "std": 42.25963563185754
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 575.5273808728504,
+              "std": 42.25118539477863
+            },
+            "uplift": {
+              "mean": 0.05755273808728504,
+              "std": 0.004225118539477859
+            }
+          },
+          "0.30": {
+            "cumulative_gain": {
+              "mean": 705.178329895683,
+              "std": 5.987339458802382
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 470.0248816207979,
+              "std": 3.9907614869041868
+            },
+            "uplift": {
+              "mean": 0.04700248816207978,
+              "std": 0.0003990761486904184
+            }
+          },
+          "0.50": {
+            "cumulative_gain": {
+              "mean": 1023.3810940496866,
+              "std": 95.30351723980229
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 409.270583503174,
+              "std": 38.113784139093106
+            },
+            "uplift": {
+              "mean": 0.0409270583503174,
+              "std": 0.003811378413909311
+            }
+          }
+        },
+        "qini": {
+          "mean": 0.0074468296144512116,
+          "std": 0.003292452961292931
+        }
+      },
+      "dr_learner": {
+        "auuc": {
+          "mean": 0.020150757442811997,
+          "std": 0.0004975692783204657
+        },
+        "fractions": {
+          "0.05": {
+            "cumulative_gain": {
+              "mean": 483.3482866868676,
+              "std": 71.7680752500357
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 1933.3931467474704,
+              "std": 287.0723010001428
+            },
+            "uplift": {
+              "mean": 0.19333931467474705,
+              "std": 0.028707230100014268
+            }
+          },
+          "0.10": {
+            "cumulative_gain": {
+              "mean": 653.0719057515778,
+              "std": 79.9451738291839
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 1305.8826349761603,
+              "std": 159.85837598317121
+            },
+            "uplift": {
+              "mean": 0.13058826349761601,
+              "std": 0.015985837598317124
+            }
+          },
+          "0.20": {
+            "cumulative_gain": {
+              "mean": 773.2682273009369,
+              "std": 63.59399038012563
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 773.1136045800209,
+              "std": 63.58127412530062
+            },
+            "uplift": {
+              "mean": 0.07731136045800209,
+              "std": 0.0063581274125300595
+            }
+          },
+          "0.30": {
+            "cumulative_gain": {
+              "mean": 958.3745025031434,
+              "std": 38.85117540751493
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 638.7885772866383,
+              "std": 25.895604484113157
+            },
+            "uplift": {
+              "mean": 0.06387885772866382,
+              "std": 0.0025895604484113136
+            }
+          },
+          "0.50": {
+            "cumulative_gain": {
+              "mean": 1156.1059552451331,
+              "std": 86.20738571355386
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 462.3499121156301,
+              "std": 34.47605907360686
+            },
+            "uplift": {
+              "mean": 0.04623499121156301,
+              "std": 0.0034476059073606847
+            }
+          }
+        },
+        "qini": {
+          "mean": 0.014075201080962855,
+          "std": 0.00035387794523748426
+        }
+      },
+      "random_ranking": {
+        "auuc": {
+          "mean": 0.004018826617500101,
+          "std": 0.0015720692560245511
+        },
+        "fractions": {
+          "0.05": {
+            "cumulative_gain": {
+              "mean": 99.35661902803345,
+              "std": 33.21898872304281
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 397.4264761121338,
+              "std": 132.87595489217125
+            },
+            "uplift": {
+              "mean": 0.03974264761121338,
+              "std": 0.013287595489217124
+            }
+          },
+          "0.10": {
+            "cumulative_gain": {
+              "mean": 192.3150183044805,
+              "std": 50.021507444513816
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 384.55312598376423,
+              "std": 100.02301028697028
+            },
+            "uplift": {
+              "mean": 0.03845531259837642,
+              "std": 0.010002301028697026
+            }
+          },
+          "0.20": {
+            "cumulative_gain": {
+              "mean": 378.8248247005857,
+              "std": 38.05000687858425
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 378.7490748856085,
+              "std": 38.04239839890446
+            },
+            "uplift": {
+              "mean": 0.03787490748856085,
+              "std": 0.003804239839890447
+            }
+          },
+          "0.30": {
+            "cumulative_gain": {
+              "mean": 581.7778107308962,
+              "std": 37.61173571230774
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 387.77431895680616,
+              "std": 25.069476579555918
+            },
+            "uplift": {
+              "mean": 0.038777431895680614,
+              "std": 0.002506947657955592
+            }
+          },
+          "0.50": {
+            "cumulative_gain": {
+              "mean": 934.3044135134859,
+              "std": 48.559772099201915
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 373.6470359981947,
+              "std": 19.420024834713853
+            },
+            "uplift": {
+              "mean": 0.03736470359981947,
+              "std": 0.0019420024834713842
+            }
+          }
+        },
+        "qini": {
+          "mean": 0.002542645606163356,
+          "std": 0.0009313490060105897
+        }
+      },
+      "s_learner": {
+        "auuc": {
+          "mean": 0.012499914694301043,
+          "std": 0.0037846296188514456
+        },
+        "fractions": {
+          "0.05": {
+            "cumulative_gain": {
+              "mean": 143.21825264959998,
+              "std": 79.9062495058537
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 572.8730105983999,
+              "std": 319.6249980234148
+            },
+            "uplift": {
+              "mean": 0.05728730105984,
+              "std": 0.031962499802341476
+            }
+          },
+          "0.10": {
+            "cumulative_gain": {
+              "mean": 337.8803346983666,
+              "std": 72.24241123758011
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 675.6255442878755,
+              "std": 144.45593128890243
+            },
+            "uplift": {
+              "mean": 0.06756255442878756,
+              "std": 0.014445593128890242
+            }
+          },
+          "0.20": {
+            "cumulative_gain": {
+              "mean": 639.59443406546,
+              "std": 109.66451666228112
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 639.4665407573084,
+              "std": 109.6425881446522
+            },
+            "uplift": {
+              "mean": 0.06394665407573084,
+              "std": 0.01096425881446522
+            }
+          },
+          "0.30": {
+            "cumulative_gain": {
+              "mean": 824.0326773367627,
+              "std": 54.87200465050465
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 549.2452691706743,
+              "std": 36.57402162934385
+            },
+            "uplift": {
+              "mean": 0.05492452691706743,
+              "std": 0.003657402162934387
+            }
+          },
+          "0.50": {
+            "cumulative_gain": {
+              "mean": 1119.0967848596822,
+              "std": 71.3999026336837
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 447.54920410305226,
+              "std": 28.554250203432822
+            },
+            "uplift": {
+              "mean": 0.04475492041030523,
+              "std": 0.002855425020343282
+            }
+          }
+        },
+        "qini": {
+          "mean": 0.008179331720693142,
+          "std": 0.0024664272325592386
+        }
+      },
+      "t_learner": {
+        "auuc": {
+          "mean": 0.015547456026493928,
+          "std": 0.005417086570351425
+        },
+        "fractions": {
+          "0.05": {
+            "cumulative_gain": {
+              "mean": 334.23699314047917,
+              "std": 17.35821081438381
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 1336.9479725619167,
+              "std": 69.43284325753524
+            },
+            "uplift": {
+              "mean": 0.13369479725619168,
+              "std": 0.006943284325753521
+            }
+          },
+          "0.10": {
+            "cumulative_gain": {
+              "mean": 429.25846831292733,
+              "std": 91.06265004631352
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 858.3452675723402,
+              "std": 182.08888231616385
+            },
+            "uplift": {
+              "mean": 0.08583452675723402,
+              "std": 0.018208888231616385
+            }
+          },
+          "0.20": {
+            "cumulative_gain": {
+              "mean": 713.1240771366311,
+              "std": 53.477618291272236
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 712.981480840463,
+              "std": 53.46692490629104
+            },
+            "uplift": {
+              "mean": 0.07129814808404629,
+              "std": 0.0053466924906291
+            }
+          },
+          "0.30": {
+            "cumulative_gain": {
+              "mean": 908.494517456172,
+              "std": 57.602754863502845
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 605.5419032567966,
+              "std": 38.39415774411977
+            },
+            "uplift": {
+              "mean": 0.06055419032567966,
+              "std": 0.003839415774411977
+            }
+          },
+          "0.50": {
+            "cumulative_gain": {
+              "mean": 1162.9197663170428,
+              "std": 124.63849783011256
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 465.07489154850737,
+              "std": 49.84543004603582
+            },
+            "uplift": {
+              "mean": 0.046507489154850735,
+              "std": 0.004984543004603582
+            }
+          }
+        },
+        "qini": {
+          "mean": 0.010534541001534078,
+          "std": 0.003564813717295064
+        }
+      },
+      "two_model_logistic": {
+        "auuc": {
+          "mean": 0.0217381797551376,
+          "std": 0.0018772668710148083
+        },
+        "fractions": {
+          "0.05": {
+            "cumulative_gain": {
+              "mean": 215.3161665836733,
+              "std": 18.231725651711297
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 861.2646663346932,
+              "std": 72.92690260684519
+            },
+            "uplift": {
+              "mean": 0.0861264666334693,
+              "std": 0.007292690260684522
+            }
+          },
+          "0.10": {
+            "cumulative_gain": {
+              "mean": 395.38397974807475,
+              "std": 32.91169920701302
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 790.6098375286438,
+              "std": 65.81023636675269
+            },
+            "uplift": {
+              "mean": 0.07906098375286437,
+              "std": 0.0065810236366752655
+            }
+          },
+          "0.20": {
+            "cumulative_gain": {
+              "mean": 664.1937761345907,
+              "std": 41.25662380552853
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 664.0609639418022,
+              "std": 41.2483741307024
+            },
+            "uplift": {
+              "mean": 0.06640609639418023,
+              "std": 0.0041248374130702405
+            }
+          },
+          "0.30": {
+            "cumulative_gain": {
+              "mean": 878.4083029203924,
+              "std": 68.08736113491531
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 585.4884375927431,
+              "std": 45.382497590425416
+            },
+            "uplift": {
+              "mean": 0.058548843759274306,
+              "std": 0.004538249759042544
+            }
+          },
+          "0.50": {
+            "cumulative_gain": {
+              "mean": 1230.5803979315713,
+              "std": 108.02014216716387
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 492.13373242614324,
+              "std": 43.19941698346891
+            },
+            "uplift": {
+              "mean": 0.04921337324261432,
+              "std": 0.004319941698346889
+            }
+          }
+        },
+        "qini": {
+          "mean": 0.013999654250965563,
+          "std": 0.001335774321654679
+        }
+      },
+      "x_learner": {
+        "auuc": {
+          "mean": 0.021349221407248247,
+          "std": 0.0030277620227645175
+        },
+        "fractions": {
+          "0.05": {
+            "cumulative_gain": {
+              "mean": 376.75566287601333,
+              "std": 45.42190947077568
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 1507.0226515040533,
+              "std": 181.68763788310272
+            },
+            "uplift": {
+              "mean": 0.15070226515040533,
+              "std": 0.018168763788310276
+            }
+          },
+          "0.10": {
+            "cumulative_gain": {
+              "mean": 522.5625824334744,
+              "std": 58.88943156827398
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 1044.9161816306225,
+              "std": 117.75531207413316
+            },
+            "uplift": {
+              "mean": 0.10449161816306225,
+              "std": 0.011775531207413316
+            }
+          },
+          "0.20": {
+            "cumulative_gain": {
+              "mean": 875.0015378336706,
+              "std": 30.219481883830888
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 874.8265725191665,
+              "std": 30.213439195991683
+            },
+            "uplift": {
+              "mean": 0.08748265725191666,
+              "std": 0.0030213439195991695
+            }
+          },
+          "0.30": {
+            "cumulative_gain": {
+              "mean": 1002.8227427694895,
+              "std": 68.85269439407558
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 668.4148122172163,
+              "std": 45.892617739169204
+            },
+            "uplift": {
+              "mean": 0.06684148122172162,
+              "std": 0.004589261773916922
+            }
+          },
+          "0.50": {
+            "cumulative_gain": {
+              "mean": 1245.3061877086482,
+              "std": 4.937233797538168
+            },
+            "incremental_conversions_per_10000": {
+              "mean": 498.02287050935735,
+              "std": 1.974498619291414
+            },
+            "uplift": {
+              "mean": 0.049802287050935735,
+              "std": 0.00019744986192914008
+            }
+          }
+        },
+        "qini": {
+          "mean": 0.014522651670227529,
+          "std": 0.0020840513360026523
+        }
+      }
+    }
+  },
+  "bootstrap": {
+    "interval": "percentile 95%",
+    "samples": 1000,
+    "scheme": "treatment/control-stratified nonparametric bootstrap within each ranked subset"
+  },
+  "dataset": "X5 RetailHero advertiser-randomized A/B experiment",
+  "input_sha256": "be2716dee734ff1623b3805748ee2d337356938afb24cbbe0a371d97723a4c6a",
+  "method_configs": {
+    "causal_forest_dml": {
+      "fit_rows": 150029,
+      "forest_trees": 200,
+      "library": "econml.dml.CausalForestDML",
+      "n_jobs": 1,
+      "score_quantization_decimals": 10
+    },
+    "dr_learner": {
+      "fit_rows": 150029,
+      "forest_trees": 80,
+      "library": "econml.dr.DRLearner",
+      "score_quantization_decimals": 10
+    },
+    "random_ranking": {
+      "fit_rows": 0,
+      "library": "numpy",
+      "score_quantization_decimals": 10
+    },
+    "s_learner": {
+      "fit_rows": 150029,
+      "forest_trees": 80,
+      "library": "econml.metalearners.SLearner",
+      "score_quantization_decimals": 10
+    },
+    "t_learner": {
+      "fit_rows": 150029,
+      "forest_trees": 80,
+      "library": "econml.metalearners.TLearner",
+      "score_quantization_decimals": 10
+    },
+    "two_model_logistic": {
+      "fit_rows": 150029,
+      "library": "sklearn.linear_model.LogisticRegression",
+      "score_quantization_decimals": 10
+    },
+    "x_learner": {
+      "fit_rows": 150029,
+      "forest_trees": 80,
+      "library": "econml.metalearners.XLearner",
+      "score_quantization_decimals": 10
+    }
+  },
+  "outcome_rate": 0.6198891216212838,
+  "privacy": {
+    "customer_ids_written": false,
+    "split_identifiers": "SHA-256 of sorted customer IDs"
+  },
+  "rows": 200039,
+  "seed_runs": [
+    {
+      "methods": {
+        "causal_forest_dml": {
+          "auuc": 0.00607455351014175,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 246.3837685611879,
+              "incremental_conversions_per_10000": 985.5350742447516,
+              "n_control": 1240,
+              "n_targeted": 2500,
+              "n_treated": 1260,
+              "uplift": 0.09855350742447516,
+              "uplift_ci95_high": 0.13838069636456732,
+              "uplift_ci95_low": 0.05838293650793653
+            },
+            "0.10": {
+              "cumulative_gain": 355.2761416175819,
+              "incremental_conversions_per_10000": 710.4102011949249,
+              "n_control": 2508,
+              "n_targeted": 5001,
+              "n_treated": 2493,
+              "uplift": 0.07104102011949248,
+              "uplift_ci95_high": 0.09900892355053485,
+              "uplift_ci95_low": 0.042595751357389196
+            },
+            "0.20": {
+              "cumulative_gain": 575.4160276293017,
+              "incremental_conversions_per_10000": 575.3009674358145,
+              "n_control": 5031,
+              "n_targeted": 10002,
+              "n_treated": 4971,
+              "uplift": 0.05753009674358145,
+              "uplift_ci95_high": 0.07661088157467155,
+              "uplift_ci95_low": 0.03879597671263757
+            },
+            "0.30": {
+              "cumulative_gain": 698.2686917650011,
+              "incremental_conversions_per_10000": 465.4193773012072,
+              "n_control": 7532,
+              "n_targeted": 15003,
+              "n_treated": 7471,
+              "uplift": 0.04654193773012072,
+              "uplift_ci95_high": 0.06130968315582153,
+              "uplift_ci95_low": 0.031240604492086994
+            },
+            "0.50": {
+              "cumulative_gain": 915.0614157285033,
+              "incremental_conversions_per_10000": 365.9513760161981,
+              "n_control": 12530,
+              "n_targeted": 25005,
+              "n_treated": 12475,
+              "uplift": 0.03659513760161981,
+              "uplift_ci95_high": 0.049154426970461254,
+              "uplift_ci95_low": 0.025145575268653887
+            }
+          },
+          "qini": 0.003975334183260766
+        },
+        "dr_learner": {
+          "auuc": 0.01979643447093935,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 520.430955717239,
+              "incremental_conversions_per_10000": 2081.723822868956,
+              "n_control": 1029,
+              "n_targeted": 2500,
+              "n_treated": 1471,
+              "uplift": 0.2081723822868956,
+              "uplift_ci95_high": 0.2448257996021561,
+              "uplift_ci95_low": 0.16960294557757058
+            },
+            "0.10": {
+              "cumulative_gain": 689.8314694658454,
+              "incremental_conversions_per_10000": 1379.387061519387,
+              "n_control": 2288,
+              "n_targeted": 5001,
+              "n_treated": 2713,
+              "uplift": 0.1379387061519387,
+              "uplift_ci95_high": 0.1648240737101085,
+              "uplift_ci95_low": 0.11103024498078401
+            },
+            "0.20": {
+              "cumulative_gain": 797.4208366828884,
+              "incremental_conversions_per_10000": 797.2613844060072,
+              "n_control": 4854,
+              "n_targeted": 10002,
+              "n_treated": 5148,
+              "uplift": 0.07972613844060072,
+              "uplift_ci95_high": 0.09856230845106001,
+              "uplift_ci95_low": 0.0602249676569825
+            },
+            "0.30": {
+              "cumulative_gain": 916.6578245220302,
+              "incremental_conversions_per_10000": 610.9830197440713,
+              "n_control": 7337,
+              "n_targeted": 15003,
+              "n_treated": 7666,
+              "uplift": 0.06109830197440713,
+              "uplift_ci95_high": 0.07641773399167168,
+              "uplift_ci95_low": 0.044972304155774995
+            },
+            "0.50": {
+              "cumulative_gain": 1135.2946708701436,
+              "incremental_conversions_per_10000": 454.0270629354703,
+              "n_control": 12319,
+              "n_targeted": 25005,
+              "n_treated": 12686,
+              "uplift": 0.045402706293547035,
+              "uplift_ci95_high": 0.05722223698572005,
+              "uplift_ci95_low": 0.034233888160440214
+            }
+          },
+          "qini": 0.01389877340261605
+        },
+        "random_ranking": {
+          "auuc": 0.00557017854334807,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 124.21127568475605,
+              "incremental_conversions_per_10000": 496.8451027390242,
+              "n_control": 1272,
+              "n_targeted": 2500,
+              "n_treated": 1228,
+              "uplift": 0.049684510273902416,
+              "uplift_ci95_high": 0.08737292063589612,
+              "uplift_ci95_low": 0.012143665621862986
+            },
+            "0.10": {
+              "cumulative_gain": 215.5882941529966,
+              "incremental_conversions_per_10000": 431.09037023194685,
+              "n_control": 2548,
+              "n_targeted": 5001,
+              "n_treated": 2453,
+              "uplift": 0.043109037023194685,
+              "uplift_ci95_high": 0.06874810807386082,
+              "uplift_ci95_low": 0.01685608993824881
+            },
+            "0.20": {
+              "cumulative_gain": 383.2684328276295,
+              "incremental_conversions_per_10000": 383.19179446873574,
+              "n_control": 5108,
+              "n_targeted": 10002,
+              "n_treated": 4894,
+              "uplift": 0.038319179446873575,
+              "uplift_ci95_high": 0.05506864157572001,
+              "uplift_ci95_low": 0.020733500884371224
+            },
+            "0.30": {
+              "cumulative_gain": 623.8213504355756,
+              "incremental_conversions_per_10000": 415.7977407422353,
+              "n_control": 7613,
+              "n_targeted": 15003,
+              "n_treated": 7390,
+              "uplift": 0.04157977407422353,
+              "uplift_ci95_high": 0.05642434945424002,
+              "uplift_ci95_low": 0.026036441120673957
+            },
+            "0.50": {
+              "cumulative_gain": 985.694320099674,
+              "incremental_conversions_per_10000": 394.19888826221717,
+              "n_control": 12596,
+              "n_targeted": 25005,
+              "n_treated": 12409,
+              "uplift": 0.039419888826221716,
+              "uplift_ci95_high": 0.05177539390542123,
+              "uplift_ci95_low": 0.027580806691257908
+            }
+          },
+          "qini": 0.003373599962643002
+        },
+        "s_learner": {
+          "auuc": 0.008521222327304347,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 180.93797025086232,
+              "incremental_conversions_per_10000": 723.7518810034493,
+              "n_control": 1263,
+              "n_targeted": 2500,
+              "n_treated": 1237,
+              "uplift": 0.07237518810034493,
+              "uplift_ci95_high": 0.11163084199186987,
+              "uplift_ci95_low": 0.030945843102389927
+            },
+            "0.10": {
+              "cumulative_gain": 333.49637691012884,
+              "incremental_conversions_per_10000": 666.8593819438689,
+              "n_control": 2539,
+              "n_targeted": 5001,
+              "n_treated": 2462,
+              "uplift": 0.0666859381943869,
+              "uplift_ci95_high": 0.0938980218901945,
+              "uplift_ci95_low": 0.03838282420559346
+            },
+            "0.20": {
+              "cumulative_gain": 571.5535752671316,
+              "incremental_conversions_per_10000": 571.4392874096496,
+              "n_control": 5026,
+              "n_targeted": 10002,
+              "n_treated": 4976,
+              "uplift": 0.05714392874096497,
+              "uplift_ci95_high": 0.07674622309648994,
+              "uplift_ci95_low": 0.03636271252829337
+            },
+            "0.30": {
+              "cumulative_gain": 779.3767134033009,
+              "incremental_conversions_per_10000": 519.4805794863033,
+              "n_control": 7472,
+              "n_targeted": 15003,
+              "n_treated": 7531,
+              "uplift": 0.05194805794863033,
+              "uplift_ci95_high": 0.06758834184869565,
+              "uplift_ci95_low": 0.03592658952916097
+            },
+            "0.50": {
+              "cumulative_gain": 1070.78131430434,
+              "incremental_conversions_per_10000": 428.2268803456668,
+              "n_control": 12515,
+              "n_targeted": 25005,
+              "n_treated": 12490,
+              "uplift": 0.04282268803456668,
+              "uplift_ci95_high": 0.05386686736524655,
+              "uplift_ci95_low": 0.03066056680742115
+            }
+          },
+          "qini": 0.005525855865114582
+        },
+        "t_learner": {
+          "auuc": 0.009316568868854475,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 353.8177935317402,
+              "incremental_conversions_per_10000": 1415.271174126961,
+              "n_control": 1126,
+              "n_targeted": 2500,
+              "n_treated": 1374,
+              "uplift": 0.14152711741269608,
+              "uplift_ci95_high": 0.18314811870283185,
+              "uplift_ci95_low": 0.1036783089138298
+            },
+            "0.10": {
+              "cumulative_gain": 370.43255013936573,
+              "incremental_conversions_per_10000": 740.716956887354,
+              "n_control": 2347,
+              "n_targeted": 5001,
+              "n_treated": 2654,
+              "uplift": 0.0740716956887354,
+              "uplift_ci95_high": 0.09943764089480421,
+              "uplift_ci95_low": 0.04706990180348564
+            },
+            "0.20": {
+              "cumulative_gain": 666.4586436932362,
+              "incremental_conversions_per_10000": 666.3253786175127,
+              "n_control": 4889,
+              "n_targeted": 10002,
+              "n_treated": 5113,
+              "uplift": 0.06663253786175127,
+              "uplift_ci95_high": 0.08667705779031849,
+              "uplift_ci95_low": 0.047363376802688414
+            },
+            "0.30": {
+              "cumulative_gain": 866.006653025396,
+              "incremental_conversions_per_10000": 577.2223242187536,
+              "n_control": 7418,
+              "n_targeted": 15003,
+              "n_treated": 7585,
+              "uplift": 0.05772223242187535,
+              "uplift_ci95_high": 0.072366147621821,
+              "uplift_ci95_low": 0.04372841729207927
+            },
+            "0.50": {
+              "cumulative_gain": 1019.6175676916141,
+              "incremental_conversions_per_10000": 407.76547398184925,
+              "n_control": 12428,
+              "n_targeted": 25005,
+              "n_treated": 12577,
+              "uplift": 0.040776547398184926,
+              "uplift_ci95_high": 0.052892448209406535,
+              "uplift_ci95_low": 0.029057572620120705
+            }
+          },
+          "qini": 0.006424848800176756
+        },
+        "two_model_logistic": {
+          "auuc": 0.019593445471504108,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 217.5683149657913,
+              "incremental_conversions_per_10000": 870.2732598631652,
+              "n_control": 1268,
+              "n_targeted": 2500,
+              "n_treated": 1232,
+              "uplift": 0.08702732598631652,
+              "uplift_ci95_high": 0.12437644669998767,
+              "uplift_ci95_low": 0.04855515639723057
+            },
+            "0.10": {
+              "cumulative_gain": 433.38544033170626,
+              "incremental_conversions_per_10000": 866.5975611511823,
+              "n_control": 2535,
+              "n_targeted": 5001,
+              "n_treated": 2466,
+              "uplift": 0.08665975611511822,
+              "uplift_ci95_high": 0.11247191388684928,
+              "uplift_ci95_low": 0.058725471141248764
+            },
+            "0.20": {
+              "cumulative_gain": 648.8988617570151,
+              "incremental_conversions_per_10000": 648.769107935428,
+              "n_control": 5067,
+              "n_targeted": 10002,
+              "n_treated": 4935,
+              "uplift": 0.0648769107935428,
+              "uplift_ci95_high": 0.08437192681892425,
+              "uplift_ci95_low": 0.04505822585260248
+            },
+            "0.30": {
+              "cumulative_gain": 953.5576034588813,
+              "incremental_conversions_per_10000": 635.5779533819111,
+              "n_control": 7554,
+              "n_targeted": 15003,
+              "n_treated": 7449,
+              "uplift": 0.06355779533819111,
+              "uplift_ci95_high": 0.08016685955895372,
+              "uplift_ci95_low": 0.04857120556399884
+            },
+            "0.50": {
+              "cumulative_gain": 1106.993822291688,
+              "incremental_conversions_per_10000": 442.70898711925133,
+              "n_control": 12609,
+              "n_targeted": 25005,
+              "n_treated": 12396,
+              "uplift": 0.04427089871192513,
+              "uplift_ci95_high": 0.056328526766441685,
+              "uplift_ci95_low": 0.03182442134595998
+            }
+          },
+          "qini": 0.012469602422630673
+        },
+        "x_learner": {
+          "auuc": 0.017899773291885152,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 428.6619026565622,
+              "incremental_conversions_per_10000": 1714.6476106262487,
+              "n_control": 1101,
+              "n_targeted": 2500,
+              "n_treated": 1399,
+              "uplift": 0.17146476106262487,
+              "uplift_ci95_high": 0.21160454885707253,
+              "uplift_ci95_low": 0.13139799480490477
+            },
+            "0.10": {
+              "cumulative_gain": 521.4615834718486,
+              "incremental_conversions_per_10000": 1042.7146240188933,
+              "n_control": 2360,
+              "n_targeted": 5001,
+              "n_treated": 2641,
+              "uplift": 0.10427146240188934,
+              "uplift_ci95_high": 0.132921398385306,
+              "uplift_ci95_low": 0.07762942901700047
+            },
+            "0.20": {
+              "cumulative_gain": 840.1096985223392,
+              "incremental_conversions_per_10000": 839.9417101803031,
+              "n_control": 4904,
+              "n_targeted": 10002,
+              "n_treated": 5098,
+              "uplift": 0.0839941710180303,
+              "uplift_ci95_high": 0.1033487047026727,
+              "uplift_ci95_low": 0.06498259321219271
+            },
+            "0.30": {
+              "cumulative_gain": 934.0497798660894,
+              "incremental_conversions_per_10000": 622.5753381764243,
+              "n_control": 7387,
+              "n_targeted": 15003,
+              "n_treated": 7616,
+              "uplift": 0.06225753381764243,
+              "uplift_ci95_high": 0.07875467264203635,
+              "uplift_ci95_low": 0.046466389558564684
+            },
+            "0.50": {
+              "cumulative_gain": 1240.9533503471928,
+              "incremental_conversions_per_10000": 496.28208372213265,
+              "n_control": 12410,
+              "n_targeted": 25005,
+              "n_treated": 12595,
+              "uplift": 0.04962820837221327,
+              "uplift_ci95_high": 0.061612228129871285,
+              "uplift_ci95_low": 0.03754076512461786
+            }
+          },
+          "qini": 0.012187727168715178
+        }
+      },
+      "seed": 42,
+      "test_index_hash": "af119f97bab50616848d220b6397d14a930254493084a96a1a7d9b98eaf92a88",
+      "test_joint_counts": {
+        "t0_y0": 9924,
+        "t0_y1": 15091,
+        "t1_y0": 9085,
+        "t1_y1": 15910
+      },
+      "test_rows": 50010,
+      "train_index_hash": "60e0a75702b796368e71e0b1d3aba6e43c0a19c3ccae3eae7ff048123574ce10",
+      "train_joint_counts": {
+        "t0_y0": 29771,
+        "t0_y1": 45272,
+        "t1_y0": 27257,
+        "t1_y1": 47729
+      },
+      "train_rows": 150029
+    },
+    {
+      "methods": {
+        "causal_forest_dml": {
+          "auuc": 0.015688657713596243,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 182.60576599124016,
+              "incremental_conversions_per_10000": 730.4230639649606,
+              "n_control": 1185,
+              "n_targeted": 2500,
+              "n_treated": 1315,
+              "uplift": 0.07304230639649606,
+              "uplift_ci95_high": 0.11230030001123044,
+              "uplift_ci95_low": 0.03419325857117643
+            },
+            "0.10": {
+              "cumulative_gain": 331.1532465264227,
+              "incremental_conversions_per_10000": 662.1740582411973,
+              "n_control": 2488,
+              "n_targeted": 5001,
+              "n_treated": 2513,
+              "uplift": 0.06621740582411972,
+              "uplift_ci95_high": 0.0949462913428947,
+              "uplift_ci95_low": 0.03827228636172288
+            },
+            "0.20": {
+              "cumulative_gain": 533.4965351551471,
+              "incremental_conversions_per_10000": 533.3898571837103,
+              "n_control": 4968,
+              "n_targeted": 10002,
+              "n_treated": 5034,
+              "uplift": 0.053338985718371035,
+              "uplift_ci95_high": 0.07366486994716127,
+              "uplift_ci95_low": 0.03379519268970996
+            },
+            "0.30": {
+              "cumulative_gain": 708.4308880597056,
+              "incremental_conversions_per_10000": 472.1928201424419,
+              "n_control": 7448,
+              "n_targeted": 15003,
+              "n_treated": 7555,
+              "uplift": 0.04721928201424419,
+              "uplift_ci95_high": 0.06303561609777487,
+              "uplift_ci95_low": 0.031056530217715993
+            },
+            "0.50": {
+              "cumulative_gain": 1094.3604416624842,
+              "incremental_conversions_per_10000": 437.6566453359265,
+              "n_control": 12446,
+              "n_targeted": 25005,
+              "n_treated": 12559,
+              "uplift": 0.04376566453359265,
+              "uplift_ci95_high": 0.05554488198956588,
+              "uplift_ci95_low": 0.031313552754764155
+            }
+          },
+          "qini": 0.01052488359381208
+        },
+        "dr_learner": {
+          "auuc": 0.020719603253722976,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 400.6250749142914,
+              "incremental_conversions_per_10000": 1602.5002996571657,
+              "n_control": 1021,
+              "n_targeted": 2500,
+              "n_treated": 1479,
+              "uplift": 0.16025002996571658,
+              "uplift_ci95_high": 0.19995026684387832,
+              "uplift_ci95_low": 0.12359210799048248
+            },
+            "0.10": {
+              "cumulative_gain": 561.358763987571,
+              "incremental_conversions_per_10000": 1122.493029369268,
+              "n_control": 2290,
+              "n_targeted": 5001,
+              "n_treated": 2711,
+              "uplift": 0.11224930293692681,
+              "uplift_ci95_high": 0.13991206776854448,
+              "uplift_ci95_low": 0.08458933280070363
+            },
+            "0.20": {
+              "cumulative_gain": 701.1362467125103,
+              "incremental_conversions_per_10000": 700.9960475030097,
+              "n_control": 4803,
+              "n_targeted": 10002,
+              "n_treated": 5199,
+              "uplift": 0.07009960475030097,
+              "uplift_ci95_high": 0.08905779218821094,
+              "uplift_ci95_low": 0.05081141583106059
+            },
+            "0.30": {
+              "cumulative_gain": 964.942882983943,
+              "incremental_conversions_per_10000": 643.1666219982291,
+              "n_control": 7276,
+              "n_targeted": 15003,
+              "n_treated": 7727,
+              "uplift": 0.0643166621998229,
+              "uplift_ci95_high": 0.08122818545068719,
+              "uplift_ci95_low": 0.049034250629988584
+            },
+            "0.50": {
+              "cumulative_gain": 1250.8139175879055,
+              "incremental_conversions_per_10000": 500.2255219307761,
+              "n_control": 12293,
+              "n_targeted": 25005,
+              "n_treated": 12712,
+              "uplift": 0.05002255219307761,
+              "uplift_ci95_high": 0.06294887739966933,
+              "uplift_ci95_low": 0.03737523742451267
+            }
+          },
+          "qini": 0.014482608522610322
+        },
+        "random_ranking": {
+          "auuc": 0.0024268283240206955,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 112.23118279569871,
+              "incremental_conversions_per_10000": 448.92473118279486,
+              "n_control": 1260,
+              "n_targeted": 2500,
+              "n_treated": 1240,
+              "uplift": 0.044892473118279486,
+              "uplift_ci95_high": 0.08399929595494113,
+              "uplift_ci95_low": 0.009689260112647225
+            },
+            "0.10": {
+              "cumulative_gain": 226.45956844345108,
+              "incremental_conversions_per_10000": 452.82857117266764,
+              "n_control": 2513,
+              "n_targeted": 5001,
+              "n_treated": 2488,
+              "uplift": 0.04528285711726676,
+              "uplift_ci95_high": 0.07037378701491787,
+              "uplift_ci95_low": 0.017270562848109523
+            },
+            "0.20": {
+              "cumulative_gain": 414.4579249900041,
+              "incremental_conversions_per_10000": 414.37504998000804,
+              "n_control": 5002,
+              "n_targeted": 10002,
+              "n_treated": 5000,
+              "uplift": 0.04143750499800081,
+              "uplift_ci95_high": 0.06003616153538582,
+              "uplift_ci95_low": 0.022642041183526647
+            },
+            "0.30": {
+              "cumulative_gain": 570.1846272051632,
+              "incremental_conversions_per_10000": 380.0470753883645,
+              "n_control": 7487,
+              "n_targeted": 15003,
+              "n_treated": 7516,
+              "uplift": 0.038004707538836446,
+              "uplift_ci95_high": 0.05239801899307738,
+              "uplift_ci95_low": 0.022673994245693777
+            },
+            "0.50": {
+              "cumulative_gain": 889.1837146201948,
+              "incremental_conversions_per_10000": 355.6023653750029,
+              "n_control": 12444,
+              "n_targeted": 25005,
+              "n_treated": 12561,
+              "uplift": 0.03556023653750029,
+              "uplift_ci95_high": 0.04739630103647716,
+              "uplift_ci95_low": 0.022530979389528007
+            }
+          },
+          "qini": 0.001535943331972307
+        },
+        "s_learner": {
+          "auuc": 0.012923717317725347,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 51.43428337683137,
+              "incremental_conversions_per_10000": 205.73713350732547,
+              "n_control": 1231,
+              "n_targeted": 2500,
+              "n_treated": 1269,
+              "uplift": 0.020573713350732548,
+              "uplift_ci95_high": 0.06361828236795831,
+              "uplift_ci95_low": -0.020866228933532842
+            },
+            "0.10": {
+              "cumulative_gain": 267.92973485424756,
+              "incremental_conversions_per_10000": 535.7523192446462,
+              "n_control": 2411,
+              "n_targeted": 5001,
+              "n_treated": 2590,
+              "uplift": 0.05357523192446462,
+              "uplift_ci95_high": 0.08193674743654002,
+              "uplift_ci95_low": 0.025280483274054435
+            },
+            "0.20": {
+              "cumulative_gain": 581.1262838168577,
+              "incremental_conversions_per_10000": 581.0100818004976,
+              "n_control": 4851,
+              "n_targeted": 10002,
+              "n_treated": 5151,
+              "uplift": 0.05810100818004976,
+              "uplift_ci95_high": 0.07786892734891733,
+              "uplift_ci95_low": 0.03729560831233183
+            },
+            "0.30": {
+              "cumulative_gain": 807.433540758127,
+              "incremental_conversions_per_10000": 538.1813908939059,
+              "n_control": 7363,
+              "n_targeted": 15003,
+              "n_treated": 7640,
+              "uplift": 0.05381813908939059,
+              "uplift_ci95_high": 0.06942570322960487,
+              "uplift_ci95_low": 0.03771171772617151
+            },
+            "0.50": {
+              "cumulative_gain": 1085.3998956475048,
+              "incremental_conversions_per_10000": 434.0731436302758,
+              "n_control": 12504,
+              "n_targeted": 25005,
+              "n_treated": 12501,
+              "uplift": 0.04340731436302758,
+              "uplift_ci95_high": 0.055487131087094556,
+              "uplift_ci95_low": 0.03100820216532387
+            }
+          },
+          "qini": 0.008610211006504767
+        },
+        "t_learner": {
+          "auuc": 0.018186600505740128,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 328.1549179986681,
+              "incremental_conversions_per_10000": 1312.6196719946724,
+              "n_control": 1092,
+              "n_targeted": 2500,
+              "n_treated": 1408,
+              "uplift": 0.13126196719946726,
+              "uplift_ci95_high": 0.17140951496420243,
+              "uplift_ci95_low": 0.08788021873959373
+            },
+            "0.10": {
+              "cumulative_gain": 383.19269034922854,
+              "incremental_conversions_per_10000": 766.2321342716027,
+              "n_control": 2329,
+              "n_targeted": 5001,
+              "n_treated": 2672,
+              "uplift": 0.07662321342716027,
+              "uplift_ci95_high": 0.10212352774056867,
+              "uplift_ci95_low": 0.04916982935160166
+            },
+            "0.20": {
+              "cumulative_gain": 701.4338206941026,
+              "incremental_conversions_per_10000": 701.2935619817063,
+              "n_control": 4849,
+              "n_targeted": 10002,
+              "n_treated": 5153,
+              "uplift": 0.07012935619817062,
+              "uplift_ci95_high": 0.08967927970407849,
+              "uplift_ci95_low": 0.050414159069051265
+            },
+            "0.30": {
+              "cumulative_gain": 885.419566563467,
+              "incremental_conversions_per_10000": 590.16167870657,
+              "n_control": 7353,
+              "n_targeted": 15003,
+              "n_treated": 7650,
+              "uplift": 0.059016167870657,
+              "uplift_ci95_high": 0.07438654490764081,
+              "uplift_ci95_low": 0.04407166342669258
+            },
+            "0.50": {
+              "cumulative_gain": 1223.0333163585456,
+              "incremental_conversions_per_10000": 489.1155034427297,
+              "n_control": 12402,
+              "n_targeted": 25005,
+              "n_treated": 12603,
+              "uplift": 0.04891155034427297,
+              "uplift_ci95_high": 0.060763399093165554,
+              "uplift_ci95_low": 0.03760473111335217
+            }
+          },
+          "qini": 0.012387596749142605
+        },
+        "two_model_logistic": {
+          "auuc": 0.02253811884321342,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 196.06299414198517,
+              "incremental_conversions_per_10000": 784.2519765679407,
+              "n_control": 1236,
+              "n_targeted": 2500,
+              "n_treated": 1264,
+              "uplift": 0.07842519765679407,
+              "uplift_ci95_high": 0.11593179048379829,
+              "uplift_ci95_low": 0.04063402513211258
+            },
+            "0.10": {
+              "cumulative_gain": 376.6941993331296,
+              "incremental_conversions_per_10000": 753.237751116036,
+              "n_control": 2504,
+              "n_targeted": 5001,
+              "n_treated": 2497,
+              "uplift": 0.0753237751116036,
+              "uplift_ci95_high": 0.10373801597060238,
+              "uplift_ci95_low": 0.04930586032312254
+            },
+            "0.20": {
+              "cumulative_gain": 632.7687595922737,
+              "incremental_conversions_per_10000": 632.6422311460444,
+              "n_control": 4984,
+              "n_targeted": 10002,
+              "n_treated": 5018,
+              "uplift": 0.06326422311460445,
+              "uplift_ci95_high": 0.08287056244390173,
+              "uplift_ci95_low": 0.04486541268448029
+            },
+            "0.30": {
+              "cumulative_gain": 820.8255113644547,
+              "incremental_conversions_per_10000": 547.1075860590913,
+              "n_control": 7470,
+              "n_targeted": 15003,
+              "n_treated": 7533,
+              "uplift": 0.05471075860590913,
+              "uplift_ci95_high": 0.0710762244517697,
+              "uplift_ci95_low": 0.03888712956165564
+            },
+            "0.50": {
+              "cumulative_gain": 1277.775060644336,
+              "incremental_conversions_per_10000": 511.0078226931958,
+              "n_control": 12469,
+              "n_targeted": 25005,
+              "n_treated": 12536,
+              "uplift": 0.05110078226931958,
+              "uplift_ci95_high": 0.062372831878962774,
+              "uplift_ci95_low": 0.03845578115410973
+            }
+          },
+          "qini": 0.014595863429147465
+        },
+        "x_learner": {
+          "auuc": 0.023567223926915095,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 357.3184131390239,
+              "incremental_conversions_per_10000": 1429.2736525560956,
+              "n_control": 1048,
+              "n_targeted": 2500,
+              "n_treated": 1452,
+              "uplift": 0.14292736525560956,
+              "uplift_ci95_high": 0.18240949572056442,
+              "uplift_ci95_low": 0.10512999968456245
+            },
+            "0.10": {
+              "cumulative_gain": 464.23136997077034,
+              "incremental_conversions_per_10000": 928.2770845246357,
+              "n_control": 2274,
+              "n_targeted": 5001,
+              "n_treated": 2727,
+              "uplift": 0.09282770845246358,
+              "uplift_ci95_high": 0.12098550554263875,
+              "uplift_ci95_low": 0.06482748978503823
+            },
+            "0.20": {
+              "cumulative_gain": 892.8172512580264,
+              "incremental_conversions_per_10000": 892.6387235133237,
+              "n_control": 4791,
+              "n_targeted": 10002,
+              "n_treated": 5211,
+              "uplift": 0.08926387235133237,
+              "uplift_ci95_high": 0.10904213811470294,
+              "uplift_ci95_low": 0.0693015695688291
+            },
+            "0.30": {
+              "cumulative_gain": 1071.754892624618,
+              "incremental_conversions_per_10000": 714.3603896718109,
+              "n_control": 7331,
+              "n_targeted": 15003,
+              "n_treated": 7672,
+              "uplift": 0.07143603896718109,
+              "uplift_ci95_high": 0.08737215084954274,
+              "uplift_ci95_low": 0.05616734412651067
+            },
+            "0.50": {
+              "cumulative_gain": 1250.6710045373636,
+              "incremental_conversions_per_10000": 500.16836814131716,
+              "n_control": 12313,
+              "n_targeted": 25005,
+              "n_treated": 12692,
+              "uplift": 0.050016836814131715,
+              "uplift_ci95_high": 0.06315969091110737,
+              "uplift_ci95_low": 0.038140226864168444
+            }
+          },
+          "qini": 0.016194460676968527
+        }
+      },
+      "seed": 137,
+      "test_index_hash": "fe788b2c306f9da5469aabc3eea3cfe3100cb88949196986e8f56028570499fa",
+      "test_joint_counts": {
+        "t0_y0": 9924,
+        "t0_y1": 15091,
+        "t1_y0": 9085,
+        "t1_y1": 15910
+      },
+      "test_rows": 50010,
+      "train_index_hash": "19bd6790d07ff4f9e830e20f688bd4c46fbcec28aa6896089cdd8309928b4bc7",
+      "train_joint_counts": {
+        "t0_y0": 29771,
+        "t0_y1": 45272,
+        "t1_y0": 27257,
+        "t1_y1": 47729
+      },
+      "train_rows": 150029
+    },
+    {
+      "methods": {
+        "causal_forest_dml": {
+          "auuc": 0.011953932529188608,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 238.66592915821604,
+              "incremental_conversions_per_10000": 954.6637166328642,
+              "n_control": 1228,
+              "n_targeted": 2500,
+              "n_treated": 1272,
+              "uplift": 0.09546637166328642,
+              "uplift_ci95_high": 0.13249320109397086,
+              "uplift_ci95_low": 0.060620953946694506
+            },
+            "0.10": {
+              "cumulative_gain": 419.53922215656985,
+              "incremental_conversions_per_10000": 838.9106621807035,
+              "n_control": 2474,
+              "n_targeted": 5001,
+              "n_treated": 2527,
+              "uplift": 0.08389106621807035,
+              "uplift_ci95_high": 0.11169447573322104,
+              "uplift_ci95_low": 0.05826985292870946
+            },
+            "0.20": {
+              "cumulative_gain": 618.0148962626262,
+              "incremental_conversions_per_10000": 617.8913179990265,
+              "n_control": 4958,
+              "n_targeted": 10002,
+              "n_treated": 5044,
+              "uplift": 0.06178913179990264,
+              "uplift_ci95_high": 0.08254099703168795,
+              "uplift_ci95_low": 0.04159245153340398
+            },
+            "0.30": {
+              "cumulative_gain": 708.8354098623423,
+              "incremental_conversions_per_10000": 472.46244741874443,
+              "n_control": 7510,
+              "n_targeted": 15003,
+              "n_treated": 7493,
+              "uplift": 0.047246244741874444,
+              "uplift_ci95_high": 0.06190787522415504,
+              "uplift_ci95_low": 0.0307157163818943
+            },
+            "0.50": {
+              "cumulative_gain": 1060.7214247580723,
+              "incremental_conversions_per_10000": 424.20372915739745,
+              "n_control": 12535,
+              "n_targeted": 25005,
+              "n_treated": 12470,
+              "uplift": 0.042420372915739746,
+              "uplift_ci95_high": 0.05535854139284095,
+              "uplift_ci95_low": 0.030822490930766826
+            }
+          },
+          "qini": 0.007840271066280791
+        },
+        "dr_learner": {
+          "auuc": 0.019936234603773667,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 528.9888294290723,
+              "incremental_conversions_per_10000": 2115.9553177162893,
+              "n_control": 997,
+              "n_targeted": 2500,
+              "n_treated": 1503,
+              "uplift": 0.21159553177162893,
+              "uplift_ci95_high": 0.2470706697604457,
+              "uplift_ci95_low": 0.17317636542361617
+            },
+            "0.10": {
+              "cumulative_gain": 708.0254838013168,
+              "incremental_conversions_per_10000": 1415.7678140398255,
+              "n_control": 2285,
+              "n_targeted": 5001,
+              "n_treated": 2716,
+              "uplift": 0.14157678140398255,
+              "uplift_ci95_high": 0.168860887584071,
+              "uplift_ci95_low": 0.1139459576607381
+            },
+            "0.20": {
+              "cumulative_gain": 821.2475985074121,
+              "incremental_conversions_per_10000": 821.0833818310459,
+              "n_control": 4815,
+              "n_targeted": 10002,
+              "n_treated": 5187,
+              "uplift": 0.08210833818310459,
+              "uplift_ci95_high": 0.1017372030603707,
+              "uplift_ci95_low": 0.06132749198661645
+            },
+            "0.30": {
+              "cumulative_gain": 993.5228000034568,
+              "incremental_conversions_per_10000": 662.2160901176144,
+              "n_control": 7326,
+              "n_targeted": 15003,
+              "n_treated": 7677,
+              "uplift": 0.06622160901176144,
+              "uplift_ci95_high": 0.08221187989652237,
+              "uplift_ci95_low": 0.049476794816771356
+            },
+            "0.50": {
+              "cumulative_gain": 1082.20927727735,
+              "incremental_conversions_per_10000": 432.7971514806439,
+              "n_control": 12384,
+              "n_targeted": 25005,
+              "n_treated": 12621,
+              "uplift": 0.04327971514806439,
+              "uplift_ci95_high": 0.05531979412158531,
+              "uplift_ci95_low": 0.0318959799566552
+            }
+          },
+          "qini": 0.013844221317662194
+        },
+        "random_ranking": {
+          "auuc": 0.004059472985131539,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 61.62739860364558,
+              "incremental_conversions_per_10000": 246.50959441458232,
+              "n_control": 1267,
+              "n_targeted": 2500,
+              "n_treated": 1233,
+              "uplift": 0.02465095944145823,
+              "uplift_ci95_high": 0.061084338159186014,
+              "uplift_ci95_low": -0.013720521747702408
+            },
+            "0.10": {
+              "cumulative_gain": 134.8971923169938,
+              "incremental_conversions_per_10000": 269.7404365466782,
+              "n_control": 2513,
+              "n_targeted": 5001,
+              "n_treated": 2488,
+              "uplift": 0.026974043654667823,
+              "uplift_ci95_high": 0.05421397159209409,
+              "uplift_ci95_low": -0.00015922028602392268
+            },
+            "0.20": {
+              "cumulative_gain": 338.7481162841234,
+              "incremental_conversions_per_10000": 338.6803802080818,
+              "n_control": 5047,
+              "n_targeted": 10002,
+              "n_treated": 4955,
+              "uplift": 0.03386803802080818,
+              "uplift_ci95_high": 0.05084702584804754,
+              "uplift_ci95_low": 0.01516974546228117
+            },
+            "0.30": {
+              "cumulative_gain": 551.3274545519499,
+              "incremental_conversions_per_10000": 367.4781407398187,
+              "n_control": 7498,
+              "n_targeted": 15003,
+              "n_treated": 7505,
+              "uplift": 0.036747814073981866,
+              "uplift_ci95_high": 0.051941506853526526,
+              "uplift_ci95_low": 0.020614502752588297
+            },
+            "0.50": {
+              "cumulative_gain": 928.0352058205889,
+              "incremental_conversions_per_10000": 371.1398543573641,
+              "n_control": 12430,
+              "n_targeted": 25005,
+              "n_treated": 12575,
+              "uplift": 0.03711398543573641,
+              "uplift_ci95_high": 0.04879774130758496,
+              "uplift_ci95_low": 0.02538330355757657
+            }
+          },
+          "qini": 0.00271839352387476
+        },
+        "s_learner": {
+          "auuc": 0.016054804437873434,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 197.28250432110627,
+              "incremental_conversions_per_10000": 789.1300172844251,
+              "n_control": 1230,
+              "n_targeted": 2500,
+              "n_treated": 1270,
+              "uplift": 0.07891300172844251,
+              "uplift_ci95_high": 0.1169225721784777,
+              "uplift_ci95_low": 0.03905191729082645
+            },
+            "0.10": {
+              "cumulative_gain": 412.21489233072333,
+              "incremental_conversions_per_10000": 824.2649316751116,
+              "n_control": 2496,
+              "n_targeted": 5001,
+              "n_treated": 2505,
+              "uplift": 0.08242649316751116,
+              "uplift_ci95_high": 0.10844028289574693,
+              "uplift_ci95_low": 0.056406273990480524
+            },
+            "0.20": {
+              "cumulative_gain": 766.1034431123902,
+              "incremental_conversions_per_10000": 765.9502530617779,
+              "n_control": 4991,
+              "n_targeted": 10002,
+              "n_treated": 5011,
+              "uplift": 0.07659502530617779,
+              "uplift_ci95_high": 0.09637865019937497,
+              "uplift_ci95_low": 0.057783515416554465
+            },
+            "0.30": {
+              "cumulative_gain": 885.2877778488602,
+              "incremental_conversions_per_10000": 590.0738371318137,
+              "n_control": 7503,
+              "n_targeted": 15003,
+              "n_treated": 7500,
+              "uplift": 0.05900738371318137,
+              "uplift_ci95_high": 0.07473631347461011,
+              "uplift_ci95_low": 0.043675745701719317
+            },
+            "0.50": {
+              "cumulative_gain": 1201.109144627202,
+              "incremental_conversions_per_10000": 480.3475883332142,
+              "n_control": 12518,
+              "n_targeted": 25005,
+              "n_treated": 12487,
+              "uplift": 0.04803475883332142,
+              "uplift_ci95_high": 0.059483628591245626,
+              "uplift_ci95_low": 0.03658846820760699
+            }
+          },
+          "qini": 0.010401928290460076
+        },
+        "t_learner": {
+          "auuc": 0.019139198704887186,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 320.73826789102924,
+              "incremental_conversions_per_10000": 1282.953071564117,
+              "n_control": 1118,
+              "n_targeted": 2500,
+              "n_treated": 1382,
+              "uplift": 0.1282953071564117,
+              "uplift_ci95_high": 0.16608011515291154,
+              "uplift_ci95_low": 0.08881165068902759
+            },
+            "0.10": {
+              "cumulative_gain": 534.1501644501877,
+              "incremental_conversions_per_10000": 1068.0867115580638,
+              "n_control": 2350,
+              "n_targeted": 5001,
+              "n_treated": 2651,
+              "uplift": 0.10680867115580639,
+              "uplift_ci95_high": 0.1335978273955232,
+              "uplift_ci95_low": 0.07974836071494495
+            },
+            "0.20": {
+              "cumulative_gain": 771.4797670225543,
+              "incremental_conversions_per_10000": 771.3255019221699,
+              "n_control": 4855,
+              "n_targeted": 10002,
+              "n_treated": 5147,
+              "uplift": 0.07713255019221699,
+              "uplift_ci95_high": 0.09527493843713661,
+              "uplift_ci95_low": 0.057333265035755254
+            },
+            "0.30": {
+              "cumulative_gain": 974.0573327796528,
+              "incremental_conversions_per_10000": 649.2417068450662,
+              "n_control": 7436,
+              "n_targeted": 15003,
+              "n_treated": 7567,
+              "uplift": 0.06492417068450662,
+              "uplift_ci95_high": 0.08109856458563136,
+              "uplift_ci95_low": 0.049672808601062365
+            },
+            "0.50": {
+              "cumulative_gain": 1246.1084149009685,
+              "incremental_conversions_per_10000": 498.34369722094317,
+              "n_control": 12480,
+              "n_targeted": 25005,
+              "n_treated": 12525,
+              "uplift": 0.04983436972209432,
+              "uplift_ci95_high": 0.06174439102564101,
+              "uplift_ci95_low": 0.038489168298019405
+            }
+          },
+          "qini": 0.012791177455282868
+        },
+        "two_model_logistic": {
+          "auuc": 0.02308297495069528,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 232.31719064324335,
+              "incremental_conversions_per_10000": 929.2687625729734,
+              "n_control": 1239,
+              "n_targeted": 2500,
+              "n_treated": 1261,
+              "uplift": 0.09292687625729734,
+              "uplift_ci95_high": 0.12978440250412993,
+              "uplift_ci95_low": 0.05470519637040691
+            },
+            "0.10": {
+              "cumulative_gain": 376.07229957938836,
+              "incremental_conversions_per_10000": 751.994200318713,
+              "n_control": 2467,
+              "n_targeted": 5001,
+              "n_treated": 2534,
+              "uplift": 0.0751994200318713,
+              "uplift_ci95_high": 0.10211671730616834,
+              "uplift_ci95_low": 0.04853796235006107
+            },
+            "0.20": {
+              "cumulative_gain": 710.9137070544833,
+              "incremental_conversions_per_10000": 710.7715527439345,
+              "n_control": 4973,
+              "n_targeted": 10002,
+              "n_treated": 5029,
+              "uplift": 0.07107715527439346,
+              "uplift_ci95_high": 0.09165878024090081,
+              "uplift_ci95_low": 0.051190210193305864
+            },
+            "0.30": {
+              "cumulative_gain": 860.8417939378414,
+              "incremental_conversions_per_10000": 573.7797733372269,
+              "n_control": 7499,
+              "n_targeted": 15003,
+              "n_treated": 7504,
+              "uplift": 0.057377977333722685,
+              "uplift_ci95_high": 0.07323894518558412,
+              "uplift_ci95_low": 0.04164988123149893
+            },
+            "0.50": {
+              "cumulative_gain": 1306.9723108586893,
+              "incremental_conversions_per_10000": 522.6843874659826,
+              "n_control": 12536,
+              "n_targeted": 25005,
+              "n_treated": 12469,
+              "uplift": 0.052268438746598256,
+              "uplift_ci95_high": 0.06420772350784114,
+              "uplift_ci95_low": 0.039758061703298556
+            }
+          },
+          "qini": 0.014933496901118552
+        },
+        "x_learner": {
+          "auuc": 0.02258066700294449,
+          "fractions": {
+            "0.05": {
+              "cumulative_gain": 344.286672832454,
+              "incremental_conversions_per_10000": 1377.146691329816,
+              "n_control": 1114,
+              "n_targeted": 2500,
+              "n_treated": 1386,
+              "uplift": 0.13771466913298158,
+              "uplift_ci95_high": 0.1754023305639105,
+              "uplift_ci95_low": 0.09710123807969406
+            },
+            "0.10": {
+              "cumulative_gain": 581.9947938578041,
+              "incremental_conversions_per_10000": 1163.7568363483385,
+              "n_control": 2377,
+              "n_targeted": 5001,
+              "n_treated": 2624,
+              "uplift": 0.11637568363483386,
+              "uplift_ci95_high": 0.14275369922760803,
+              "uplift_ci95_low": 0.08828442046877089
+            },
+            "0.20": {
+              "cumulative_gain": 892.0776637206457,
+              "incremental_conversions_per_10000": 891.8992838638728,
+              "n_control": 4891,
+              "n_targeted": 10002,
+              "n_treated": 5111,
+              "uplift": 0.08918992838638728,
+              "uplift_ci95_high": 0.1074199829817711,
+              "uplift_ci95_low": 0.07095652851013365
+            },
+            "0.30": {
+              "cumulative_gain": 1002.6635558177611,
+              "incremental_conversions_per_10000": 668.3087088034134,
+              "n_control": 7412,
+              "n_targeted": 15003,
+              "n_treated": 7591,
+              "uplift": 0.06683087088034134,
+              "uplift_ci95_high": 0.08217747038398568,
+              "uplift_ci95_low": 0.051831595671387176
+            },
+            "0.50": {
+              "cumulative_gain": 1244.294208241388,
+              "incremental_conversions_per_10000": 497.6181596646223,
+              "n_control": 12443,
+              "n_targeted": 25005,
+              "n_treated": 12562,
+              "uplift": 0.04976181596646223,
+              "uplift_ci95_high": 0.061741288244463205,
+              "uplift_ci95_low": 0.03680042912573555
+            }
+          },
+          "qini": 0.015185767164998882
+        }
+      },
+      "seed": 256,
+      "test_index_hash": "2b5c5de909598a43ca7876ee70b545acf8a12eca36bc96419a8c7c846c862a40",
+      "test_joint_counts": {
+        "t0_y0": 9924,
+        "t0_y1": 15091,
+        "t1_y0": 9085,
+        "t1_y1": 15910
+      },
+      "test_rows": 50010,
+      "train_index_hash": "1eaddf8e95d8b450932f7abd66d6bf7c22272f3c18c5aa5ed7b9035b7726a11e",
+      "train_joint_counts": {
+        "t0_y0": 29771,
+        "t0_y1": 45272,
+        "t1_y0": 27257,
+        "t1_y1": 47729
+      },
+      "train_rows": 150029
+    }
+  ],
+  "seeds": [
+    42,
+    137,
+    256
+  ],
+  "split": "joint treatment-outcome stratified 75/25",
+  "study": "x5_budget_constrained_targeting",
+  "target_fractions": [
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5
+  ],
+  "treatment_rate": 0.4998075375301816
+}

@@ -1,0 +1,311 @@
+{
+  "cate_primary_interpretation": "segment means because factual and counterfactual generator paths contain independent noise",
+  "generator": {
+    "counterfactual_budget_rule": {
+      "0": 0.6,
+      "1": 1.0,
+      "2": 1.4,
+      "3": 1.8
+    },
+    "input_sha256": "0cb60f0f5e7ec0def722ca16e28e332e961d75c4f7126a09e2346e6d2f550f5f",
+    "n_scenarios": 20000,
+    "seed": 2027
+  },
+  "identity_intervention_policy": "reuse the same computed potential outcome for identical arm and budget inputs",
+  "identity_intervention_max_abs_effect_log_scale": {
+    "arm_mean": 0.0,
+    "causal_forest_dml": 0.0,
+    "global_mean": 0.0,
+    "lightgbm_substitution": 0.0,
+    "t_learner": 0.0
+  },
+  "methods": {
+    "arm_mean": {
+      "status": "completed"
+    },
+    "causal_forest_dml": {
+      "design": "one-vs-arm-0 CausalForestDML with an arm-0 outcome anchor",
+      "n_estimators": 100,
+      "status": "completed"
+    },
+    "global_mean": {
+      "status": "completed"
+    },
+    "lightgbm_substitution": {
+      "status": "completed"
+    },
+    "oransim_counterfactual_head": {
+      "reason": "the public source repository contains architecture code but no trained CausalTransformer counterfactual-head checkpoint",
+      "status": "deferred"
+    },
+    "t_learner": {
+      "status": "completed"
+    }
+  },
+  "metrics": [
+    {
+      "counterfactual_mae": 201.71260827728096,
+      "counterfactual_normalized_mae": 0.7211413422947099,
+      "factual_mae": 138.85312506156438,
+      "factual_r2": -0.052786152121593544,
+      "ite_mae": 73.08645,
+      "ite_rank_correlation": null,
+      "ite_sign_accuracy": 0.0,
+      "kpi": "impressions",
+      "method": "global_mean",
+      "segment_cate_r2": -0.5370942568906512
+    },
+    {
+      "counterfactual_mae": 2.2268807492663782,
+      "counterfactual_normalized_mae": 0.7031958915200439,
+      "factual_mae": 1.5421674818407356,
+      "factual_r2": -0.033865958682979924,
+      "ite_mae": 1.0926500000000001,
+      "ite_rank_correlation": null,
+      "ite_sign_accuracy": 0.0,
+      "kpi": "clicks",
+      "method": "global_mean",
+      "segment_cate_r2": -0.4921746867472625
+    },
+    {
+      "counterfactual_mae": 0.02823894462518183,
+      "counterfactual_normalized_mae": 1.357641568453086,
+      "factual_mae": 0.018911405707900734,
+      "factual_r2": -0.00017118842788232946,
+      "ite_mae": 0.01335,
+      "ite_rank_correlation": null,
+      "ite_sign_accuracy": 0.0,
+      "kpi": "conversions",
+      "method": "global_mean",
+      "segment_cate_r2": -0.7145870856582408
+    },
+    {
+      "counterfactual_mae": 4.482930446147154,
+      "counterfactual_normalized_mae": 0.7405432573087309,
+      "factual_mae": 2.927206508298783,
+      "factual_r2": -0.038124345161437034,
+      "ite_mae": 3.4124749999999997,
+      "ite_rank_correlation": null,
+      "ite_sign_accuracy": 0.0,
+      "kpi": "revenue",
+      "method": "global_mean",
+      "segment_cate_r2": -0.42040316206308703
+    },
+    {
+      "counterfactual_mae": 436.7749420228816,
+      "counterfactual_normalized_mae": 1.5615110560570298,
+      "factual_mae": 81.53872534949423,
+      "factual_r2": 0.40864737990796607,
+      "ite_mae": 408.94324037253926,
+      "ite_rank_correlation": -0.7220684372989271,
+      "ite_sign_accuracy": 0.13457943925233645,
+      "kpi": "impressions",
+      "method": "arm_mean",
+      "segment_cate_r2": -5.766751131661877
+    },
+    {
+      "counterfactual_mae": 4.650812191362789,
+      "counterfactual_normalized_mae": 1.4686156976636733,
+      "factual_mae": 1.0957320518927471,
+      "factual_r2": 0.36367085683322653,
+      "ite_mae": 4.406840460724439,
+      "ite_rank_correlation": -0.4574475121161367,
+      "ite_sign_accuracy": 0.4037199124726477,
+      "kpi": "clicks",
+      "method": "arm_mean",
+      "segment_cate_r2": -5.176113425788351
+    },
+    {
+      "counterfactual_mae": 0.052901016018314595,
+      "counterfactual_normalized_mae": 2.543318077681312,
+      "factual_mae": 0.013526298857523471,
+      "factual_r2": 0.24483309057873415,
+      "ite_mae": 0.05460530217801712,
+      "ite_rank_correlation": -0.48731441414442145,
+      "ite_sign_accuracy": 0.09917355371900827,
+      "kpi": "conversions",
+      "method": "arm_mean",
+      "segment_cate_r2": -5.187090486601962
+    },
+    {
+      "counterfactual_mae": 8.15678532547617,
+      "counterfactual_normalized_mae": 1.3474338820687335,
+      "factual_mae": 2.3727801068835,
+      "factual_r2": 0.2534475203358485,
+      "ite_mae": 8.029737408401207,
+      "ite_rank_correlation": -0.2990711402181162,
+      "ite_sign_accuracy": 0.44488977955911824,
+      "kpi": "revenue",
+      "method": "arm_mean",
+      "segment_cate_r2": -2.366974969243267
+    },
+    {
+      "counterfactual_mae": 61.136018811216374,
+      "counterfactual_normalized_mae": 0.21856695545511343,
+      "factual_mae": 18.239129829677054,
+      "factual_r2": 0.9637712200168259,
+      "ite_mae": 63.45609568555217,
+      "ite_rank_correlation": 0.5444109722483993,
+      "ite_sign_accuracy": 0.9551401869158879,
+      "kpi": "impressions",
+      "method": "lightgbm_substitution",
+      "segment_cate_r2": 0.4568613030008043
+    },
+    {
+      "counterfactual_mae": 0.8096399293972332,
+      "counterfactual_normalized_mae": 0.2556650023357893,
+      "factual_mae": 0.4770605210168427,
+      "factual_r2": 0.8923243972635516,
+      "ite_mae": 0.9198946662526332,
+      "ite_rank_correlation": 0.42873099803119474,
+      "ite_sign_accuracy": 0.6165207877461707,
+      "kpi": "clicks",
+      "method": "lightgbm_substitution",
+      "segment_cate_r2": 0.35474802116767934
+    },
+    {
+      "counterfactual_mae": 0.01210022919962753,
+      "counterfactual_normalized_mae": 0.5817417884156629,
+      "factual_mae": 0.005485598968143608,
+      "factual_r2": 0.7620708502681879,
+      "ite_mae": 0.013843112265933882,
+      "ite_rank_correlation": 0.44969442525953673,
+      "ite_sign_accuracy": 0.9297520661157025,
+      "kpi": "conversions",
+      "method": "lightgbm_substitution",
+      "segment_cate_r2": 0.531207767125093
+    },
+    {
+      "counterfactual_mae": 2.6569572633100624,
+      "counterfactual_normalized_mae": 0.4389074981060141,
+      "factual_mae": 1.7289034022516978,
+      "factual_r2": 0.6668185394708307,
+      "ite_mae": 3.2303180144494332,
+      "ite_rank_correlation": 0.23334001723935116,
+      "ite_sign_accuracy": 0.5516032064128257,
+      "kpi": "revenue",
+      "method": "lightgbm_substitution",
+      "segment_cate_r2": 0.0032787234580082814
+    },
+    {
+      "counterfactual_mae": 898.6439590791404,
+      "counterfactual_normalized_mae": 3.212735765156203,
+      "factual_mae": 18.37382284064422,
+      "factual_r2": 0.9637720156066213,
+      "ite_mae": 898.0101560489912,
+      "ite_rank_correlation": -0.5703750525982343,
+      "ite_sign_accuracy": 0.13457943925233645,
+      "kpi": "impressions",
+      "method": "t_learner",
+      "segment_cate_r2": -45.96082320602817
+    },
+    {
+      "counterfactual_mae": 8.790508891208082,
+      "counterfactual_normalized_mae": 2.775833298978561,
+      "factual_mae": 0.48343901219398017,
+      "factual_r2": 0.8906291503770161,
+      "ite_mae": 8.75758951515878,
+      "ite_rank_correlation": -0.35960594224190967,
+      "ite_sign_accuracy": 0.4037199124726477,
+      "kpi": "clicks",
+      "method": "t_learner",
+      "segment_cate_r2": -35.84542017697862
+    },
+    {
+      "counterfactual_mae": 0.09902248019159342,
+      "counterfactual_normalized_mae": 4.760696162828497,
+      "factual_mae": 0.005481999541172755,
+      "factual_r2": 0.7665811507490625,
+      "ite_mae": 0.10066176676191252,
+      "ite_rank_correlation": -0.40077385888691397,
+      "ite_sign_accuracy": 0.09917355371900827,
+      "kpi": "conversions",
+      "method": "t_learner",
+      "segment_cate_r2": -28.06844532039776
+    },
+    {
+      "counterfactual_mae": 14.5970712089361,
+      "counterfactual_normalized_mae": 2.411316166978112,
+      "factual_mae": 1.7677282218150858,
+      "factual_r2": 0.6504171908497526,
+      "ite_mae": 14.781658160724815,
+      "ite_rank_correlation": -0.2530679486973572,
+      "ite_sign_accuracy": 0.44488977955911824,
+      "kpi": "revenue",
+      "method": "t_learner",
+      "segment_cate_r2": -13.28775885993162
+    },
+    {
+      "counterfactual_mae": 303246109.5412826,
+      "counterfactual_normalized_mae": 1084133.0561728682,
+      "factual_mae": 31207479.29580061,
+      "factual_r2": -17196146842177.215,
+      "ite_mae": 334440317.6487958,
+      "ite_rank_correlation": 0.4064966792660147,
+      "ite_sign_accuracy": 0.805607476635514,
+      "kpi": "impressions",
+      "method": "causal_forest_dml",
+      "segment_cate_r2": -26667652068037.02
+    },
+    {
+      "counterfactual_mae": 4406506.11189649,
+      "counterfactual_normalized_mae": 1391469.6576654979,
+      "factual_mae": 5814942759.085162,
+      "factual_r2": -5.5056199006084e+21,
+      "ite_mae": 5819349262.226299,
+      "ite_rank_correlation": -0.06268156135143649,
+      "ite_sign_accuracy": 0.526258205689278,
+      "kpi": "clicks",
+      "method": "causal_forest_dml",
+      "segment_cate_r2": -1.5707654907730726e+20
+    },
+    {
+      "counterfactual_mae": 0.4359169817216639,
+      "counterfactual_normalized_mae": 20.957547197149346,
+      "factual_mae": 8.475974096958355,
+      "factual_r2": -31565773.50451126,
+      "ite_mae": 8.900591078680016,
+      "ite_rank_correlation": -0.3331948591527179,
+      "ite_sign_accuracy": 0.0371900826446281,
+      "kpi": "conversions",
+      "method": "causal_forest_dml",
+      "segment_cate_r2": -3350943.3565317304
+    },
+    {
+      "counterfactual_mae": 5.905011600270796e+30,
+      "counterfactual_normalized_mae": 9.754593736043064e+29,
+      "factual_mae": 2.9546789522396913e+23,
+      "factual_r2": -3.3561937018534474e+48,
+      "ite_mae": 5.905011895738692e+30,
+      "ite_rank_correlation": -0.03595461550297924,
+      "ite_sign_accuracy": 0.5265531062124249,
+      "kpi": "revenue",
+      "method": "causal_forest_dml",
+      "segment_cate_r2": -2.0786996530813582e+61
+    }
+  ],
+  "overlap_diagnostic": {
+    "conditional_overlap_available": false,
+    "reason": "treatment_arm is a deterministic function of budget_bucket and KOL tier in the public generator",
+    "observed_consequence": "T-Learner extrapolates across unsupported arms and CausalForestDML diverges; complete failure metrics are retained"
+  },
+  "privacy": {
+    "prediction_identifiers": "synthetic scenario_id only",
+    "private_data_used": false,
+    "synthetic_rows_only": true
+  },
+  "source_clean_after": true,
+  "source_clean_before": true,
+  "source_commit": "8b5dd54269962fbe63333869d971b06383b3f838",
+  "source_repository": "https://github.com/OranAi-Ltd/oransim",
+  "split": {
+    "policy": "scenario_id lexical order 80/10/10",
+    "test_rows": 2000,
+    "train_rows": 16000,
+    "train_test_overlap": 0,
+    "train_validation_overlap": 0,
+    "validation_rows": 2000,
+    "validation_test_overlap": 0
+  },
+  "study": "public_synthetic_paired_counterfactual_audit"
+}

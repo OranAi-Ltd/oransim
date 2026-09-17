@@ -1,0 +1,46 @@
+{
+  "config": {
+    "seeds": [
+      20260915,
+      20260916,
+      20260917
+    ],
+    "widths": [
+      8,
+      16
+    ],
+    "lr": 0.01,
+    "epochs": {
+      "kuairand": 300,
+      "retail": 120
+    },
+    "patience": 20,
+    "weight_decay": 0.001,
+    "clip": 10.0,
+    "samples": 2048,
+    "horizons": [
+      1,
+      3,
+      7
+    ]
+  },
+  "reference": "https://doi.org/10.1016/j.ijforecast.2019.07.001",
+  "status": "Supplement specified after original Gaussian and GRU test results were known.",
+  "adaptation": "Shared one-layer LSTM; full short sequences, uniform cell weighting; train-only scales; one-hot cell identifiers. DeepAR-joint adds autoregressive binary mark readout with daily mark NLL + .05 cell count NLL.",
+  "inputs": "Original aggregate covariates plus reference population, effort, cell identity, and previous count. No individual histories or fitted Gaussian weights.",
+  "selection": "Each method/seed selects width and epoch by validation; all 24 selections completed before test scoring; no test retuning.",
+  "forecast": "2048 sampled NB count histories; conditional endpoint means; non-calendar covariates frozen at origin; marks weighted by endpoint arrival intensity.",
+  "source_sha256": "c47da55d4d0c54f8cdb9c3ba2a803f0ee71a541cc7e56eee5c3b03e6569cae9e",
+  "input_sha256": {
+    "kuairand/standard": "4b3ac1e8a2fc962b7b7ff9e2cf1d3ff07de11e232177986b41aa1efae7dcb4dc",
+    "kuairand/random": "1c3909fd40b008077cd264abb2b229bb1d44e6ff2e8726ac61dc47dbe882c5fd",
+    "retail/2010": "a5b32041c613ab24f7d97f31a8500c52a0249f47f146ddbb64b55caef337d5ee",
+    "retail/2011": "8a6cb91b9807c03a0a65b09587e216bf35cc36adb23ba04ab6d6d5e5e1b3e200"
+  },
+  "environment": {
+    "torch": "2.11.0+cu130",
+    "numpy": "2.4.4",
+    "dtype": "float64",
+    "threads": 1
+  }
+}

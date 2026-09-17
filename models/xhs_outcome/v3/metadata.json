@@ -1,0 +1,25 @@
+{
+  "version": "v3-pg",
+  "target_names": [
+    "exp",
+    "read",
+    "like",
+    "coll",
+    "comm"
+  ],
+  "feature_dim": 182,
+  "pca_dim": 128,
+  "n_training": 77107,
+  "include_note_age": false,
+  "niche_slots": 15,
+  "topic_slots": 30,
+  "target_transforms": {
+    "exp": "log1p",
+    "read": "log1p",
+    "like": "log1p",
+    "coll": "log1p",
+    "comm": "log1p"
+  },
+  "input": "Prepared feature matrix in the original training feature order; original text embedding service and topic vocabulary are not distributed.",
+  "training_data": "Proprietary Huitun-derived platform observations; raw records are not distributed."
+}

@@ -1,0 +1,410 @@
+{
+  "source_hashes_match": true,
+  "snapshots": [
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260915-direct-train.json",
+      "sha256": "1b7850bcb51d8d35a088950ffce0bf77753820fa85eeae116d1e0ba8eb02cd59"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260915-direct-final.json",
+      "sha256": "39f54a84476be844118aed2ba9116f2f1d19167c8e864e1360b9877b5a02d401"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260915-fixed_gaussian-train.json",
+      "sha256": "f4b9f8ce1fb5f35971b2808ae194a7607c644d695636e5c0cea897719d814cb7"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260915-fixed_gaussian-final.json",
+      "sha256": "214361dab10003e25068f25e5564611a0245b65d2da859f80158fac8167a1861"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260915-joint_discrete-train.json",
+      "sha256": "66633c657eedec4b038adde41f9bf60660ad73e5215dd3e203230aaf3649dd5e"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260915-joint_discrete-final.json",
+      "sha256": "70346954e8766582658c8cf27dfd2e4111e798754727f497ac7e92d3a19392db"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260915-joint_gaussian-train.json",
+      "sha256": "4e3916200cfb6868bdca3675bb72ee00ca78facb00a6ff7b767bda12ead78a41"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260915-joint_gaussian-final.json",
+      "sha256": "62c8ff8d086ceb13fa170ec20e503fa34e8d9097186a420bced90fc14f58b743"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260915-no_dynamics-train.json",
+      "sha256": "56f11267c2be1b93ef3c50f11e6b1c8244f309eaa566485459fbc67097be7151"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260915-no_dynamics-final.json",
+      "sha256": "4beae83a513d39811ca536dc7c049ebf286a36a16029704020f63be3af31f32b"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260916-direct-train.json",
+      "sha256": "f70e9d5f3cd041c077cd4b87b9512baed2f340a8713ae2fd08bdb3425d0d4208"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260916-direct-final.json",
+      "sha256": "ede4c5b79b0c1a974e4d189585724e0ed38bad5f84ca59beba40b97d18ff02fe"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260916-fixed_gaussian-train.json",
+      "sha256": "381249b68d8e420640ebf358d4d953e62b57fd78341b0e70a991d38ace801d9e"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260916-fixed_gaussian-final.json",
+      "sha256": "2215db71e2fec5401851674c04496dd6ab3f0dd968eaf49134d4a65131aab27f"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260916-joint_discrete-train.json",
+      "sha256": "25f1cf40837825e6c3de08adaff3b43a4a1ed21695fa3da26f1ac2c5bd7fc1a2"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260916-joint_discrete-final.json",
+      "sha256": "de926ee2502cbe61621604d2267b1b9d38804d66221a337fb914b2624ee2bf54"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260916-joint_gaussian-train.json",
+      "sha256": "04be773e799b395628267ed2842d87f5ef36b0ad804f3ef999c3365c74c318a9"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260916-joint_gaussian-final.json",
+      "sha256": "6976e5f2412b3f7ef3021ec3aafd058f31d042e7dc4f0100afb7fcabbd11508f"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260916-no_dynamics-train.json",
+      "sha256": "090e85ffe57b1f0b6fab85ab8f3e998e7c89708028d8d9987d5f0dec0c848491"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260916-no_dynamics-final.json",
+      "sha256": "659e28e889ce42c6ec2a5072a41367eace70f649bba1a28bfe244f67ccd66e6e"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260917-direct-train.json",
+      "sha256": "6f6b32dc7013e80afb37dbd68093472e916b4d921e23304b8d4499666e086ade"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260917-direct-final.json",
+      "sha256": "fd9e10cb7bfd787527b4947f7ccf8a9631e7f057409b4e0e47c96bcf29cd9421"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260917-fixed_gaussian-train.json",
+      "sha256": "fc6c485b9876c0fdc35706ca23676c95b85ad2b2ed9c001f464f6bb31728da1d"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260917-fixed_gaussian-final.json",
+      "sha256": "6d2a8cf145d7dd618bb4d290235fda19dd9bc99f750dcc8c4ca6ed4ad9857098"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260917-joint_discrete-train.json",
+      "sha256": "8675302330610c43228b6d24ff8378530c9ae9dc9e1356cbe092fe666efb45e0"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260917-joint_discrete-final.json",
+      "sha256": "881dc00f3be7c39f1080cfe6773828acad250aca56bd3919a714eeac76185b2e"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260917-joint_gaussian-train.json",
+      "sha256": "d16ba8b056df822124a6e98b209c3c4b963a7815c5f40a416a50a06c924c999b"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260917-joint_gaussian-final.json",
+      "sha256": "20ac3786eaada190d82afe77b252f10e050fc4500011e00444c9c5a2c695afa1"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260917-no_dynamics-train.json",
+      "sha256": "1e392a295f22d5de3eb91b9b1eb5fb15dd4fed9e3586573fdcdd13fb3fa26039"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2010/20260917-no_dynamics-final.json",
+      "sha256": "769aa09090482dcf2aebe21ba8769bac9dee7ea4682fdcf2c957e809f5bf6dd7"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260915-direct-train.json",
+      "sha256": "627ab16a697ada5caa8dce06278ac3194eaa0403a4208aa8d5205e8caa4566c4"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260915-direct-final.json",
+      "sha256": "d81f6f21fb85b40882e322e90ed36af3f2316c8fecfdacf2bb65f3641e054ca7"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260915-fixed_gaussian-train.json",
+      "sha256": "820bf8a803246cfe6f62d63698754f879d5868df9c052470788140b60a5c3cdd"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260915-fixed_gaussian-final.json",
+      "sha256": "ed8e8d931119d94d3b546c8c294de8353e6b1777dc96f37e0d7bb915489cfbec"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260915-joint_discrete-train.json",
+      "sha256": "4fa97dca5b8762ca9a111c3ed9d186c450760cf4357230b27c3d0750d85f989e"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260915-joint_discrete-final.json",
+      "sha256": "0236f67410c72a996d9174e6c7ac429c6376f70dd1d0633099940438291e14c3"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260915-joint_gaussian-train.json",
+      "sha256": "237178b348c66e9da7a295832cc44845baac970610975572abfc4d52b28e4d72"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260915-joint_gaussian-final.json",
+      "sha256": "4497b2ef939d7f5d45f9405fadf43bf19aa666243fe8555e94c28a194164ee19"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260915-no_dynamics-train.json",
+      "sha256": "df22eb4d825e7503491b0fa6d5b5200de31f736e8c7352066d1b9c032af6b1bb"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260915-no_dynamics-final.json",
+      "sha256": "4439ad962e4f971b841f1183202b0f16ebd7c01c3b6f61d2fc14aa5aa2f836e4"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260916-direct-train.json",
+      "sha256": "ddfb8aaeb8496d3172d60cddfe60bf24b1cb0f0d94ddcf6bfe0202d240e20985"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260916-direct-final.json",
+      "sha256": "64f6d8a087000452504a29a7d7d534518f9981aa394f4945a13b8b542f122ac9"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260916-fixed_gaussian-train.json",
+      "sha256": "69b9a8030c85843515466b508120ec5c3c298b1b28dd0c2f2c3d85f30b00baa1"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260916-fixed_gaussian-final.json",
+      "sha256": "4619543c73027afce3302f738669a62ea5bc2c5db298b859a480cc95c55ae2e6"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260916-joint_discrete-train.json",
+      "sha256": "19d037946638426689eb77a990554f2dd3c9e961cdf53e2fbf923cc1386fd833"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260916-joint_discrete-final.json",
+      "sha256": "1a1f10bd221af1ee4273f83e7d6b27f8c4a86051e4219b1326384a9d909b5069"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260916-joint_gaussian-train.json",
+      "sha256": "c1b00cacc73f8b0ffaf37fe0db20225f53fe6eccc12a6e5b4198da0ebefc59e7"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260916-joint_gaussian-final.json",
+      "sha256": "9278627e25b9609dd4de1d4831e29692d864721188b59bc98b08481181345a4c"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260916-no_dynamics-train.json",
+      "sha256": "c84d5148a45d3103f2f62e9156c93bda5e1e011cabfc33a0633cf612705e7ffe"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260916-no_dynamics-final.json",
+      "sha256": "e60486e1dd397cece7c4c88ea138689087ba3b2da3fd61cfdbaa63cf80ea7d0e"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260917-direct-train.json",
+      "sha256": "86c26d02b1de2c68916edefa534167d1456de0c4bb8ccc122fb925c1f1285654"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260917-direct-final.json",
+      "sha256": "549045e41a603a54423fbb085ac6db069a78fc8b3b28acc9fee9167cc640fedc"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260917-fixed_gaussian-train.json",
+      "sha256": "99d26f3bb0a28a463b01b5ddf1c02109a8d2e2eb195c875ce28cf515dc103013"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260917-fixed_gaussian-final.json",
+      "sha256": "aff4e0156330fe9b8b18c72682a18c0d9d7142a87d3e953eb8bfda49aa2a676c"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260917-joint_discrete-train.json",
+      "sha256": "b508269481f21980a8c492afdfa5572ee7aecf73b925a656a4ebc7e021593463"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260917-joint_discrete-final.json",
+      "sha256": "9d1e4e075d8e821b1ea864d667923c02d1e563d4678ca56fccb90e8f0b0c17ea"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260917-joint_gaussian-train.json",
+      "sha256": "aecee62f7512266af30f715b9acb31b807c52fe2f0945b9220d8f90c24911929"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260917-joint_gaussian-final.json",
+      "sha256": "95b378acfaf84ee6ba6fa2e54e923f4ca6c36953228063eac830deb26d210cb8"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260917-no_dynamics-train.json",
+      "sha256": "40361f8da0bb8031c9d421a5fc17e8c96a23b3bfaa0eb62357de1767357791a9"
+    },
+    {
+      "path": "models/gaussian_population/benchmarks/retail/2011/20260917-no_dynamics-final.json",
+      "sha256": "8be23f94eb546e2779db327875f2fa064ef29d4d96788e7f8a719bb7dd44527c"
+    }
+  ],
+  "quadrature": [
+    {
+      "window": "2010",
+      "model": "20260915-fixed_gaussian",
+      "high_order_test_nll": 1.7505821119556586,
+      "delta": -1.2009113259381365e-08,
+      "high_order_transaction_mae": 7.89978089841749,
+      "max_absolute_daily_prediction_change": 4.263256414560601e-14,
+      "maximum_standard_deviation": 0.4501
+    },
+    {
+      "window": "2010",
+      "model": "20260915-joint_gaussian",
+      "high_order_test_nll": 1.7358682539783834,
+      "delta": 1.6191471670534696e-05,
+      "high_order_transaction_mae": 9.562226897158709,
+      "max_absolute_daily_prediction_change": 8.43698444441543e-11,
+      "maximum_standard_deviation": 1.24445855972267
+    },
+    {
+      "window": "2010",
+      "model": "20260915-no_dynamics",
+      "high_order_test_nll": 1.7335947453836524,
+      "delta": -1.2776207967357678e-05,
+      "high_order_transaction_mae": 13.23500777333733,
+      "max_absolute_daily_prediction_change": 1.9166947140547563e-08,
+      "maximum_standard_deviation": 1.4270501432603302
+    },
+    {
+      "window": "2010",
+      "model": "20260916-fixed_gaussian",
+      "high_order_test_nll": 1.7480923530916797,
+      "delta": -1.6775421496362242e-08,
+      "high_order_transaction_mae": 7.8708145650280965,
+      "max_absolute_daily_prediction_change": 2.842170943040401e-14,
+      "maximum_standard_deviation": 0.4501
+    },
+    {
+      "window": "2010",
+      "model": "20260916-joint_gaussian",
+      "high_order_test_nll": 1.734454260997513,
+      "delta": -3.3180790350861855e-06,
+      "high_order_transaction_mae": 9.500171561728711,
+      "max_absolute_daily_prediction_change": 6.110667527536862e-12,
+      "maximum_standard_deviation": 1.2409307508635494
+    },
+    {
+      "window": "2010",
+      "model": "20260916-no_dynamics",
+      "high_order_test_nll": 1.730958424969132,
+      "delta": -2.4563384430908997e-06,
+      "high_order_transaction_mae": 12.877431517386366,
+      "max_absolute_daily_prediction_change": 1.5400303254864411e-10,
+      "maximum_standard_deviation": 1.43832691996448
+    },
+    {
+      "window": "2010",
+      "model": "20260917-fixed_gaussian",
+      "high_order_test_nll": 1.7544415872375623,
+      "delta": -9.235527897999418e-10,
+      "high_order_transaction_mae": 7.827233951886852,
+      "max_absolute_daily_prediction_change": 2.1316282072803006e-14,
+      "maximum_standard_deviation": 0.4501
+    },
+    {
+      "window": "2010",
+      "model": "20260917-joint_gaussian",
+      "high_order_test_nll": 1.736828933553297,
+      "delta": 3.2402043470547426e-07,
+      "high_order_transaction_mae": 9.34586681463046,
+      "max_absolute_daily_prediction_change": 3.979039320256561e-12,
+      "maximum_standard_deviation": 1.0468229597029974
+    },
+    {
+      "window": "2010",
+      "model": "20260917-no_dynamics",
+      "high_order_test_nll": 1.7376425595695963,
+      "delta": 4.279926677952517e-06,
+      "high_order_transaction_mae": 13.229153035958497,
+      "max_absolute_daily_prediction_change": 1.946716565726092e-09,
+      "maximum_standard_deviation": 1.123495220878093
+    },
+    {
+      "window": "2011",
+      "model": "20260915-fixed_gaussian",
+      "high_order_test_nll": 1.7537978010700928,
+      "delta": -4.3528003423887185e-10,
+      "high_order_transaction_mae": 9.266329249271235,
+      "max_absolute_daily_prediction_change": 5.684341886080802e-14,
+      "maximum_standard_deviation": 0.4501
+    },
+    {
+      "window": "2011",
+      "model": "20260915-joint_gaussian",
+      "high_order_test_nll": 1.7554712984711331,
+      "delta": -3.6000917966738655e-06,
+      "high_order_transaction_mae": 9.259963220336626,
+      "max_absolute_daily_prediction_change": 1.6031833638407988e-09,
+      "maximum_standard_deviation": 1.3847925188451073
+    },
+    {
+      "window": "2011",
+      "model": "20260915-no_dynamics",
+      "high_order_test_nll": 1.755817435315257,
+      "delta": -2.017447302549158e-07,
+      "high_order_transaction_mae": 7.869147820088866,
+      "max_absolute_daily_prediction_change": 7.366196541624959e-08,
+      "maximum_standard_deviation": 1.538801903420595
+    },
+    {
+      "window": "2011",
+      "model": "20260916-fixed_gaussian",
+      "high_order_test_nll": 1.7539152632093344,
+      "delta": 1.6687735637788137e-09,
+      "high_order_transaction_mae": 9.276203088745083,
+      "max_absolute_daily_prediction_change": 5.684341886080802e-14,
+      "maximum_standard_deviation": 0.4501
+    },
+    {
+      "window": "2011",
+      "model": "20260916-joint_gaussian",
+      "high_order_test_nll": 1.7547039419354713,
+      "delta": 7.937682844350036e-07,
+      "high_order_transaction_mae": 9.450093203890784,
+      "max_absolute_daily_prediction_change": 7.062794793455396e-11,
+      "maximum_standard_deviation": 1.2927176278940022
+    },
+    {
+      "window": "2011",
+      "model": "20260916-no_dynamics",
+      "high_order_test_nll": 1.7551439002804268,
+      "delta": 8.238541038263492e-07,
+      "high_order_transaction_mae": 7.7728864619542435,
+      "max_absolute_daily_prediction_change": 2.0672530354204355e-10,
+      "maximum_standard_deviation": 1.3496607325845047
+    },
+    {
+      "window": "2011",
+      "model": "20260917-fixed_gaussian",
+      "high_order_test_nll": 1.7554762777072204,
+      "delta": 5.915739009765275e-10,
+      "high_order_transaction_mae": 9.275408074817232,
+      "max_absolute_daily_prediction_change": 4.263256414560601e-14,
+      "maximum_standard_deviation": 0.4501
+    },
+    {
+      "window": "2011",
+      "model": "20260917-joint_gaussian",
+      "high_order_test_nll": 1.7562680959167436,
+      "delta": -2.1662410312206504e-06,
+      "high_order_transaction_mae": 9.178400533079499,
+      "max_absolute_daily_prediction_change": 1.0805933925439604e-10,
+      "maximum_standard_deviation": 1.2954465573203682
+    },
+    {
+      "window": "2011",
+      "model": "20260917-no_dynamics",
+      "high_order_test_nll": 1.7565290657085835,
+      "delta": -3.79284454510298e-07,
+      "high_order_transaction_mae": 7.820882446605469,
+      "max_absolute_daily_prediction_change": 1.2251106795702071e-08,
+      "maximum_standard_deviation": 1.5028858436375312
+    }
+  ],
+  "all_snapshots_ignored": true
+}

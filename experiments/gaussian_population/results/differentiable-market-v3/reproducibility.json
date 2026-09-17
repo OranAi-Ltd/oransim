@@ -1,0 +1,465 @@
+{
+  "environment": {
+    "python": "3.12.3 (main, Jan  8 2026, 11:30:50) [GCC 13.3.0]",
+    "torch": "2.11.0+cu130",
+    "numpy": "2.4.4",
+    "device": "cpu",
+    "torch_threads": 1
+  },
+  "source_sha256": {
+    "backend/oransim/world_model/differentiable_market.py": "e1f4a601d75f1a38c5c390ff86bd537abba3e076d05d1d7c4d7e38ae81ab609a",
+    "backend/oransim/world_model/market_choice_learning.py": "16908a78ac5940acb997c2cc4fade80cbc68337bf2e932bf9dcaa62d6f68e25c",
+    "backend/scripts/differentiable_market.py": "791a8219065f57bb56e4a75821b614ddc2a9927289e2eb834cabbd85ac7dcf5d",
+    "backend/scripts/train_differentiable_market.py": "4a5bf088ad33894f9b22fbd132262a60606c022e786c41691c94e5c852d10ed3",
+    "backend/scripts/evaluate_differentiable_recovery.py": "5cc072a418bfc379ac4960e885b7dd352a13ddb61503b300756abed391664fce",
+    "backend/scripts/evaluate_differentiable_dynamics.py": "f9378b119301f4f1d91144fc0e1ce8a44fa25c124684b27ddcd273f9f71ce365",
+    "backend/scripts/summarize_differentiable_market.py": "a22c13d1af9044bfbdc795493b1cf73653fcc8f52deb57f0d678f7cdd2acdf2c",
+    "backend/scripts/plot_differentiable_market.py": "67d1f5ee9d1f92cb50dc81b4cb3b8c1f12a27c203b6e95e31e0e2500b87c6ee8",
+    "backend/scripts/check_differentiable_market_artifacts.py": "415ffec12f98e2f58c11f0f321e85ba06c2b1df7a95e3490bbdf13992f8ab66b",
+    "tests/research/test_differentiable_market.py": "a85208d5ea6ae854c84effbdf9f55a22b24f050f57c0d2fd9e7157bcf82cdf2d"
+  },
+  "source_protocol_hashes_verified": true,
+  "snapshots": [
+    {
+      "path": "models/gaussian_population/controlled/random/20260912-direct-train.json",
+      "sha256": "b2a54708197ee69dc75bc3bc40119bd654e0623d51bacc4b13efe4dc25d9e784",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260912-fixed_gaussian-train.json",
+      "sha256": "95961fc18fea7d05c72baaa4a0c15d9017605e9c566fb7f9fa7220d91ccb06a2",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260912-joint_discrete-train.json",
+      "sha256": "be9c97e9c06dbf250d84fbd6467054e4d0be816484047b47cd9a8f5dcaf114db",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260912-joint_gaussian-train.json",
+      "sha256": "999049c6a0dd5245b60fbec86eb81d75283af24bde40d844e23e598df6e36a0d",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260912-no_dynamics-train.json",
+      "sha256": "380aee3c27f2ad9005ff6ad3903d2360c2401ed75c539c08ff41acd2bdc921a6",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260913-direct-train.json",
+      "sha256": "88d9a0b511a57a15e5f4b42c57cfefc61198dbf1f1f5f75512202e26a8be290a",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260913-fixed_gaussian-train.json",
+      "sha256": "20db4046f5ecfe86f167f133a90ec3bc52ce385512bbe8fdffa814ba3be539ed",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260913-joint_discrete-train.json",
+      "sha256": "4b02ab296e0fcd9bcc6b058c42375779400c5fca8cc0def86338f1aba227fda1",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260913-joint_gaussian-train.json",
+      "sha256": "1ce18305a3e6583ed99fa15249575c8d9825b4eb8527d361729fb53b685526d7",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260913-no_dynamics-train.json",
+      "sha256": "cecf802444c821a5762d230354fb5c49f5aad917920642df33e17d798d7d0939",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260914-direct-train.json",
+      "sha256": "e2feb0958ef9cf1d66da19f99e45191c73ec5e16d71901b7b7e3e9ad3c1c542d",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260914-fixed_gaussian-train.json",
+      "sha256": "347384205a9bdfd1fc3ddc249f35d43665d575f69b7a377549483b3f8d910a3c",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260914-joint_discrete-train.json",
+      "sha256": "807049f5bd3b90b5c8ac5dacbbff9ab08205a19405d5a7aa9d8611ca37cb187a",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260914-joint_gaussian-train.json",
+      "sha256": "ce3bf2819c926f1915171c486ea672ec7263e9e6ad976f298256abbd7acfb28f",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260914-no_dynamics-train.json",
+      "sha256": "7b04283e8ccadf58cd84ecbb37fcc1653dad634df83278e4966dd0b90ee5771e",
+      "day": 4
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260912-direct-train.json",
+      "sha256": "c5afaa672ed62240120d944573ed118253698e8114e0a3855ef29854d18d2195",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260912-fixed_gaussian-train.json",
+      "sha256": "3d69b4bd7871f01067cbae638c80dc5636d99690216177b4cc00374922e9a2f8",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260912-joint_discrete-train.json",
+      "sha256": "8a55b10c023cfd9b1f43ca7f5d86be635a6647e73c66a904765be0583ca100a0",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260912-joint_gaussian-train.json",
+      "sha256": "867ba7e63c52b5b605cbc9950a33ff3d08f6c19e8d31ecba545f6f80b8b1997d",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260912-no_dynamics-train.json",
+      "sha256": "aca7dd1b8bd6033d4bff551ef955b9f72a074d7210f2b543bd3515a9ebad1a1f",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260913-direct-train.json",
+      "sha256": "9308af3ae3c96f02410e04faf306f08839d5a10daf797a08014485e4368eef9b",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260913-fixed_gaussian-train.json",
+      "sha256": "44fa768e7ad581cda1fa6a440a65310c9aff0951c95e47ca8490202a91e3bd29",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260913-joint_discrete-train.json",
+      "sha256": "addb58165a1d47855ad0fb5588674e40da5117c8a39c1edb371e78b312717420",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260913-joint_gaussian-train.json",
+      "sha256": "4ebd134bcd678e43297b9727ad302b3fb47ec4ae1d73fb2a282b770bc2a4c8d9",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260913-no_dynamics-train.json",
+      "sha256": "54269e2d8ae5d1ec73b42caa58524bc777856af6452f42ee59615760d3d2da04",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260914-direct-train.json",
+      "sha256": "cebbc47db7beebc8b2278f3bda71180091c54ec95da2686c588abfba9153e6fe",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260914-fixed_gaussian-train.json",
+      "sha256": "d861995ead0289c533f594a3b73a3f6c9ed2ccf7ca1dd1c0d1934106359143c2",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260914-joint_discrete-train.json",
+      "sha256": "4603a63adf97d622a76670372a94b596f3a568c94bd489e073d2bc2c3252012e",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260914-joint_gaussian-train.json",
+      "sha256": "502cbd849208e7e24c3198a26cee8f34188a276c9c3c05e47511e2b5d781c2e3",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260914-no_dynamics-train.json",
+      "sha256": "7b77a6973eedac6f5170748af7bdd5d8970e5d96c71663d0e88b09c44b8773e0",
+      "day": 9
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260912-direct-final.json",
+      "sha256": "9d271b5331f0413768379c6a9e5bd9e693a8986462669881e06381e15844184b",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260912-fixed_gaussian-final.json",
+      "sha256": "5802fa9547a7feff117d399b2d41caaaeeb448af0d4699f9d67828456b29aa49",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260912-joint_discrete-final.json",
+      "sha256": "a9d5c361914439e046fe33969b69f92e21bfb3b0c1685ea5fba174c948965d80",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260912-joint_gaussian-final.json",
+      "sha256": "1a7e9ef70f9cae3fda783841231490c6ef0a5a01de2678d770233c7b2d108215",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260912-no_dynamics-final.json",
+      "sha256": "a4241fc37714be8c903838a64f8b38eb20cabc9a30434496998d3bd221b38ea9",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260913-direct-final.json",
+      "sha256": "c13f69ba0e74db94a2236ccff2af8b1436fc34308f42271cf5fd29d85e485949",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260913-fixed_gaussian-final.json",
+      "sha256": "0bee03433d73acc5189bb14fe4ff495794d36628299987b1a34438fe27527e86",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260913-joint_discrete-final.json",
+      "sha256": "244fe2f89b415e3baf41fadb65f3d15a40327689f2a42dc5f74a3e76472ffbdc",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260913-joint_gaussian-final.json",
+      "sha256": "0e504eafec2e1d6a650c140b92afd0274820dfcd22016a9f36002f8c4f918a33",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260913-no_dynamics-final.json",
+      "sha256": "65b285112587fee140d1c4d4b62d1b49742175d787b5e49afb5f7c7791148034",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260914-direct-final.json",
+      "sha256": "b74a06550fa3fa1f6d7b4a2acdfa3fd2413ac904db4272ff7587c7e4a74e5d92",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260914-fixed_gaussian-final.json",
+      "sha256": "050f19934f477a51f2bf13e3897d15fa4017db6ebf98d2ffeb85a352f2ae5fd1",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260914-joint_discrete-final.json",
+      "sha256": "dd3b7f7e8f005cbe55ad30bf344ef2eea44c0e2c50140cbabdff07659f2d297e",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260914-joint_gaussian-final.json",
+      "sha256": "b6eef62bfda056f0ea29a3b175415832e053b58773639efd2cd071fe36045c1e",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/random/20260914-no_dynamics-final.json",
+      "sha256": "bab0ea481262a2d21816c44f55599ed38b3796d23965f3c4c035d949770f52ed",
+      "day": 14
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260912-direct-final.json",
+      "sha256": "34dd8d77487495dd1256279024c05f05a530cfc1f0f2c5f2baaaec213e5ac4db",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260912-fixed_gaussian-final.json",
+      "sha256": "ddbd3daf0fdb3996475c6ba245d95cc321befe77f66c33b5ea8e13c8d6704155",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260912-joint_discrete-final.json",
+      "sha256": "5a377d3aa3d44c44377d461f80b050c8bfd0312838af5712d004af2c34a83ce3",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260912-joint_gaussian-final.json",
+      "sha256": "057d6942a70480b277d729dcc5a241df578421dcab61f35fdbe6b5634ff3cb59",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260912-no_dynamics-final.json",
+      "sha256": "59ecdb8922c75c8bcc44007764bea90708b775d05b2df6c7f107f807ff631631",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260913-direct-final.json",
+      "sha256": "ecb2c83c7ebd5f985605bc7a9919ef8508298cfea0e68e06ac629573b7a2a70d",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260913-fixed_gaussian-final.json",
+      "sha256": "ab6a5fba913c1585e368fcd76679af270df5611f9bd29fef1795099680997f42",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260913-joint_discrete-final.json",
+      "sha256": "7fc1fc74f19f9f2ff6b8ef12d7afc61da52d0ee481e127ad65f836dd36480147",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260913-joint_gaussian-final.json",
+      "sha256": "2c4d28cfb42fb796c26905f20ff5807711affcbf4a3f4933b8d79cabd36e83f8",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260913-no_dynamics-final.json",
+      "sha256": "36025a162ba7c6b7b285a9ee12bfeda10007c2eddda3f816453efe19a6b9cd6d",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260914-direct-final.json",
+      "sha256": "1886a6a6493b3ec11802bff588e0556d967eb0988d676a4819983959d4fb1d98",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260914-fixed_gaussian-final.json",
+      "sha256": "b28a321050d38f352848de8fb43a875beef53076308ba41d9fc8f84fe3c2217a",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260914-joint_discrete-final.json",
+      "sha256": "1b62730e689d6d530b2d133a0ba07463681ab54ee4e1ef5e9f7b79eb33aa21dd",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260914-joint_gaussian-final.json",
+      "sha256": "f2392d330e2a1e3b0d27f82712440d48135313d8d6b6059d9cac500d75dc104f",
+      "day": 26
+    },
+    {
+      "path": "models/gaussian_population/controlled/standard/20260914-no_dynamics-final.json",
+      "sha256": "177fba45f877cb69d52a4234baeee88a9ee57ea9c0c5ce7ef753a63b02298a97",
+      "day": 26
+    }
+  ],
+  "snapshots_loaded": 60,
+  "private_permissions": "0600",
+  "private_git_ignored": true,
+  "choice_snapshots": [
+    {
+      "path": "models/gaussian_population/controlled/choice/gaussian/20260912-fixed_gaussian.json",
+      "sha256": "80ab5bae569fdb0a28d1bf62fc5833438d218a3bf1c081687a9a8a56a7171af1"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/gaussian/20260912-joint_gaussian.json",
+      "sha256": "3e213012203792259cbfb3d0adba2c80a730c079942f3a1ea18cb170cb0187d0"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/gaussian/20260912-joint_discrete.json",
+      "sha256": "90c5f8c52c08813df9895dbbbf426cf4267823f0d34a2c4cd57e972fa8081522"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/gaussian/20260912-point.json",
+      "sha256": "fbe2ad1bbdada3fb6e2129a8ed57ee583b2e85464839be35c1695984c5743fa8"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/gaussian/20260913-fixed_gaussian.json",
+      "sha256": "d1c8224a002d25137886ea3468f35cb4e7cb9ac1ab4b993732b262287c63a032"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/gaussian/20260913-joint_gaussian.json",
+      "sha256": "65350b367011c02c37c8a94b637716823013079ae19d18ca77bef36d2db0c82d"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/gaussian/20260913-joint_discrete.json",
+      "sha256": "162de39e64ec9ee86726b89e8f5ced92adb4fc6114177ec89f724d069372e9ba"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/gaussian/20260913-point.json",
+      "sha256": "91643c4cf15c20cfd218f06321f543d7a91fdffd8fe9f48cf118fe0c925d67b3"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/gaussian/20260914-fixed_gaussian.json",
+      "sha256": "cca1d1ced456ec1025a8e1c73b1c8d6a6490018e94daee02a3141f8449d08b34"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/gaussian/20260914-joint_gaussian.json",
+      "sha256": "5b54c96fc07d7392de733b52b6f327418f2e94f8193a6987f5fdb6372ad3c0a8"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/gaussian/20260914-joint_discrete.json",
+      "sha256": "cb1e0a377d292b1a16b62e5ae1927a9e3c868cedf545a893ab8c0925189178b7"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/gaussian/20260914-point.json",
+      "sha256": "0ce03c8f7e9603e1a4967677fc111f8c2b4b1bc8456504f4be3c4496f325de8b"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/discrete/20260912-fixed_gaussian.json",
+      "sha256": "e9db4ec211ab5047eebfceb53a9b1161edb375e8644241a97870411f4cb8f7a5"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/discrete/20260912-joint_gaussian.json",
+      "sha256": "5663a1d30e974ced2aa5277fc4e2364d24b55b231fade01ef150251ea3a5a2eb"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/discrete/20260912-joint_discrete.json",
+      "sha256": "2b8d0e3be46d9009dff04a2cdfed32d0d5c3df6077385a733eec391d66995ace"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/discrete/20260912-point.json",
+      "sha256": "37aaa7a28163d0e1480a7b0adc667d262a0216d6bb2f8252aaa744fbd6aaed7f"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/discrete/20260913-fixed_gaussian.json",
+      "sha256": "3cc09db63414d691ccd986468391f2f4ea5bf05df0401fad4eeae0b0732ac00d"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/discrete/20260913-joint_gaussian.json",
+      "sha256": "a3cce2226a3409485d6af4dac67b8c285f91d002549da8fbd998cb33c7f50fa1"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/discrete/20260913-joint_discrete.json",
+      "sha256": "cfbdef355dc42f77ba0b44bb8aa2b19b565475bc61b5aed7d8fd52762cd2a540"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/discrete/20260913-point.json",
+      "sha256": "d7661585cf13dca2f20b9af387b4142c4c106ceeca897d93edadc9eeaf1d8db2"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/discrete/20260914-fixed_gaussian.json",
+      "sha256": "6d636baa27d993fb907cdd034eddc0660e12bbd88115202006d177fa2635f4fe"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/discrete/20260914-joint_gaussian.json",
+      "sha256": "c66fe397ac4d4bf79bf370dab1fdbe319bf688b8f925833777cc2424030f8e8e"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/discrete/20260914-joint_discrete.json",
+      "sha256": "e6b882f0fef9f23890e278e8c9f723b013d35a8a74b44ce37cda67718caf7e24"
+    },
+    {
+      "path": "models/gaussian_population/controlled/choice/discrete/20260914-point.json",
+      "sha256": "5b224c9e33fc058eaac797bb47dd36d183ebcc8cfd144fa69f899618f77f8514"
+    }
+  ],
+  "choice_snapshots_loaded": 24,
+  "tests": {
+    "passed": 73,
+    "scope": "11 existing/new research test modules; 12 new differentiable market tests",
+    "last_observed_output": "73 passed in 13.50s"
+  },
+  "cli_operations_exercised": [
+    "fit",
+    "observe",
+    "forecast",
+    "simulate",
+    "fit-choice",
+    "choice"
+  ],
+  "artifacts_sha256": {
+    "behavior-comparison.png": "27e46a2d1e5bffccb1a8bd834835f37d72a9a70e03d47e5ac0fed69cb10a8121",
+    "protocol.json": "62fb583a3ae31781f186311d43e063116fe7504d12e75d46361ffeae0fa80222",
+    "dynamics-recovery.json": "b85c22509ac7ff61bd1417dc9adc623a63d3ca0d0f4a2fd6dc80c2decf7c4308",
+    "recovery-protocol.json": "1657b1c50b9cdc45458310ca8ca5735728146a88faaa368ffd0345abc6f95650",
+    "calibration.json": "bcc323e1d0aea663f9c0640d68c1808bfeb3fa5ba57555dd7024a5220df02bf3",
+    "dynamics-protocol.json": "0db734ec568026e98d9783a98f6583a7c1d5b3261ead19cb9a720c6ded0691a7",
+    "summary.json": "5f4d76cd4301abb863c10ac2e9d0c6b5d073119bc099f933d805a8a246b09ec6",
+    "choice-recovery.json": "30739ee14737fe39cb259cb36e3ff38936326b910726f127673a1d2d63a37d86",
+    "quadrature-audit.json": "7e56079c32c575ceee4601c394dd10c314fa4c1d6dc0b814aea466a1eb4c916e",
+    "results.json": "e0a4c93d9eb56de66932e2f4cbecbb10baa8f4f4ace4121cba78716299396afb",
+    "choice-recovery.png": "fc75537ceecd82c4f10b52bb5e21e524cd7bc867636baeca6007f72b9554f47c",
+    "gradient-audit.json": "d03e912f06bba027a7c233d5216498b3f3823dabe238de9419803cd9f14e4b31",
+    "standard/20260912-selection.json": "e5d4f3e5f27f3ed78ed560a75806db90c945ebf78ceb282751547f1aff71f159",
+    "standard/20260913-continuation.json": "85034cf67cf6c7a5c9570226fc7456a9a996e03497d2ae220056df59030719b0",
+    "standard/20260913-selection.json": "0da944863a441f37cb2be41d6aceff0f1400a6f7ad06cb9ac9268f324261a207",
+    "standard/20260914-selection.json": "1b682f8855fb2291417374b96cf62e753bb9b7da8e5a297a9d994674fafc35b0",
+    "standard/20260914-continuation.json": "39af3bc48ab3b100575a66bd59aa4b22c0d6c7a0b2902526ceea1c61a6e60aeb",
+    "standard/20260912-continuation.json": "56230b1b0b08a3904638d3ce671dc78e3709a392bb0b623c85401404cc9eedf2",
+    "random/20260912-selection.json": "f1e12db36b4ca99bf0dbb09bab08c638c2df74960ee6dee38d1015781c8fb18c",
+    "random/20260913-continuation.json": "b3b8ee4ebeeda545af9a86c7eba0d3f055aac75eb22174f1233387a7d58bd1d6",
+    "random/20260913-selection.json": "7d98f6d366842da8f25f4170212735cda8ae7fe8c4dd98273944348095090a06",
+    "random/20260914-selection.json": "1a234440df3d79015a9b76eb54a704da9a96324f4ddab8ff1e24f638a6052df5",
+    "random/20260914-continuation.json": "884c1891f083962fac9a9454ceda264be226be746e4059eb8ca80bdac1d1e1df",
+    "random/20260912-continuation.json": "086380d65548e3de06230b4aa16e31ac092b08633f4be07083e8a92889ea9259"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "status": "Post-audit enhanced baseline; specified after inspection of some primary-family test results.",
+  "selection_scope": "Only validation selects each run epoch. No entry into the original family selection; no retuning after supplementary test scores.",
+  "model": "ProjectedGRUMarket",
+  "policies": [
+    "standard",
+    "random"
+  ],
+  "regime": "aggregate",
+  "bucket": 1,
+  "seeds": [
+    20260915,
+    20260916,
+    20260917
+  ],
+  "epochs": 300,
+  "patience": 20,
+  "optimization": "Same fit_market: Adam .025, clip norm 10, normalized regularizer .001, count .05 and two-step .15.",
+  "change": "Replace the first fixed behavior row and remaining latent behavior loading with an H x 4 trainable matrix; legacy loading frozen. All H rows learn.",
+  "initialization": "Exactly legacy GRU output: first row e1, other rows copied. No data-dependent extra initialization.",
+  "retained": "Same four-dimensional group GRU state, observation features, exposure likelihood and readout, autoregressive head dependencies, dates, warm-up priors and validation rule.",
+  "information": "Only fixed historical groups, joint cohort counts, weekday, and lagged cohort count/mark EMA. Event records absent.",
+  "warmup_priors": "Only immutable base_log_intensity and reference_rates buffers read from original train snapshots; no fitted parameter or recurrent state transferred.",
+  "forecast": "Origin history columns and population frozen; 1/3/7-day endpoint scores.",
+  "original_protocol_sha256": "db675f48ebd19d4b23f8c2bebf92d91d2052427fd0b40d46f1cfa8040cafe017",
+  "source_sha256": {
+    "backend/scripts/evaluate_population_gru_projection.py": "24d78c6c036827837f26d9f243899d441909119c8568f72ffc6545500b02013c",
+    "backend/oransim/world_model/population_gru_projection.py": "03ef5a7293e528f243bf03d6a7284c5ea6692febece13636fed03c659103b9c7",
+    "backend/oransim/world_model/population_comparisons.py": "a163c85f4da2e3aa38ad076e0c471fdeebfa89ae07fc300364b8f6ba021701cf",
+    "backend/oransim/world_model/differentiable_market.py": "e1f4a601d75f1a38c5c390ff86bd537abba3e076d05d1d7c4d7e38ae81ab609a",
+    "backend/scripts/evaluate_population_readiness.py": "e4cd842e8b7101a34fe83f3951ded95da9dfa559842ccc1fb4353b4217cfa71b",
+    "backend/scripts/train_differentiable_market.py": "4a5bf088ad33894f9b22fbd132262a60606c022e786c41691c94e5c852d10ed3"
+  },
+  "private_source_sha256": {
+    "models/gaussian_population/benchmarks/kuairand/standard/aggregate/records.json": "4b3ac1e8a2fc962b7b7ff9e2cf1d3ff07de11e232177986b41aa1efae7dcb4dc",
+    "models/gaussian_population/benchmarks/kuairand/standard/aggregate/20260915-joint_gaussian-train.json": "c029b78a431a75181201081e9551a9936fcfafae5a45bad552885e797553b8c2",
+    "models/gaussian_population/benchmarks/kuairand/random/aggregate/records.json": "1c3909fd40b008077cd264abb2b229bb1d44e6ff2e8726ac61dc47dbe882c5fd",
+    "models/gaussian_population/benchmarks/kuairand/random/aggregate/20260915-joint_gaussian-train.json": "c58cf7ebbf51a3a2b98976ca8bb7804684e50e37c0468c962e29fe1bc22628b2"
+  },
+  "environment": {
+    "torch": "2.11.0+cu130",
+    "numpy": "2.4.4",
+    "dtype": "float64",
+    "threads": 1
+  }
+}

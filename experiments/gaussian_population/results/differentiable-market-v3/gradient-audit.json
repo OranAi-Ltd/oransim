@@ -1,0 +1,34 @@
+{
+  "standard": {
+    "first_training_day_gradient_norms": {
+      "mixture_logits": 0.014053991537206805,
+      "means": 0.0125805180709284,
+      "raw_cholesky": 0.003106772054344798,
+      "intensity_features": 0.20709834021353699,
+      "intensity_loading": 0.11495860974817361,
+      "behavior_features": 0.025307348877911365,
+      "dependencies": 0.004822514728372972
+    },
+    "learned_mean_shift_norm": 9.660666532605234,
+    "learned_cholesky_diagonal_range": [
+      0.18282070443883627,
+      2.891018660400736
+    ]
+  },
+  "random": {
+    "first_training_day_gradient_norms": {
+      "mixture_logits": 0.006287770112354865,
+      "means": 0.006791721853870877,
+      "raw_cholesky": 0.002078626506133824,
+      "intensity_features": 0.023521575451009382,
+      "intensity_loading": 0.011563008984360534,
+      "behavior_features": 0.02183869002941942,
+      "dependencies": 0.006320235051035914
+    },
+    "learned_mean_shift_norm": 4.317424648014976,
+    "learned_cholesky_diagonal_range": [
+      0.32353371125196645,
+      1.1632698093395335
+    ]
+  }
+}

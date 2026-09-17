@@ -1,0 +1,916 @@
+{
+  "metric_scope": {
+    "joint_nll": "invoice-weighted joint basket-pattern NLL conditional on observed positive transaction",
+    "count": "retained positive merchandise invoices per calendar day",
+    "seed_sd": "training-seed standard deviation within one fixed test window",
+    "interval": "paired circular moving-calendar-block percentile interval, 7-day blocks, 5000 resamples; fixed fitted models; unadjusted exploratory intervals; only 17 test days per window"
+  },
+  "windows": {
+    "2010": {
+      "data": {
+        "warmup_start": "2009-12-01",
+        "warmup_end": "2009-12-31",
+        "train_end": "2010-02-28",
+        "validation_end": "2010-03-14",
+        "test_end": "2010-03-31",
+        "window": "2010",
+        "warmup_invoices": 1665,
+        "known_warmup_customers": 951,
+        "population_anchors": [
+          671.0,
+          140.0,
+          140.0,
+          1.0
+        ],
+        "unknown_group_anchor": "one fixed reference unit; not a person/visit/opportunity count",
+        "repeat_spend_threshold_gbp": 747.51,
+        "mark_thresholds": {
+          "value": 294.52000000000004,
+          "quantity": 135.0,
+          "skus": 14.0
+        },
+        "days": {
+          "train": 59,
+          "validation": 14,
+          "test": 17
+        },
+        "invoices": {
+          "train": 2237,
+          "validation": 682,
+          "test": 960
+        },
+        "group_invoices": {
+          "train": [
+            435,
+            158,
+            500,
+            1144
+          ],
+          "validation": [
+            128,
+            38,
+            129,
+            387
+          ],
+          "test": [
+            167,
+            61,
+            186,
+            546
+          ]
+        }
+      },
+      "models": {
+        "fixed_gaussian": {
+          "joint_nll": {
+            "mean": 1.7510386939976625,
+            "seed_sd": 0.003199138224969451
+          },
+          "count_nll": {
+            "mean": 2.594384710964333,
+            "seed_sd": 0.000750823404871698
+          },
+          "transaction_mae": {
+            "mean": 7.865943138444145,
+            "seed_sd": 0.036517981330462926
+          },
+          "transaction_rmse": {
+            "mean": 9.25447583966266,
+            "seed_sd": 0.03199798499195537
+          },
+          "selected_epochs": [
+            120,
+            120,
+            120
+          ],
+          "train_seconds": [
+            34.732520583987935,
+            34.732443278015126,
+            33.83454953500768
+          ],
+          "horizons": {
+            "1": {
+              "origins": 17,
+              "transaction_mae": {
+                "mean": 7.865943138444145,
+                "seed_sd": 0.036517981330462926
+              },
+              "joint_nll": {
+                "mean": 1.7510386939976625,
+                "seed_sd": 0.003199138224969451
+              }
+            },
+            "3": {
+              "origins": 15,
+              "transaction_mae": {
+                "mean": 10.494158030809652,
+                "seed_sd": 0.0566972483636961
+              },
+              "joint_nll": {
+                "mean": 1.7476698759986669,
+                "seed_sd": 0.0014813191094295974
+              }
+            },
+            "7": {
+              "origins": 11,
+              "transaction_mae": {
+                "mean": 7.120149413512903,
+                "seed_sd": 0.05664087920936948
+              },
+              "joint_nll": {
+                "mean": 1.72712538157499,
+                "seed_sd": 0.0013651325098033233
+              }
+            }
+          }
+        },
+        "joint_gaussian": {
+          "joint_nll": {
+            "mean": 1.735712750372041,
+            "seed_sd": 0.001191638476779889
+          },
+          "count_nll": {
+            "mean": 2.688544531891509,
+            "seed_sd": 0.020269638603676754
+          },
+          "transaction_mae": {
+            "mean": 9.469421757845817,
+            "seed_sd": 0.11140953351880269
+          },
+          "transaction_rmse": {
+            "mean": 11.263252976430934,
+            "seed_sd": 0.14702370755400787
+          },
+          "selected_epochs": [
+            56,
+            55,
+            63
+          ],
+          "train_seconds": [
+            22.693752509978367,
+            22.484173322998686,
+            24.83238742800313
+          ],
+          "horizons": {
+            "1": {
+              "origins": 17,
+              "transaction_mae": {
+                "mean": 9.469421757845817,
+                "seed_sd": 0.11140953351880269
+              },
+              "joint_nll": {
+                "mean": 1.735712750372041,
+                "seed_sd": 0.001191638476779889
+              }
+            },
+            "3": {
+              "origins": 15,
+              "transaction_mae": {
+                "mean": 14.727652106533432,
+                "seed_sd": 0.5270530554286544
+              },
+              "joint_nll": {
+                "mean": 1.7353437968365526,
+                "seed_sd": 0.000868280710692468
+              }
+            },
+            "7": {
+              "origins": 11,
+              "transaction_mae": {
+                "mean": 6.865866400759056,
+                "seed_sd": 0.10461882192651435
+              },
+              "joint_nll": {
+                "mean": 1.7112756973944772,
+                "seed_sd": 0.0016093881068998332
+              }
+            }
+          }
+        },
+        "joint_discrete": {
+          "joint_nll": {
+            "mean": 1.7368426776824812,
+            "seed_sd": 0.0010945572582777955
+          },
+          "count_nll": {
+            "mean": 2.7172984175894848,
+            "seed_sd": 0.04066388756520265
+          },
+          "transaction_mae": {
+            "mean": 9.732538699709043,
+            "seed_sd": 0.48783997458584205
+          },
+          "transaction_rmse": {
+            "mean": 11.472930323737359,
+            "seed_sd": 0.4677167248489317
+          },
+          "selected_epochs": [
+            52,
+            48,
+            61
+          ],
+          "train_seconds": [
+            19.820086044986965,
+            18.194705861998955,
+            21.408099805004895
+          ],
+          "horizons": {
+            "1": {
+              "origins": 17,
+              "transaction_mae": {
+                "mean": 9.732538699709043,
+                "seed_sd": 0.48783997458584205
+              },
+              "joint_nll": {
+                "mean": 1.7368426776824812,
+                "seed_sd": 0.0010945572582777955
+              }
+            },
+            "3": {
+              "origins": 15,
+              "transaction_mae": {
+                "mean": 15.085362560419,
+                "seed_sd": 0.6643527728978139
+              },
+              "joint_nll": {
+                "mean": 1.736987491633907,
+                "seed_sd": 0.001779605260517233
+              }
+            },
+            "7": {
+              "origins": 11,
+              "transaction_mae": {
+                "mean": 6.895339132885696,
+                "seed_sd": 0.15953273032659618
+              },
+              "joint_nll": {
+                "mean": 1.7121548734449554,
+                "seed_sd": 0.0021640331503369405
+              }
+            }
+          }
+        },
+        "direct": {
+          "joint_nll": {
+            "mean": 1.7585383509732442,
+            "seed_sd": 0.0005344898288134424
+          },
+          "count_nll": {
+            "mean": 2.584313284860881,
+            "seed_sd": 0.000611858036984035
+          },
+          "transaction_mae": {
+            "mean": 8.038477647789264,
+            "seed_sd": 0.011372906247051685
+          },
+          "transaction_rmse": {
+            "mean": 9.454320326522502,
+            "seed_sd": 0.033172008128164905
+          },
+          "selected_epochs": [
+            120,
+            120,
+            120
+          ],
+          "train_seconds": [
+            31.631517261004774,
+            30.860129708977183,
+            31.29898513201624
+          ],
+          "horizons": {
+            "1": {
+              "origins": 17,
+              "transaction_mae": {
+                "mean": 8.038477647789264,
+                "seed_sd": 0.011372906247051685
+              },
+              "joint_nll": {
+                "mean": 1.7585383509732442,
+                "seed_sd": 0.0005344898288134424
+              }
+            },
+            "3": {
+              "origins": 15,
+              "transaction_mae": {
+                "mean": 10.561026330499503,
+                "seed_sd": 0.07602684478897234
+              },
+              "joint_nll": {
+                "mean": 1.7576773842278837,
+                "seed_sd": 0.0006949726415415008
+              }
+            },
+            "7": {
+              "origins": 11,
+              "transaction_mae": {
+                "mean": 6.432315064221662,
+                "seed_sd": 0.02864012090101105
+              },
+              "joint_nll": {
+                "mean": 1.73668750348548,
+                "seed_sd": 0.0006450744638358307
+              }
+            }
+          }
+        },
+        "no_dynamics": {
+          "joint_nll": {
+            "mean": 1.7340688941807043,
+            "seed_sd": 0.003362522956305287
+          },
+          "count_nll": {
+            "mean": 2.9115548534552445,
+            "seed_sd": 0.0047269946890272285
+          },
+          "transaction_mae": {
+            "mean": 13.113864113110202,
+            "seed_sd": 0.20477755913779383
+          },
+          "transaction_rmse": {
+            "mean": 16.01045151232297,
+            "seed_sd": 0.20764441501251807
+          },
+          "selected_epochs": [
+            64,
+            67,
+            65
+          ],
+          "train_seconds": [
+            16.981030118011404,
+            17.230155636003474,
+            17.344019835989457
+          ],
+          "horizons": {
+            "1": {
+              "origins": 17,
+              "transaction_mae": {
+                "mean": 13.113864113110202,
+                "seed_sd": 0.20477755913779383
+              },
+              "joint_nll": {
+                "mean": 1.7340688941807043,
+                "seed_sd": 0.003362522956305287
+              }
+            },
+            "3": {
+              "origins": 15,
+              "transaction_mae": {
+                "mean": 14.70553603794499,
+                "seed_sd": 0.17194061486586112
+              },
+              "joint_nll": {
+                "mean": 1.7351098926269781,
+                "seed_sd": 0.0033161319927431953
+              }
+            },
+            "7": {
+              "origins": 11,
+              "transaction_mae": {
+                "mean": 16.018210117427213,
+                "seed_sd": 0.32747673756829315
+              },
+              "joint_nll": {
+                "mean": 1.710229606518432,
+                "seed_sd": 0.002652735629909385
+              }
+            }
+          }
+        }
+      },
+      "baselines": {
+        "1": {
+          "last": 25.11764705882353,
+          "weekly": 13.0
+        },
+        "3": {
+          "last": 29.8,
+          "weekly": 12.733333333333333
+        },
+        "7": {
+          "last": 11.454545454545455,
+          "weekly": 11.454545454545455
+        }
+      },
+      "paired_comparisons": {
+        "fixed_gaussian": {
+          "difference": "joint_gaussian minus fixed_gaussian",
+          "days": 17,
+          "block_length": 7,
+          "joint_nll_difference": -0.015325943625621286,
+          "joint_nll_95_interval": [
+            -0.023301654211169653,
+            -0.007901636793152695
+          ],
+          "transaction_mae_difference": 1.6034786194016721,
+          "transaction_mae_95_interval": [
+            0.9461201177685907,
+            2.191328103702004
+          ]
+        },
+        "joint_discrete": {
+          "difference": "joint_gaussian minus joint_discrete",
+          "days": 17,
+          "block_length": 7,
+          "joint_nll_difference": -0.0011299273104400647,
+          "joint_nll_95_interval": [
+            -0.003520209455976165,
+            0.000896981061679899
+          ],
+          "transaction_mae_difference": -0.2631169418632253,
+          "transaction_mae_95_interval": [
+            -0.5344822948619158,
+            0.017163267967813284
+          ]
+        },
+        "direct": {
+          "difference": "joint_gaussian minus direct",
+          "days": 17,
+          "block_length": 7,
+          "joint_nll_difference": -0.022825600601202922,
+          "joint_nll_95_interval": [
+            -0.031889932594950494,
+            -0.014852932844478204
+          ],
+          "transaction_mae_difference": 1.4309441100565523,
+          "transaction_mae_95_interval": [
+            0.7273164296595448,
+            1.9979671424690773
+          ]
+        },
+        "no_dynamics": {
+          "difference": "joint_gaussian minus no_dynamics",
+          "days": 17,
+          "block_length": 7,
+          "joint_nll_difference": 0.0016438561913367953,
+          "joint_nll_95_interval": [
+            -0.002859406025397932,
+            0.005575926934873364
+          ],
+          "transaction_mae_difference": -3.6444423552643834,
+          "transaction_mae_95_interval": [
+            -8.086497865398622,
+            0.4456730976939331
+          ]
+        }
+      },
+      "validation_selected": {
+        "20260915": "joint_discrete",
+        "20260916": "joint_discrete",
+        "20260917": "joint_discrete"
+      }
+    },
+    "2011": {
+      "data": {
+        "warmup_start": "2010-12-01",
+        "warmup_end": "2010-12-31",
+        "train_end": "2011-02-28",
+        "validation_end": "2011-03-14",
+        "test_end": "2011-03-31",
+        "window": "2011",
+        "warmup_invoices": 1549,
+        "known_warmup_customers": 884,
+        "population_anchors": [
+          622.0,
+          131.0,
+          131.0,
+          1.0
+        ],
+        "unknown_group_anchor": "one fixed reference unit; not a person/visit/opportunity count",
+        "repeat_spend_threshold_gbp": 664.2,
+        "mark_thresholds": {
+          "value": 254.39999999999998,
+          "quantity": 110.0,
+          "skus": 13.0
+        },
+        "days": {
+          "train": 59,
+          "validation": 14,
+          "test": 17
+        },
+        "invoices": {
+          "train": 2159,
+          "validation": 565,
+          "test": 869
+        },
+        "group_invoices": {
+          "train": [
+            394,
+            183,
+            389,
+            1193
+          ],
+          "validation": [
+            90,
+            51,
+            98,
+            326
+          ],
+          "test": [
+            141,
+            63,
+            134,
+            531
+          ]
+        }
+      },
+      "models": {
+        "fixed_gaussian": {
+          "joint_nll": {
+            "mean": 1.7543964467205269,
+            "seed_sd": 0.0009370029224260522
+          },
+          "count_nll": {
+            "mean": 2.577467938076729,
+            "seed_sd": 0.0014943924314456342
+          },
+          "transaction_mae": {
+            "mean": 9.27264680427785,
+            "seed_sd": 0.005485584538826146
+          },
+          "transaction_rmse": {
+            "mean": 12.812415196566796,
+            "seed_sd": 0.03148990915176296
+          },
+          "selected_epochs": [
+            120,
+            120,
+            120
+          ],
+          "train_seconds": [
+            43.74851964102709,
+            36.89151030499488,
+            35.9994776439853
+          ],
+          "horizons": {
+            "1": {
+              "origins": 17,
+              "transaction_mae": {
+                "mean": 9.27264680427785,
+                "seed_sd": 0.005485584538826146
+              },
+              "joint_nll": {
+                "mean": 1.7543964467205269,
+                "seed_sd": 0.0009370029224260522
+              }
+            },
+            "3": {
+              "origins": 15,
+              "transaction_mae": {
+                "mean": 10.895576739165469,
+                "seed_sd": 0.08047051805125632
+              },
+              "joint_nll": {
+                "mean": 1.7729204439886768,
+                "seed_sd": 0.0018423746281692904
+              }
+            },
+            "7": {
+              "origins": 11,
+              "transaction_mae": {
+                "mean": 15.556321629723897,
+                "seed_sd": 0.2503899555782938
+              },
+              "joint_nll": {
+                "mean": 1.757320730160875,
+                "seed_sd": 0.0016747739589909824
+              }
+            }
+          }
+        },
+        "joint_gaussian": {
+          "joint_nll": {
+            "mean": 1.7554827696292972,
+            "seed_sd": 0.000783586644946457
+          },
+          "count_nll": {
+            "mean": 2.565780186889779,
+            "seed_sd": 0.005204825585937995
+          },
+          "transaction_mae": {
+            "mean": 9.296152319024023,
+            "seed_sd": 0.13941472304585417
+          },
+          "transaction_rmse": {
+            "mean": 13.069883705406411,
+            "seed_sd": 0.12276378267530212
+          },
+          "selected_epochs": [
+            90,
+            87,
+            94
+          ],
+          "train_seconds": [
+            40.95300573101849,
+            33.954930020001484,
+            35.723392154002795
+          ],
+          "horizons": {
+            "1": {
+              "origins": 17,
+              "transaction_mae": {
+                "mean": 9.296152319024023,
+                "seed_sd": 0.13941472304585417
+              },
+              "joint_nll": {
+                "mean": 1.7554827696292972,
+                "seed_sd": 0.000783586644946457
+              }
+            },
+            "3": {
+              "origins": 15,
+              "transaction_mae": {
+                "mean": 10.464622907568566,
+                "seed_sd": 0.7098220433218461
+              },
+              "joint_nll": {
+                "mean": 1.7665772809045845,
+                "seed_sd": 0.0014884060332803293
+              }
+            },
+            "7": {
+              "origins": 11,
+              "transaction_mae": {
+                "mean": 13.895920568102968,
+                "seed_sd": 2.8225715988146183
+              },
+              "joint_nll": {
+                "mean": 1.745167265217052,
+                "seed_sd": 0.0018680250646666635
+              }
+            }
+          }
+        },
+        "joint_discrete": {
+          "joint_nll": {
+            "mean": 1.7552869707037744,
+            "seed_sd": 0.003802740610756608
+          },
+          "count_nll": {
+            "mean": 2.596173947582734,
+            "seed_sd": 0.0563045448509463
+          },
+          "transaction_mae": {
+            "mean": 9.489339723066108,
+            "seed_sd": 0.04434203779358704
+          },
+          "transaction_rmse": {
+            "mean": 13.184258645924134,
+            "seed_sd": 0.03635974097088874
+          },
+          "selected_epochs": [
+            79,
+            51,
+            89
+          ],
+          "train_seconds": [
+            28.473533028009115,
+            19.835466760006966,
+            31.342254574992694
+          ],
+          "horizons": {
+            "1": {
+              "origins": 17,
+              "transaction_mae": {
+                "mean": 9.489339723066108,
+                "seed_sd": 0.04434203779358704
+              },
+              "joint_nll": {
+                "mean": 1.7552869707037744,
+                "seed_sd": 0.003802740610756608
+              }
+            },
+            "3": {
+              "origins": 15,
+              "transaction_mae": {
+                "mean": 10.399575436496113,
+                "seed_sd": 1.1864943145269833
+              },
+              "joint_nll": {
+                "mean": 1.7675022944067453,
+                "seed_sd": 0.003444262310145407
+              }
+            },
+            "7": {
+              "origins": 11,
+              "transaction_mae": {
+                "mean": 14.613174974402748,
+                "seed_sd": 4.052763976554727
+              },
+              "joint_nll": {
+                "mean": 1.7445277420937713,
+                "seed_sd": 0.0021035380100968486
+              }
+            }
+          }
+        },
+        "direct": {
+          "joint_nll": {
+            "mean": 1.7576728445159404,
+            "seed_sd": 0.0015671364395331204
+          },
+          "count_nll": {
+            "mean": 2.5742646212779348,
+            "seed_sd": 0.0020231272077669534
+          },
+          "transaction_mae": {
+            "mean": 8.998642636637106,
+            "seed_sd": 0.09110961356262803
+          },
+          "transaction_rmse": {
+            "mean": 12.666328071407369,
+            "seed_sd": 0.06988907799931077
+          },
+          "selected_epochs": [
+            120,
+            120,
+            120
+          ],
+          "train_seconds": [
+            33.32520596799441,
+            33.04480984300608,
+            33.02444192901021
+          ],
+          "horizons": {
+            "1": {
+              "origins": 17,
+              "transaction_mae": {
+                "mean": 8.998642636637106,
+                "seed_sd": 0.09110961356262803
+              },
+              "joint_nll": {
+                "mean": 1.7576728445159404,
+                "seed_sd": 0.0015671364395331204
+              }
+            },
+            "3": {
+              "origins": 15,
+              "transaction_mae": {
+                "mean": 9.835373368127113,
+                "seed_sd": 0.358536632990825
+              },
+              "joint_nll": {
+                "mean": 1.7757695882819908,
+                "seed_sd": 0.0023006520385574426
+              }
+            },
+            "7": {
+              "origins": 11,
+              "transaction_mae": {
+                "mean": 11.446661781826082,
+                "seed_sd": 1.2096493084428621
+              },
+              "joint_nll": {
+                "mean": 1.7584973572092781,
+                "seed_sd": 0.0010615013723752492
+              }
+            }
+          }
+        },
+        "no_dynamics": {
+          "joint_nll": {
+            "mean": 1.7558300528264492,
+            "seed_sd": 0.0006932676713481654
+          },
+          "count_nll": {
+            "mean": 2.5591849236234445,
+            "seed_sd": 0.001696656422377107
+          },
+          "transaction_mae": {
+            "mean": 7.820972251230741,
+            "seed_sd": 0.048130752650395583
+          },
+          "transaction_rmse": {
+            "mean": 10.973070943913294,
+            "seed_sd": 0.08199759828349652
+          },
+          "selected_epochs": [
+            96,
+            95,
+            97
+          ],
+          "train_seconds": [
+            24.26868439099053,
+            24.704808363021584,
+            23.889784266008064
+          ],
+          "horizons": {
+            "1": {
+              "origins": 17,
+              "transaction_mae": {
+                "mean": 7.820972251230741,
+                "seed_sd": 0.048130752650395583
+              },
+              "joint_nll": {
+                "mean": 1.7558300528264492,
+                "seed_sd": 0.0006932676713481654
+              }
+            },
+            "3": {
+              "origins": 15,
+              "transaction_mae": {
+                "mean": 8.937134931946487,
+                "seed_sd": 0.11237794837504764
+              },
+              "joint_nll": {
+                "mean": 1.764923688522373,
+                "seed_sd": 0.0006378278870964497
+              }
+            },
+            "7": {
+              "origins": 11,
+              "transaction_mae": {
+                "mean": 7.346046980033065,
+                "seed_sd": 0.12313366123422446
+              },
+              "joint_nll": {
+                "mean": 1.7450905787915316,
+                "seed_sd": 0.0008580968852949055
+              }
+            }
+          }
+        }
+      },
+      "baselines": {
+        "1": {
+          "last": 18.058823529411764,
+          "weekly": 8.705882352941176
+        },
+        "3": {
+          "last": 24.533333333333335,
+          "weekly": 9.6
+        },
+        "7": {
+          "last": 7.363636363636363,
+          "weekly": 7.363636363636363
+        }
+      },
+      "paired_comparisons": {
+        "fixed_gaussian": {
+          "difference": "joint_gaussian minus fixed_gaussian",
+          "days": 17,
+          "block_length": 7,
+          "joint_nll_difference": 0.0010863229087704257,
+          "joint_nll_95_interval": [
+            -0.0044979279364717704,
+            0.006626467654244441
+          ],
+          "transaction_mae_difference": 0.0235055147461739,
+          "transaction_mae_95_interval": [
+            -0.5350322697740794,
+            0.5280204790555062
+          ]
+        },
+        "joint_discrete": {
+          "difference": "joint_gaussian minus joint_discrete",
+          "days": 17,
+          "block_length": 7,
+          "joint_nll_difference": 0.00019579892552252883,
+          "joint_nll_95_interval": [
+            -0.0019997721297885674,
+            0.002163533406083578
+          ],
+          "transaction_mae_difference": -0.19318740404208368,
+          "transaction_mae_95_interval": [
+            -0.49241464480217656,
+            0.09461835810375895
+          ]
+        },
+        "direct": {
+          "difference": "joint_gaussian minus direct",
+          "days": 17,
+          "block_length": 7,
+          "joint_nll_difference": -0.0021900748866434117,
+          "joint_nll_95_interval": [
+            -0.00861329713722044,
+            0.00454811728574412
+          ],
+          "transaction_mae_difference": 0.29750968238691844,
+          "transaction_mae_95_interval": [
+            0.07547509554832847,
+            0.5388373079604822
+          ]
+        },
+        "no_dynamics": {
+          "difference": "joint_gaussian minus no_dynamics",
+          "days": 17,
+          "block_length": 7,
+          "joint_nll_difference": -0.0003472831971523745,
+          "joint_nll_95_interval": [
+            -0.0014904234422943472,
+            0.0008403936340666167
+          ],
+          "transaction_mae_difference": 1.4751800677932814,
+          "transaction_mae_95_interval": [
+            -1.0188921344266368,
+            4.357116676156674
+          ]
+        }
+      },
+      "validation_selected": {
+        "20260915": "no_dynamics",
+        "20260916": "no_dynamics",
+        "20260917": "no_dynamics"
+      }
+    }
+  }
+}

@@ -558,7 +558,8 @@ def test_fastapi_app_metadata():
     assert api.app.title == "Oransim"
     assert api.app.version == "0.2.0a0"
     # No internal-vendor routes leaked to the public API
-    routes = [r.path for r in api.app.routes if hasattr(r, "path")]
+    # OpenAPI resolves included routers across FastAPI versions.
+    routes = api.app.openapi()["paths"]
     _forbidden_route = bytes.fromhex("68756974756e").decode()  # decoded at runtime
     assert not any(_forbidden_route in p for p in routes)
     # Core routes present
